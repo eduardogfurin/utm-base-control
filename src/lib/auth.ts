@@ -71,18 +71,18 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account }) {
-      // Permite login Google — cria usuário com role MARKETING se não existir
       if (account?.provider === "google") {
         if (!user.email) return false;
-        const existing = await prisma.user.findUnique({
+        // Garante que o usuário tem role definido após o PrismaAdapter criá-lo
+        await prisma.user.upsert({
           where: { email: user.email },
+          update: {},
+          create: {
+            email: user.email,
+            name: user.name ?? user.email,
+            role: UserRole.MARKETING,
+          },
         });
-        if (!existing) {
-          await prisma.user.update({
-            where: { email: user.email },
-            data: { role: UserRole.MARKETING },
-          }).catch(() => null);
-        }
         return true;
       }
       return true;

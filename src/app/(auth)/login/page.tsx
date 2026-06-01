@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link2, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -174,7 +175,14 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
 
-        <p className="text-center text-xs text-zinc-600 mt-6">
+        <p className="text-center text-sm text-zinc-500 mt-4">
+          Não tem conta?{" "}
+          <Link href="/register" className="text-violet-400 hover:text-violet-300">
+            Criar conta
+          </Link>
+        </p>
+
+        <p className="text-center text-xs text-zinc-600 mt-3">
           UTM Base Control v1
         </p>
       </div>
