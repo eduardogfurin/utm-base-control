@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -42,7 +42,7 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
@@ -77,11 +77,88 @@ export default function LoginPage() {
     await signIn("google", { callbackUrl });
   }
 
-  const googleConfigured =
-    typeof window !== "undefined"
-      ? true // sempre mostra — se não configurado, NextAuth retorna erro descritivo
-      : true;
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 space-y-5">
+      <div>
+        <h1 className="text-lg font-semibold text-zinc-100">Acessar plataforma</h1>
+        <p className="text-sm text-zinc-400 mt-1">
+          Entre com Google ou use seu email e senha
+        </p>
+      </div>
 
+      {/* Google SSO */}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full flex items-center gap-3 bg-zinc-800 border-zinc-700 text-zinc-100 hover:bg-zinc-700 hover:text-white"
+        onClick={handleGoogleSignIn}
+        disabled={loadingGoogle}
+      >
+        {loadingGoogle ? (
+          <Loader2 size={16} className="animate-spin" />
+        ) : (
+          <GoogleIcon />
+        )}
+        Entrar com Google
+      </Button>
+
+      {/* Divisor */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-zinc-800" />
+        <span className="text-xs text-zinc-500">ou continue com email</span>
+        <div className="flex-1 h-px bg-zinc-800" />
+      </div>
+
+      {/* Formulário email/senha */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-zinc-300 text-sm">
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="seu@email.com"
+            className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-xs text-red-400">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="text-zinc-300 text-sm">
+            Senha
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-xs text-red-400">{errors.password.message}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          disabled={loadingCredentials}
+          className="w-full bg-violet-600 hover:bg-violet-500 text-white"
+        >
+          {loadingCredentials ? (
+            <Loader2 size={15} className="animate-spin mr-2" />
+          ) : null}
+          Entrar
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950">
       <div className="w-full max-w-sm px-4">
@@ -93,86 +170,9 @@ export default function LoginPage() {
           <span className="text-xl font-semibold text-white">UTM Base Control</span>
         </div>
 
-        {/* Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 space-y-5">
-          <div>
-            <h1 className="text-lg font-semibold text-zinc-100">Acessar plataforma</h1>
-            <p className="text-sm text-zinc-400 mt-1">
-              Entre com Google ou use seu email e senha
-            </p>
-          </div>
-
-          {/* Google SSO */}
-          {googleConfigured && (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center gap-3 bg-zinc-800 border-zinc-700 text-zinc-100 hover:bg-zinc-700 hover:text-white"
-              onClick={handleGoogleSignIn}
-              disabled={loadingGoogle}
-            >
-              {loadingGoogle ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <GoogleIcon />
-              )}
-              Entrar com Google
-            </Button>
-          )}
-
-          {/* Divisor */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-zinc-800" />
-            <span className="text-xs text-zinc-500">ou continue com email</span>
-            <div className="flex-1 h-px bg-zinc-800" />
-          </div>
-
-          {/* Formulário email/senha */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-zinc-300 text-sm">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-                {...register("email")}
-              />
-              {errors.email && (
-                <p className="text-xs text-red-400">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-zinc-300 text-sm">
-                Senha
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="text-xs text-red-400">{errors.password.message}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loadingCredentials}
-              className="w-full bg-violet-600 hover:bg-violet-500 text-white"
-            >
-              {loadingCredentials ? (
-                <Loader2 size={15} className="animate-spin mr-2" />
-              ) : null}
-              Entrar
-            </Button>
-          </form>
-        </div>
+        <Suspense fallback={<div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 h-64 animate-pulse" />}>
+          <LoginForm />
+        </Suspense>
 
         <p className="text-center text-xs text-zinc-600 mt-6">
           UTM Base Control v1
