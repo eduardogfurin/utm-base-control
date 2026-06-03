@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
 import {
-  LayoutDashboard,
+  Home,
   Radio,
   Megaphone,
   Link2,
   Puzzle,
-  QrCode,
   UploadCloud,
   History,
   Settings,
@@ -17,6 +17,8 @@ import {
   LogOut,
   ChevronDown,
   UserCircle,
+  BarChart2,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -27,21 +29,135 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/vehicles", label: "Veículos", icon: Radio },
-  { href: "/campaigns", label: "Campanhas", icon: Megaphone },
+// ─── Nav structure ─────────────────────────────────────────────────────────────
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+interface NavGroup {
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  basePath: string;
+  children: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+  return "children" in entry;
+}
+
+const topNav: NavItem[] = [
+  { href: "/dashboard", label: "Home", icon: Home },
   { href: "/links", label: "Links", icon: Link2 },
-  { href: "/templates", label: "Templates UTM", icon: Puzzle },
-  { href: "/qrcodes", label: "QR Codes", icon: QrCode },
-  { href: "/import", label: "Importação CSV", icon: UploadCloud },
-  { href: "/history", label: "Histórico", icon: History },
 ];
 
-const adminItems = [
-  { href: "/settings", label: "Configurações", icon: Settings },
-  { href: "/users", label: "Usuários", icon: Users },
-];
+const trackingGroup: NavGroup = {
+  label: "Acompanhamento",
+  icon: BarChart2,
+  basePath: "/tracking",
+  children: [
+    { href: "/tracking", label: "Visões", icon: BarChart2 },
+    { href: "/vehicles", label: "Veículos", icon: Radio },
+    { href: "/campaigns", label: "Campanhas", icon: Megaphone },
+  ],
+};
+
+const settingsGroup: NavGroup = {
+  label: "Configurações",
+  icon: Settings,
+  basePath: "/settings",
+  children: [
+    { href: "/templates", label: "Templates", icon: Puzzle },
+    { href: "/import", label: "Importar lista", icon: UploadCloud },
+    { href: "/history", label: "Histórico", icon: History },
+  ],
+};
+
+// ─── Sidebar ───────────────────────────────────────────────────────────────────
+
+function NavLink({ href, label, icon: Icon, pathname }: NavItem & { pathname: string }) {
+  const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
+        active
+          ? "bg-orange-50 text-orange-700 font-medium"
+          : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+      )}
+    >
+      <Icon size={15} className={active ? "text-orange-500" : "text-gray-400"} />
+      {label}
+    </Link>
+  );
+}
+
+function NavGroupSection({
+  group,
+  pathname,
+}: {
+  group: NavGroup;
+  pathname: string;
+}) {
+  const isGroupActive = pathname.startsWith(group.basePath) ||
+    group.children.some((c) => pathname === c.href || (c.href !== "/" && pathname.startsWith(c.href)));
+  const [open, setOpen] = useState(isGroupActive);
+  const Icon = group.icon;
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
+          isGroupActive
+            ? "text-orange-700 font-medium"
+            : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+        )}
+      >
+        <Icon size={15} className={isGroupActive ? "text-orange-500" : "text-gray-400"} />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronRight
+          size={12}
+          className={cn(
+            "text-gray-400 transition-transform duration-200",
+            open && "rotate-90"
+          )}
+        />
+      </button>
+      {open && (
+        <div className="ml-3.5 mt-0.5 pl-3 border-l border-gray-100 space-y-0.5">
+          {group.children.map((child) => {
+            const ChildIcon = child.icon;
+            const active = pathname === child.href || (child.href !== "/" && pathname.startsWith(child.href) && child.href !== "/tracking");
+            const activeTracking = child.href === "/tracking" && pathname === "/tracking";
+            const isActive = active || activeTracking;
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                className={cn(
+                  "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-all duration-150",
+                  isActive
+                    ? "bg-orange-50 text-orange-700 font-medium"
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                )}
+              >
+                <ChildIcon size={13} className={isActive ? "text-orange-500" : "text-gray-400"} />
+                {child.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -64,59 +180,27 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-        <p className="px-2 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-          Principal
-        </p>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
-                active
-                  ? "bg-orange-50 text-orange-700 font-medium"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-              )}
-            >
-              <Icon
-                size={15}
-                className={active ? "text-orange-500" : "text-gray-400"}
-              />
-              {item.label}
-            </Link>
-          );
-        })}
+        {topNav.map((item) => (
+          <NavLink key={item.href} {...item} pathname={pathname} />
+        ))}
+
+        <div className="pt-1" />
+        <NavGroupSection group={trackingGroup} pathname={pathname} />
+
+        <div className="pt-1" />
+        <NavGroupSection group={settingsGroup} pathname={pathname} />
 
         {isAdmin && (
           <>
             <p className="px-2 mt-5 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
               Admin
             </p>
-            {adminItems.map((item) => {
-              const Icon = item.icon;
-              const active = pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
-                    active
-                      ? "bg-orange-50 text-orange-700 font-medium"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-                  )}
-                >
-                  <Icon
-                    size={15}
-                    className={active ? "text-orange-500" : "text-gray-400"}
-                  />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {[
+              { href: "/settings", label: "Configurações", icon: Settings },
+              { href: "/users", label: "Usuários", icon: Users },
+            ].map((item) => (
+              <NavLink key={item.href} {...item} pathname={pathname} />
+            ))}
           </>
         )}
       </nav>

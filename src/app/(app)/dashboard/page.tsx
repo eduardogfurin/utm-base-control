@@ -22,7 +22,9 @@ import {
   ArrowUpRight,
   MousePointerClick,
   ExternalLink,
+  Plus,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { formatDate } from "@/lib/utils"
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -79,6 +81,7 @@ function getGreeting() {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -125,17 +128,25 @@ export default function DashboardPage() {
             {getGreeting()}, {firstName} 👋
           </h1>
         </div>
-        <a
-          href="/links"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#1C1B21] hover:bg-orange-500 text-white text-sm font-medium px-4 py-2 transition-colors duration-300"
-        >
-          <Link2 size={14} />
-          Novo Link
-        </a>
       </div>
 
       {/* ── Bento Grid ───────────────────────────────────────────── */}
       <div className="grid grid-cols-12 gap-4">
+
+        {/* CTA: Novo Link card — col 3 */}
+        <button
+          onClick={() => router.push("/links")}
+          className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-[#1C1B21] hover:bg-orange-500 text-white p-5 flex flex-col gap-3 text-left transition-colors duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.15)] group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Ação rápida</span>
+            <span className="w-8 h-8 rounded-xl bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+              <Plus size={15} className="text-white" />
+            </span>
+          </div>
+          <span className="text-2xl font-bold leading-tight">Novo Link</span>
+          <p className="text-xs text-white/50">Criar e encurtar um novo link UTM</p>
+        </button>
 
         {/* KPI: Total Links — col 3 */}
         <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
