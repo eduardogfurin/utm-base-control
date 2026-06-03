@@ -26,7 +26,7 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {needsOnboarding && <OnboardingWizard />}
+      {needsOnboarding && <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />}
     </>
   );
 }

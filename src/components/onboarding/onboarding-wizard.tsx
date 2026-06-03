@@ -356,7 +356,7 @@ function StepImport({
 
 const STEPS = ["Boas-vindas", "Encurtador", "API Key", "Importar"];
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
@@ -413,6 +413,7 @@ export function OnboardingWizard() {
 
   async function handleFinish() {
     await fetch("/api/onboarding/complete", { method: "POST" });
+    onComplete?.();
     router.push("/dashboard");
     router.refresh();
   }
