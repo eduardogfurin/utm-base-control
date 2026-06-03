@@ -18,7 +18,7 @@ export async function GET() {
   }
 
   try {
-    const res = await fetch("https://api.rebrandly.com/v1/domains?active=true&type=user", {
+    const res = await fetch("https://api.rebrandly.com/v1/domains?active=true", {
       headers: { apikey: integration.apiKey, "Content-Type": "application/json" },
     });
 

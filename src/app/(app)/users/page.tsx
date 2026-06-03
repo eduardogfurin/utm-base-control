@@ -8,13 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -57,15 +50,15 @@ interface AppUser {
 const ROLE_BADGE: Record<UserRole, { label: string; className: string }> = {
   ADMIN: {
     label: "Admin",
-    className: "bg-violet-500/15 text-violet-400 border-violet-500/30",
+    className: "bg-orange-50 text-orange-700 border-orange-200",
   },
   MARKETING: {
     label: "Marketing",
-    className: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
   },
   VIEWER: {
     label: "Viewer",
-    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30",
+    className: "bg-gray-100 text-gray-600 border-gray-200",
   },
 };
 
@@ -85,22 +78,12 @@ function SkeletonRows() {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i} className="border-zinc-800">
-          <TableCell>
-            <Skeleton className="h-4 w-32 bg-zinc-800" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-44 bg-zinc-800" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-5 w-20 bg-zinc-800" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-24 bg-zinc-800" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-7 w-20 bg-zinc-800" />
-          </TableCell>
+        <TableRow key={i} className="border-gray-100">
+          <TableCell><Skeleton className="h-4 w-32 bg-gray-100" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-44 bg-gray-100" /></TableCell>
+          <TableCell><Skeleton className="h-5 w-20 bg-gray-100" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-24 bg-gray-100" /></TableCell>
+          <TableCell><Skeleton className="h-7 w-20 bg-gray-100" /></TableCell>
         </TableRow>
       ))}
     </>
@@ -114,7 +97,6 @@ export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<CreateForm>({
     name: "",
@@ -124,16 +106,13 @@ export default function UsersPage() {
   });
   const [createLoading, setCreateLoading] = useState(false);
 
-  // Edit dialog
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AppUser | null>(null);
   const [editForm, setEditForm] = useState<EditForm>({ name: "", role: "MARKETING" });
   const [editLoading, setEditLoading] = useState(false);
 
-  // Delete loading per user
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
 
-  // Redirect non-admins
   useEffect(() => {
     if (status === "loading") return;
     if (!session?.user || session.user.role !== "ADMIN") {
@@ -233,7 +212,7 @@ export default function UsersPage() {
   if (status === "loading" || (session?.user?.role !== "ADMIN" && status === "authenticated")) {
     return (
       <div className="flex items-center justify-center h-48">
-        <Loader2 size={20} className="animate-spin text-zinc-500" />
+        <Loader2 size={20} className="animate-spin text-gray-400" />
       </div>
     );
   }
@@ -243,12 +222,12 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center">
-            <Users size={16} className="text-zinc-400" />
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Users size={16} className="text-gray-500" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">Usuários</h1>
-            <p className="text-sm text-zinc-500">
+            <h1 className="text-lg font-semibold text-gray-900">Usuários</h1>
+            <p className="text-sm text-gray-500">
               Gerencie os membros e suas permissões
             </p>
           </div>
@@ -256,7 +235,7 @@ export default function UsersPage() {
         <Button
           size="sm"
           onClick={() => setCreateOpen(true)}
-          className="bg-violet-600 hover:bg-violet-500 text-white"
+          className="bg-orange-500 hover:bg-orange-600 text-white"
         >
           <Plus size={14} className="mr-1.5" />
           Novo Usuário
@@ -264,26 +243,26 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-zinc-800 hover:bg-transparent">
-              <TableHead className="text-zinc-400 font-medium">Nome</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Email</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Role</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Criado em</TableHead>
-              <TableHead className="text-zinc-400 font-medium w-24">Ações</TableHead>
+            <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50">
+              <TableHead className="text-gray-500 font-medium">Nome</TableHead>
+              <TableHead className="text-gray-500 font-medium">Email</TableHead>
+              <TableHead className="text-gray-500 font-medium">Role</TableHead>
+              <TableHead className="text-gray-500 font-medium">Criado em</TableHead>
+              <TableHead className="text-gray-500 font-medium w-24">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <SkeletonRows />
             ) : users.length === 0 ? (
-              <TableRow className="border-zinc-800 hover:bg-zinc-900">
+              <TableRow className="border-gray-100 hover:bg-white">
                 <TableCell colSpan={5} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2">
-                    <Users size={32} className="text-zinc-700" />
-                    <p className="text-sm text-zinc-500">Nenhum usuário encontrado</p>
+                    <Users size={32} className="text-gray-300" />
+                    <p className="text-sm text-gray-400">Nenhum usuário encontrado</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -295,20 +274,20 @@ export default function UsersPage() {
                 return (
                   <TableRow
                     key={user.id}
-                    className="border-zinc-800 hover:bg-zinc-800/40 transition-colors"
+                    className="border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <TableCell className="text-zinc-200 font-medium text-sm">
+                    <TableCell className="text-gray-900 font-medium text-sm">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-violet-600/70 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600 uppercase flex-shrink-0">
                           {(user.name ?? user.email ?? "U")[0]}
                         </div>
                         {user.name ?? "—"}
                         {isSelf && (
-                          <span className="text-[10px] text-zinc-500">(você)</span>
+                          <span className="text-[10px] text-gray-400">(você)</span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-zinc-400 text-sm">
+                    <TableCell className="text-gray-500 text-sm">
                       {user.email ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -319,7 +298,7 @@ export default function UsersPage() {
                         {badge.label}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-zinc-500 text-sm">
+                    <TableCell className="text-gray-400 text-sm">
                       {formatDate(user.createdAt)}
                     </TableCell>
                     <TableCell>
@@ -327,7 +306,7 @@ export default function UsersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
+                          className="h-7 w-7 text-gray-400 hover:text-gray-700 hover:bg-gray-100"
                           onClick={() => openEdit(user)}
                         >
                           <Pencil size={13} />
@@ -336,7 +315,7 @@ export default function UsersPage() {
                         <AlertDialog>
                           <AlertDialogTrigger
                             disabled={isSelf || isDeleting}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-30 transition-colors"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 transition-colors"
                           >
                             {isDeleting ? (
                               <Loader2 size={13} className="animate-spin" />
@@ -344,26 +323,26 @@ export default function UsersPage() {
                               <Trash2 size={13} />
                             )}
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-zinc-900 border-zinc-700">
+                          <AlertDialogContent className="bg-white border-gray-200">
                             <AlertDialogHeader>
-                              <AlertDialogTitle className="text-zinc-100">
+                              <AlertDialogTitle className="text-gray-900">
                                 Remover usuário?
                               </AlertDialogTitle>
-                              <AlertDialogDescription className="text-zinc-400">
+                              <AlertDialogDescription className="text-gray-500">
                                 Esta ação é irreversível. O usuário{" "}
-                                <span className="font-medium text-zinc-200">
+                                <span className="font-medium text-gray-700">
                                   {user.name ?? user.email}
                                 </span>{" "}
                                 será permanentemente removido do sistema.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                              <AlertDialogCancel className="border-gray-200 text-gray-700 hover:bg-gray-50">
                                 Cancelar
                               </AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(user.id)}
-                                className="bg-red-600 hover:bg-red-500 text-white"
+                                className="bg-red-500 hover:bg-red-600 text-white"
                               >
                                 Remover
                               </AlertDialogAction>
@@ -382,27 +361,27 @@ export default function UsersPage() {
 
       {/* Create Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-zinc-100 sm:max-w-md">
+        <DialogContent className="bg-white border-gray-200 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-violet-400" />
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <ShieldCheck size={16} className="text-orange-500" />
               Novo Usuário
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Nome</Label>
+              <Label className="text-gray-700">Nome</Label>
               <Input
                 placeholder="Ex: João Silva"
                 value={createForm.name}
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, name: e.target.value }))
                 }
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Email</Label>
+              <Label className="text-gray-700">Email</Label>
               <Input
                 type="email"
                 placeholder="joao@empresa.com"
@@ -410,11 +389,11 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, email: e.target.value }))
                 }
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Senha</Label>
+              <Label className="text-gray-700">Senha</Label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -422,46 +401,36 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, password: e.target.value }))
                 }
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Role</Label>
-              <Select
+              <Label className="text-gray-700">Role</Label>
+              <select
                 value={createForm.role}
-                onValueChange={(val) =>
-                  setCreateForm((f) => ({ ...f, role: (val ?? "MARKETING") as UserRole }))
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, role: e.target.value as UserRole }))
                 }
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
-                  <SelectItem value="ADMIN" className="text-zinc-200">
-                    Admin
-                  </SelectItem>
-                  <SelectItem value="MARKETING" className="text-zinc-200">
-                    Marketing
-                  </SelectItem>
-                  <SelectItem value="VIEWER" className="text-zinc-200">
-                    Viewer
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="ADMIN">Admin</option>
+                <option value="MARKETING">Marketing</option>
+                <option value="VIEWER">Viewer</option>
+              </select>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setCreateOpen(false)}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-gray-500 hover:text-gray-700"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createLoading}
-                className="bg-violet-600 hover:bg-violet-500 text-white"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
               >
                 {createLoading && (
                   <Loader2 size={14} className="animate-spin mr-1.5" />
@@ -475,73 +444,63 @@ export default function UsersPage() {
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-zinc-100 sm:max-w-md">
+        <DialogContent className="bg-white border-gray-200 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Pencil size={15} className="text-zinc-400" />
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <Pencil size={15} className="text-gray-400" />
               Editar Usuário
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Nome</Label>
+              <Label className="text-gray-700">Nome</Label>
               <Input
                 placeholder="Nome completo"
                 value={editForm.name}
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, name: e.target.value }))
                 }
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-zinc-400 text-sm">
+              <Label className="text-gray-500 text-sm">
                 Email{" "}
-                <span className="text-zinc-600 text-xs">(não editável)</span>
+                <span className="text-gray-400 text-xs">(não editável)</span>
               </Label>
               <Input
                 value={editTarget?.email ?? ""}
                 disabled
-                className="bg-zinc-800/50 border-zinc-700 text-zinc-500 cursor-not-allowed"
+                className="bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-zinc-300">Role</Label>
-              <Select
+              <Label className="text-gray-700">Role</Label>
+              <select
                 value={editForm.role}
-                onValueChange={(val) =>
-                  setEditForm((f) => ({ ...f, role: (val ?? "MARKETING") as UserRole }))
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, role: e.target.value as UserRole }))
                 }
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
-                  <SelectItem value="ADMIN" className="text-zinc-200">
-                    Admin
-                  </SelectItem>
-                  <SelectItem value="MARKETING" className="text-zinc-200">
-                    Marketing
-                  </SelectItem>
-                  <SelectItem value="VIEWER" className="text-zinc-200">
-                    Viewer
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="ADMIN">Admin</option>
+                <option value="MARKETING">Marketing</option>
+                <option value="VIEWER">Viewer</option>
+              </select>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setEditOpen(false)}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-gray-500 hover:text-gray-700"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={editLoading}
-                className="bg-violet-600 hover:bg-violet-500 text-white"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
               >
                 {editLoading && (
                   <Loader2 size={14} className="animate-spin mr-1.5" />
