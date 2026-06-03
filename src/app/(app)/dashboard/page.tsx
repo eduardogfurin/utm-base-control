@@ -47,7 +47,7 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, icon, color, loading }: KpiCardProps) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
           {label}
@@ -87,7 +87,7 @@ interface RankingTableProps {
 
 function RankingTable({ title, rows, loading, emptyMessage }: RankingTableProps) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.04)]">
       <div className="px-5 py-4 border-b border-gray-50">
         <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
       </div>
@@ -230,7 +230,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Line chart */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.04)]">
         <h3 className="text-sm font-semibold text-gray-800 mb-5">
           Cliques nos últimos 30 dias
         </h3>

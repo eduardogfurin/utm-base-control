@@ -79,7 +79,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
+    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] border border-gray-100/80 p-8 space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-gray-900">Bem-vindo de volta</h1>
         <p className="text-sm text-gray-400 mt-1">
@@ -161,7 +161,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
       <div className="w-full max-w-sm px-4">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">

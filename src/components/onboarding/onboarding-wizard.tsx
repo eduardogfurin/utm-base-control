@@ -92,7 +92,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
         <Link2 size={28} className="text-white" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Bem-vindo ao UTM Base Control!</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Bem-vindo ao UTM Base Control!</h2>
         <p className="text-gray-500 mt-2 max-w-sm mx-auto">
           Vamos configurar sua conta em poucos passos para que você possa começar a rastrear seus links.
         </p>
@@ -134,7 +134,7 @@ function StepSelectProvider({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Qual encurtador você usa?</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Qual encurtador você usa?</h2>
         <p className="text-sm text-gray-400 mt-1">
           Selecione o serviço que você utiliza para encurtar links.
         </p>
@@ -202,7 +202,7 @@ function StepApiKey({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Conecte o {provider.name}</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Conecte o {provider.name}</h2>
         <p className="text-sm text-gray-400 mt-1">
           Insira sua API key para conectar sua conta.
         </p>
@@ -302,7 +302,7 @@ function StepImport({
       {imported !== null ? (
         <>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Tudo pronto!</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Tudo pronto!</h2>
             <p className="text-gray-500 mt-2">
               <span className="font-semibold text-orange-500">{imported} links</span> importados com sucesso do {provider.name}.
             </p>
@@ -318,7 +318,7 @@ function StepImport({
       ) : (
         <>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Importar links existentes?</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Importar links existentes?</h2>
             <p className="text-gray-500 mt-2 max-w-sm mx-auto text-sm">
               Posso importar automaticamente os links que você já criou no {provider.name}. Isso é opcional e pode ser feito depois.
             </p>
@@ -419,7 +419,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-white to-orange-50/40 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-[#f5f5f7] flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
