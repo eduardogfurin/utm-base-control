@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
   Zap,
   ExternalLink,
   DownloadCloud,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,6 @@ const providers = [
     id: "REBRANDLY",
     name: "Rebrandly",
     description: "Encurtador profissional com analytics avançados",
-    color: "from-orange-400 to-pink-500",
     iconBg: "bg-orange-50",
     iconColor: "text-orange-500",
     apiKeyGuide: {
@@ -46,7 +46,6 @@ const providers = [
     id: "BITLY",
     name: "Bitly",
     description: "Um dos encurtadores mais populares do mundo",
-    color: "from-sky-400 to-blue-500",
     iconBg: "bg-sky-50",
     iconColor: "text-sky-500",
     apiKeyGuide: {
@@ -66,7 +65,6 @@ const providers = [
     id: "CUSTOM",
     name: "Outro / Customizado",
     description: "Conecte qualquer provedor via API key",
-    color: "from-slate-400 to-slate-600",
     iconBg: "bg-slate-50",
     iconColor: "text-slate-500",
     apiKeyGuide: {
@@ -82,6 +80,12 @@ const providers = [
     },
   },
 ];
+
+interface RebrandlyDomain {
+  id: string;
+  fullName: string;
+  active: boolean;
+}
 
 // ─── Step components ──────────────────────────────────────────────────────────
 
@@ -111,7 +115,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
       </div>
       <Button
         onClick={onNext}
-        className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white px-8 shadow-sm"
+        className="bg-[#1C1B21] hover:bg-orange-500 text-white px-8 transition-colors duration-300"
       >
         Começar configuração
         <ArrowRight size={16} className="ml-2" />
@@ -167,14 +171,14 @@ function StepSelectProvider({
       </div>
 
       <div className="flex gap-3 pt-2">
-        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200">
+        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
           <ArrowLeft size={16} className="mr-2" />
           Voltar
         </Button>
         <Button
           onClick={onNext}
           disabled={!selected}
-          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
+          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
         >
           Continuar
           <ArrowRight size={16} className="ml-2" />
@@ -231,7 +235,7 @@ function StepApiKey({
             href={provider.apiKeyGuide.docsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-violet-500 font-medium"
+            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 font-medium"
           >
             Abrir painel do {provider.name}
             <ExternalLink size={11} />
@@ -256,20 +260,94 @@ function StepApiKey({
       </div>
 
       <div className="flex gap-3 pt-2">
-        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200" disabled={loading}>
+        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700" disabled={loading}>
           <ArrowLeft size={16} className="mr-2" />
           Voltar
         </Button>
         <Button
           onClick={onNext}
           disabled={!apiKey.trim() || loading}
-          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
+          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
         >
-          {loading ? (
-            <Loader2 size={16} className="animate-spin mr-2" />
-          ) : null}
+          {loading && <Loader2 size={16} className="animate-spin mr-2" />}
           Conectar conta
           {!loading && <ArrowRight size={16} className="ml-2" />}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function StepSelectDomain({
+  providerName,
+  domains,
+  selectedDomain,
+  onSelect,
+  onNext,
+  onBack,
+  loading,
+}: {
+  providerName: string;
+  domains: RebrandlyDomain[];
+  selectedDomain: string;
+  onSelect: (d: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">Escolha seu domínio padrão</h2>
+        <p className="text-sm text-gray-400 mt-1">
+          Selecione qual domínio do {providerName} será usado ao encurtar links. Você pode mudar isso por link depois.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={20} className="animate-spin text-gray-400" />
+        </div>
+      ) : domains.length === 0 ? (
+        <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-700">
+          Nenhum domínio encontrado na sua conta. Você pode continuar e configurar depois em Configurações.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {domains.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => onSelect(d.fullName)}
+              className={cn(
+                "w-full text-left rounded-xl border-2 p-3.5 flex items-center gap-3 transition-all duration-150",
+                selectedDomain === d.fullName
+                  ? "border-orange-400 bg-orange-50/50"
+                  : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
+              )}
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <Globe size={14} className="text-gray-500" />
+              </div>
+              <span className="text-sm font-medium text-gray-800 flex-1">{d.fullName}</span>
+              {selectedDomain === d.fullName && (
+                <CheckCircle2 size={16} className="text-orange-500 flex-shrink-0" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-2">
+        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
+          <ArrowLeft size={16} className="mr-2" />
+          Voltar
+        </Button>
+        <Button
+          onClick={onNext}
+          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+        >
+          Continuar
+          <ArrowRight size={16} className="ml-2" />
         </Button>
       </div>
     </div>
@@ -309,7 +387,7 @@ function StepImport({
           </div>
           <Button
             onClick={onSkip}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white px-8"
+            className="bg-[#1C1B21] hover:bg-orange-500 text-white px-8 transition-colors duration-300"
           >
             Ir para o dashboard
             <ArrowRight size={16} className="ml-2" />
@@ -328,7 +406,7 @@ function StepImport({
             <Button
               onClick={onImport}
               disabled={importing}
-              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
+              className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
             >
               {importing ? (
                 <Loader2 size={16} className="animate-spin mr-2" />
@@ -354,7 +432,8 @@ function StepImport({
 
 // ─── Wizard ───────────────────────────────────────────────────────────────────
 
-const STEPS = ["Boas-vindas", "Encurtador", "API Key", "Importar"];
+// Steps: 0=Welcome, 1=Provider, 2=ApiKey, 3=Domain, 4=Import
+const STEPS = ["Boas-vindas", "Encurtador", "API Key", "Domínio", "Importar"];
 
 export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   const router = useRouter();
@@ -365,7 +444,28 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   const [importing, setImporting] = useState(false);
   const [importedCount, setImportedCount] = useState<number | null>(null);
 
+  // Domain step state
+  const [domains, setDomains] = useState<RebrandlyDomain[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [loadingDomains, setLoadingDomains] = useState(false);
+
   const provider = providers.find((p) => p.id === selectedProvider) ?? providers[0];
+
+  // Load domains when entering domain step (step 3), only for Rebrandly
+  useEffect(() => {
+    if (step !== 3 || selectedProvider !== "REBRANDLY") return;
+    setLoadingDomains(true);
+    fetch("/api/integrations/rebrandly/domains")
+      .then((r) => r.json())
+      .then((data: RebrandlyDomain[]) => {
+        setDomains(data ?? []);
+        if (data?.length && !selectedDomain) {
+          setSelectedDomain(data[0].fullName);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingDomains(false));
+  }, [step, selectedProvider]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleConnect() {
     if (!selectedProvider || !apiKey.trim()) return;
@@ -382,12 +482,24 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         return;
       }
       toast.success(`${provider.name} conectado com sucesso!`);
-      setStep(3);
+      // For Rebrandly, go to domain step; otherwise skip to import
+      setStep(selectedProvider === "REBRANDLY" ? 3 : 4);
     } catch {
       toast.error("Erro de conexão. Verifique sua API key.");
     } finally {
       setConnecting(false);
     }
+  }
+
+  async function handleSaveDomain() {
+    if (selectedDomain) {
+      await fetch("/api/integrations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "REBRANDLY", domain: selectedDomain }),
+      }).catch(() => {});
+    }
+    setStep(4);
   }
 
   async function handleImport() {
@@ -432,7 +544,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         {/* Step indicators */}
         <div className="px-6 pt-5 pb-2 flex items-center justify-between">
           {STEPS.map((label, i) => (
-            <div key={i} className="flex items-center gap-1.5">
+            <div key={i} className="flex items-center gap-1">
               <div
                 className={cn(
                   "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all",
@@ -447,7 +559,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
               </div>
               <span
                 className={cn(
-                  "text-xs hidden sm:block",
+                  "text-[10px] hidden sm:block",
                   i === step ? "text-gray-700 font-medium" : "text-gray-400"
                 )}
               >
@@ -479,6 +591,17 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
             />
           )}
           {step === 3 && (
+            <StepSelectDomain
+              providerName={provider.name}
+              domains={domains}
+              selectedDomain={selectedDomain}
+              onSelect={setSelectedDomain}
+              onNext={handleSaveDomain}
+              onBack={() => setStep(2)}
+              loading={loadingDomains}
+            />
+          )}
+          {step === 4 && (
             <StepImport
               provider={provider}
               onImport={handleImport}

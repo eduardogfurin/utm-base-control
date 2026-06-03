@@ -347,19 +347,23 @@ function LinkFormDialog({
   // True if user has their own Rebrandly integration OR global settings have an API key
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
-  // Load Rebrandly domains when dialog opens
+  // Load Rebrandly domains when dialog opens; auto-enable toggle if user has Rebrandly
   useEffect(() => {
     if (!open || !hasRebrandly) return;
     fetch("/api/integrations/rebrandly/domains")
       .then((r) => r.json())
       .then((data: RebrandlyDomain[]) => {
         setRebrandlyDomains(data ?? []);
-        if (data?.length && !form.rebrandlyDomain) {
-          setForm((prev) => ({ ...prev, rebrandlyDomain: data[0].fullName }));
-        }
+        setForm((prev) => ({
+          ...prev,
+          // Auto-enable shortening if user has Rebrandly and this is a new link
+          shortenWithRebrandly: mode === "create" ? true : prev.shortenWithRebrandly,
+          // Auto-select first domain if none chosen yet
+          rebrandlyDomain: prev.rebrandlyDomain || (data?.[0]?.fullName ?? ""),
+        }));
       })
       .catch(() => {});
-  }, [open, hasRebrandly]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, hasRebrandly, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const previewUrl = buildUtmUrl(form.baseUrl, {
     utmSource: form.utmSource || null,
@@ -609,10 +613,15 @@ function LinkFormDialog({
               variant="ghost"
               onClick={() => setOpen(false)}
               disabled={saving}
+              className="text-gray-500 hover:text-gray-800"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button
+              type="submit"
+              disabled={saving}
+              className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+            >
               {saving ? "Salvando..." : mode === "create" ? "Criar Link" : "Salvar"}
             </Button>
           </div>

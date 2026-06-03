@@ -44,3 +44,29 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true, id: integration.id }, { status: 200 });
 }
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { provider, domain } = body;
+
+  if (!provider) {
+    return NextResponse.json({ error: "provider é obrigatório" }, { status: 400 });
+  }
+
+  const validProviders = Object.values(IntegrationProvider);
+  if (!validProviders.includes(provider)) {
+    return NextResponse.json({ error: "Provedor inválido" }, { status: 400 });
+  }
+
+  await prisma.userIntegration.updateMany({
+    where: { userId: session.user.id, provider },
+    data: { domain: domain ?? null },
+  });
+
+  return NextResponse.json({ ok: true });
+}
