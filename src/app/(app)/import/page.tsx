@@ -127,13 +127,13 @@ interface PreviewTableProps {
 function PreviewTable({ rows, defaultVehicleId, defaultCampaignId }: PreviewTableProps) {
   const preview = rows.slice(0, 10);
   return (
-    <div className="rounded-lg border border-zinc-800 overflow-auto">
+    <div className="rounded-lg border border-gray-100 overflow-auto">
       <Table>
         <TableHeader>
-          <TableRow className="border-zinc-800 hover:bg-transparent">
-            <TableHead className="text-zinc-400 w-8">#</TableHead>
+          <TableRow className="border-gray-100 hover:bg-transparent">
+            <TableHead className="text-gray-400 w-8">#</TableHead>
             {PREVIEW_COLUMNS.map((col) => (
-              <TableHead key={col.key} className="text-zinc-400 whitespace-nowrap">
+              <TableHead key={col.key} className="text-gray-400 whitespace-nowrap">
                 {col.label}
               </TableHead>
             ))}
@@ -141,8 +141,8 @@ function PreviewTable({ rows, defaultVehicleId, defaultCampaignId }: PreviewTabl
         </TableHeader>
         <TableBody>
           {preview.map((row, i) => (
-            <TableRow key={i} className="border-zinc-800 hover:bg-zinc-900/50">
-              <TableCell className="text-zinc-600 text-xs">{i + 1}</TableCell>
+            <TableRow key={i} className="border-gray-100 hover:bg-white/50">
+              <TableCell className="text-gray-300 text-xs">{i + 1}</TableCell>
               {PREVIEW_COLUMNS.map((col) => {
                 let value = row[col.key];
                 // Apply defaults when column is empty
@@ -155,11 +155,11 @@ function PreviewTable({ rows, defaultVehicleId, defaultCampaignId }: PreviewTabl
                 return (
                   <TableCell key={col.key}>
                     {value ? (
-                      <span className="font-mono text-xs text-zinc-200 whitespace-nowrap">
+                      <span className="font-mono text-xs text-gray-800 whitespace-nowrap">
                         {value.length > 35 ? value.slice(0, 35) + "…" : value}
                       </span>
                     ) : (
-                      <span className="text-zinc-700 text-xs">—</span>
+                      <span className="text-gray-500 text-xs">—</span>
                     )}
                   </TableCell>
                 );
@@ -314,9 +314,9 @@ export default function ImportPage() {
 
   if (isViewer) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-3 text-zinc-500">
+      <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
         <AlertCircle className="h-10 w-10" />
-        <p className="font-medium text-zinc-300">Acesso negado</p>
+        <p className="font-medium text-gray-600">Acesso negado</p>
         <p className="text-sm">Você não tem permissão para importar links.</p>
       </div>
     );
@@ -327,8 +327,8 @@ export default function ImportPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Importação CSV</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900">Importação CSV</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
             Importe múltiplos links de uma vez via arquivo CSV
           </p>
         </div>
@@ -339,10 +339,10 @@ export default function ImportPage() {
       </div>
 
       {/* Defaults */}
-      <div className="rounded-lg border border-zinc-800 p-5 space-y-4">
+      <div className="rounded-lg border border-gray-100 p-5 space-y-4">
         <div>
-          <p className="text-sm font-medium text-zinc-200">Valores padrão</p>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-sm font-medium text-gray-800">Valores padrão</p>
+          <p className="text-xs text-gray-400 mt-0.5">
             Aplicados quando as colunas vehicleId / campaignId não estiverem no CSV ou estiverem vazias
           </p>
         </div>
@@ -354,7 +354,7 @@ export default function ImportPage() {
               onValueChange={(v) => v !== null && setDefaultVehicleId(v)}
               disabled={loadingMeta}
             >
-              <SelectTrigger className="bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="bg-white border-gray-100">
                 <SelectValue placeholder="Nenhum" />
               </SelectTrigger>
               <SelectContent>
@@ -374,7 +374,7 @@ export default function ImportPage() {
               onValueChange={(v) => v !== null && setDefaultCampaignId(v)}
               disabled={loadingMeta}
             >
-              <SelectTrigger className="bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="bg-white border-gray-100">
                 <SelectValue placeholder="Nenhuma" />
               </SelectTrigger>
               <SelectContent>
@@ -409,43 +409,43 @@ export default function ImportPage() {
             className={cn(
               "flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-16 cursor-pointer transition-colors",
               isDragging
-                ? "border-blue-500 bg-blue-950/20"
-                : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-900/40"
+                ? "border-blue-500 bg-blue-50/30"
+                : "border-gray-200 hover:border-gray-300 hover:bg-white/40"
             )}
           >
             <div className={cn(
               "rounded-full p-4 transition-colors",
-              isDragging ? "bg-blue-900/40" : "bg-zinc-800"
+              isDragging ? "bg-blue-900/40" : "bg-gray-100"
             )}>
               <Upload className={cn(
                 "h-8 w-8 transition-colors",
-                isDragging ? "text-blue-400" : "text-zinc-400"
+                isDragging ? "text-blue-700" : "text-gray-400"
               )} />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-medium text-gray-800">
                 {isDragging ? "Solte o arquivo aqui" : "Arraste e solte seu CSV aqui"}
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 ou clique para selecionar — apenas arquivos .csv
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-            <div className="rounded-md bg-zinc-800 p-2">
-              <FileText className="h-5 w-5 text-zinc-400" />
+          <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-4">
+            <div className="rounded-md bg-gray-100 p-2">
+              <FileText className="h-5 w-5 text-gray-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-zinc-200 truncate">{fileName}</p>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-sm font-medium text-gray-800 truncate">{fileName}</p>
+              <p className="text-xs text-gray-400 mt-0.5">
                 {parsedRows.length} linha{parsedRows.length !== 1 ? "s" : ""} encontrada{parsedRows.length !== 1 ? "s" : ""}
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-zinc-400 hover:text-zinc-100 shrink-0"
+              className="h-8 w-8 text-gray-400 hover:text-gray-900 shrink-0"
               onClick={clearFile}
             >
               <X className="h-4 w-4" />
@@ -457,10 +457,10 @@ export default function ImportPage() {
       {/* Parse Error */}
       {parseError && (
         <div className="flex items-start gap-3 rounded-lg border border-red-900 bg-red-950/20 p-4">
-          <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-red-300">Erro ao processar arquivo</p>
-            <p className="text-xs text-red-400 mt-0.5">{parseError}</p>
+            <p className="text-xs text-red-700 mt-0.5">{parseError}</p>
           </div>
         </div>
       )}
@@ -470,10 +470,10 @@ export default function ImportPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-medium text-gray-800">
                 Preview{parsedRows.length > 10 ? ` (primeiras 10 de ${parsedRows.length})` : ""}
               </p>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5">
                 Verifique os dados antes de confirmar a importação
               </p>
             </div>
@@ -488,10 +488,10 @@ export default function ImportPage() {
             defaultCampaignId={defaultCampaignId}
           />
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-gray-100" />
 
           <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-gray-400">
               Links sem vehicleId válido ou campaignId válido serão ignorados com erro.
             </p>
             <Button
@@ -518,8 +518,8 @@ export default function ImportPage() {
       {/* Result */}
       {result && (
         <div className="space-y-3">
-          <Separator className="bg-zinc-800" />
-          <p className="text-sm font-medium text-zinc-200">Resultado da importação</p>
+          <Separator className="bg-gray-100" />
+          <p className="text-sm font-medium text-gray-800">Resultado da importação</p>
 
           {result.created > 0 && (
             <div className="flex items-start gap-3 rounded-lg border border-green-900 bg-green-950/20 p-4">
@@ -538,7 +538,7 @@ export default function ImportPage() {
           {result.errors.length > 0 && (
             <div className="rounded-lg border border-yellow-900 bg-yellow-950/10 p-4 space-y-2">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-400" />
+                <AlertCircle className="h-4 w-4 text-yellow-700" />
                 <p className="text-sm font-medium text-yellow-300">
                   {result.errors.length} erro{result.errors.length !== 1 ? "s" : ""}
                 </p>
@@ -554,17 +554,17 @@ export default function ImportPage() {
           )}
 
           {result.created === 0 && result.errors.length === 0 && (
-            <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
-              <AlertCircle className="h-5 w-5 text-zinc-400" />
-              <p className="text-sm text-zinc-400">Nenhum link foi criado.</p>
+            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4">
+              <AlertCircle className="h-5 w-5 text-gray-400" />
+              <p className="text-sm text-gray-400">Nenhum link foi criado.</p>
             </div>
           )}
         </div>
       )}
 
       {/* Column guide */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5 space-y-3">
-        <p className="text-sm font-medium text-zinc-300">Colunas aceitas no CSV</p>
+      <div className="rounded-lg border border-gray-100 bg-white/30 p-5 space-y-3">
+        <p className="text-sm font-medium text-gray-600">Colunas aceitas no CSV</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {CSV_HEADERS.map((col) => (
             <div key={col} className="flex items-center gap-2">
@@ -572,19 +572,19 @@ export default function ImportPage() {
                 className={cn(
                   "text-xs font-mono px-2 py-0.5 rounded",
                   ["baseUrl", "vehicleId", "campaignId"].includes(col)
-                    ? "bg-blue-950 text-blue-300 border border-blue-800"
-                    : "bg-zinc-800 text-zinc-300"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "bg-gray-100 text-gray-600"
                 )}
               >
                 {col}
               </span>
               {["baseUrl", "vehicleId", "campaignId"].includes(col) && (
-                <span className="text-xs text-zinc-600">obrig.</span>
+                <span className="text-xs text-gray-300">obrig.</span>
               )}
             </div>
           ))}
         </div>
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-gray-300">
           Colunas marcadas como obrigatórias devem estar presentes ou ter valor padrão configurado acima.
         </p>
       </div>

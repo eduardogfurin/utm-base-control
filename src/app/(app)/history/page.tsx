@@ -50,23 +50,23 @@ interface PaginationMeta {
 const ACTION_BADGE: Record<AuditAction, { label: string; className: string }> = {
   CREATED: {
     label: "Criado",
-    className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   UPDATED: {
     label: "Atualizado",
-    className: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
   },
   DELETED: {
     label: "Deletado",
-    className: "bg-red-500/15 text-red-400 border-red-500/30",
+    className: "bg-red-50 text-red-700 border-red-200",
   },
   INTEGRATION: {
     label: "Integração",
-    className: "bg-violet-500/15 text-violet-400 border-violet-500/30",
+    className: "bg-violet-50 text-violet-700 border-violet-200",
   },
   METRICS_SYNC: {
     label: "Sync Métricas",
-    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30",
+    className: "bg-gray-100 text-gray-400 border-gray-200",
   },
 };
 
@@ -85,27 +85,27 @@ function SkeletonRows() {
   return (
     <>
       {Array.from({ length: 8 }).map((_, i) => (
-        <TableRow key={i} className="border-zinc-800">
+        <TableRow key={i} className="border-gray-100">
           <TableCell>
-            <Skeleton className="h-5 w-20 bg-zinc-800" />
+            <Skeleton className="h-5 w-20 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-24 bg-zinc-800" />
+            <Skeleton className="h-4 w-24 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-20 bg-zinc-800" />
+            <Skeleton className="h-4 w-20 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-32 bg-zinc-800" />
+            <Skeleton className="h-4 w-32 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-32 bg-zinc-800" />
+            <Skeleton className="h-4 w-32 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-24 bg-zinc-800" />
+            <Skeleton className="h-4 w-24 bg-gray-100" />
           </TableCell>
           <TableCell>
-            <Skeleton className="h-4 w-28 bg-zinc-800" />
+            <Skeleton className="h-4 w-28 bg-gray-100" />
           </TableCell>
         </TableRow>
       ))}
@@ -167,14 +167,14 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center">
-            <History size={16} className="text-zinc-400" />
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <History size={16} className="text-gray-400" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">
+            <h1 className="text-lg font-semibold text-gray-900">
               Histórico de Alterações
             </h1>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-gray-400">
               Auditoria completa de todas as ações no sistema
             </p>
           </div>
@@ -185,20 +185,20 @@ export default function HistoryPage() {
           value={entityType}
           onValueChange={(val) => setEntityType(val ?? "all")}
         >
-          <SelectTrigger className="w-44 bg-zinc-900 border-zinc-700 text-zinc-200">
+          <SelectTrigger className="w-44 bg-white border-gray-200 text-gray-800">
             <SelectValue placeholder="Filtrar por tipo" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-700">
-            <SelectItem value="all" className="text-zinc-200">
+          <SelectContent className="bg-white border-gray-200">
+            <SelectItem value="all" className="text-gray-800">
               Todos
             </SelectItem>
-            <SelectItem value="Vehicle" className="text-zinc-200">
+            <SelectItem value="Vehicle" className="text-gray-800">
               Veículo
             </SelectItem>
-            <SelectItem value="Campaign" className="text-zinc-200">
+            <SelectItem value="Campaign" className="text-gray-800">
               Campanha
             </SelectItem>
-            <SelectItem value="Link" className="text-zinc-200">
+            <SelectItem value="Link" className="text-gray-800">
               Link
             </SelectItem>
           </SelectContent>
@@ -207,7 +207,7 @@ export default function HistoryPage() {
 
       {/* Stats pill */}
       {pagination && !loading && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-gray-400">
           {pagination.total} registro{pagination.total !== 1 ? "s" : ""} encontrado
           {pagination.total !== 1 ? "s" : ""}
           {entityType !== "all" && ` para "${ENTITY_LABELS[entityType] ?? entityType}"`}
@@ -215,30 +215,30 @@ export default function HistoryPage() {
       )}
 
       {/* Table */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-zinc-800 hover:bg-transparent">
-              <TableHead className="text-zinc-400 font-medium w-32">Ação</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Entidade</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Campo</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Valor Anterior</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Novo Valor</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Usuário</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Data/Hora</TableHead>
+            <TableRow className="border-gray-100 hover:bg-transparent">
+              <TableHead className="text-gray-400 font-medium w-32">Ação</TableHead>
+              <TableHead className="text-gray-400 font-medium">Entidade</TableHead>
+              <TableHead className="text-gray-400 font-medium">Campo</TableHead>
+              <TableHead className="text-gray-400 font-medium">Valor Anterior</TableHead>
+              <TableHead className="text-gray-400 font-medium">Novo Valor</TableHead>
+              <TableHead className="text-gray-400 font-medium">Usuário</TableHead>
+              <TableHead className="text-gray-400 font-medium">Data/Hora</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <SkeletonRows />
             ) : logs.length === 0 ? (
-              <TableRow className="border-zinc-800 hover:bg-zinc-900">
+              <TableRow className="border-gray-100 hover:bg-white">
                 <TableCell colSpan={7} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2">
-                    <History size={32} className="text-zinc-700" />
-                    <p className="text-sm text-zinc-500">Nenhum registro encontrado</p>
+                    <History size={32} className="text-gray-500" />
+                    <p className="text-sm text-gray-400">Nenhum registro encontrado</p>
                     {entityType !== "all" && (
-                      <p className="text-xs text-zinc-600">
+                      <p className="text-xs text-gray-300">
                         Tente remover o filtro de entidade
                       </p>
                     )}
@@ -251,7 +251,7 @@ export default function HistoryPage() {
                 return (
                   <TableRow
                     key={log.id}
-                    className="border-zinc-800 hover:bg-zinc-800/40 transition-colors"
+                    className="border-gray-100 hover:bg-gray-50/60 transition-colors"
                   >
                     <TableCell>
                       <Badge
@@ -261,31 +261,31 @@ export default function HistoryPage() {
                         {badge.label}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-zinc-300 text-sm">
+                    <TableCell className="text-gray-600 text-sm">
                       <span className="font-medium">
                         {ENTITY_LABELS[log.entityType] ?? log.entityType}
                       </span>
-                      <span className="text-zinc-600 ml-1.5 text-[11px] font-mono">
+                      <span className="text-gray-300 ml-1.5 text-[11px] font-mono">
                         {log.entityId.slice(0, 8)}…
                       </span>
                     </TableCell>
-                    <TableCell className="text-zinc-400 text-sm font-mono text-[12px]">
+                    <TableCell className="text-gray-400 text-sm font-mono text-[12px]">
                       {log.field ?? "—"}
                     </TableCell>
-                    <TableCell className="text-zinc-500 text-sm max-w-[180px]">
+                    <TableCell className="text-gray-400 text-sm max-w-[180px]">
                       <span title={log.oldValue ?? undefined} className="truncate block">
                         {truncate(log.oldValue)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-zinc-300 text-sm max-w-[180px]">
+                    <TableCell className="text-gray-600 text-sm max-w-[180px]">
                       <span title={log.newValue ?? undefined} className="truncate block">
                         {truncate(log.newValue)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-zinc-400 text-sm">
+                    <TableCell className="text-gray-400 text-sm">
                       {log.user.name ?? log.user.email ?? "—"}
                     </TableCell>
-                    <TableCell className="text-zinc-500 text-sm whitespace-nowrap">
+                    <TableCell className="text-gray-400 text-sm whitespace-nowrap">
                       {formatDateTime(log.createdAt)}
                     </TableCell>
                   </TableRow>
@@ -304,7 +304,7 @@ export default function HistoryPage() {
             size="sm"
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+            className="border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
           >
             {loadingMore ? (
               <>

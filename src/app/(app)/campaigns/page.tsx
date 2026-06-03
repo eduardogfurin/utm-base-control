@@ -76,9 +76,9 @@ type CampaignForm = z.infer<typeof campaignSchema>
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  INACTIVE: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  ARCHIVED: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  ACTIVE: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  INACTIVE: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  ARCHIVED: "bg-gray-100 text-gray-400 border-gray-200",
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -103,7 +103,7 @@ function Badge({ className, children }: { className?: string; children: React.Re
 }
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-zinc-800", className)} />
+  return <div className={cn("animate-pulse rounded-md bg-gray-100", className)} />
 }
 
 // ─── Campaign Dialog ───────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ function CampaignDialog({ open, onOpenChange, campaign, onSaved }: CampaignDialo
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Nome</label>
+            <label className="text-sm font-medium text-gray-600">Nome</label>
             <Input
               {...form.register("name", {
                 onChange: (e) => {
@@ -212,27 +212,27 @@ function CampaignDialog({ open, onOpenChange, campaign, onSaved }: CampaignDialo
               placeholder="Ex: Black Friday 2025"
             />
             {form.formState.errors.name && (
-              <p className="text-xs text-red-400">{form.formState.errors.name.message}</p>
+              <p className="text-xs text-red-700">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           {/* Slug */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Slug</label>
+            <label className="text-sm font-medium text-gray-600">Slug</label>
             <Input
               {...form.register("slug")}
               placeholder="ex: black-friday-2025"
               className="font-mono text-xs"
             />
             {form.formState.errors.slug && (
-              <p className="text-xs text-red-400">{form.formState.errors.slug.message}</p>
+              <p className="text-xs text-red-700">{form.formState.errors.slug.message}</p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">
-              Descrição <span className="text-zinc-500">(opcional)</span>
+            <label className="text-sm font-medium text-gray-600">
+              Descrição <span className="text-gray-400">(opcional)</span>
             </label>
             <Textarea
               {...form.register("description")}
@@ -244,23 +244,23 @@ function CampaignDialog({ open, onOpenChange, campaign, onSaved }: CampaignDialo
           {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-300">
-                Data Início <span className="text-zinc-500">(opcional)</span>
+              <label className="text-sm font-medium text-gray-600">
+                Data Início <span className="text-gray-400">(opcional)</span>
               </label>
               <Input type="date" {...form.register("startDate")} />
               {form.formState.errors.startDate && (
-                <p className="text-xs text-red-400">
+                <p className="text-xs text-red-700">
                   {form.formState.errors.startDate.message}
                 </p>
               )}
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-300">
-                Data Término <span className="text-zinc-500">(opcional)</span>
+              <label className="text-sm font-medium text-gray-600">
+                Data Término <span className="text-gray-400">(opcional)</span>
               </label>
               <Input type="date" {...form.register("endDate")} />
               {form.formState.errors.endDate && (
-                <p className="text-xs text-red-400">
+                <p className="text-xs text-red-700">
                   {form.formState.errors.endDate.message}
                 </p>
               )}
@@ -269,10 +269,10 @@ function CampaignDialog({ open, onOpenChange, campaign, onSaved }: CampaignDialo
 
           {/* Status */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Status</label>
+            <label className="text-sm font-medium text-gray-600">Status</label>
             <select
               {...form.register("status")}
-              className="h-8 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 text-sm text-zinc-100 outline-none focus:border-zinc-500 focus:ring-0"
+              className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
             >
               <option value="ACTIVE">Ativa</option>
               <option value="INACTIVE">Inativa</option>
@@ -380,8 +380,8 @@ export default function CampaignsPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-100">Campanhas</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-xl font-semibold text-gray-900">Campanhas</h1>
+          <p className="text-sm text-gray-400 mt-1">
             Gerenciamento de campanhas de marketing
           </p>
         </div>
@@ -405,43 +405,43 @@ export default function CampaignsPage() {
       />
 
       {/* Table */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
         {error ? (
-          <div className="p-8 text-center text-sm text-red-400">{error}</div>
+          <div className="p-8 text-center text-sm text-red-700">{error}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <tr className="border-b border-gray-100">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Slug
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Início
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Término
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Links
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Criado em
                   </th>
                   {!isViewer && (
-                    <th className="px-4 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Ações
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
@@ -456,7 +456,7 @@ export default function CampaignsPage() {
                   <tr>
                     <td
                       colSpan={colCount}
-                      className="px-4 py-12 text-center text-sm text-zinc-500"
+                      className="px-4 py-12 text-center text-sm text-gray-400"
                     >
                       Nenhuma campanha cadastrada
                     </td>
@@ -465,12 +465,12 @@ export default function CampaignsPage() {
                   campaigns.map((campaign) => (
                     <tr
                       key={campaign.id}
-                      className="hover:bg-zinc-800/40 transition-colors"
+                      className="hover:bg-gray-50/60 transition-colors"
                     >
-                      <td className="px-4 py-3 font-medium text-zinc-200">
+                      <td className="px-4 py-3 font-medium text-gray-800">
                         {campaign.name}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-zinc-400">
+                      <td className="px-4 py-3 font-mono text-xs text-gray-400">
                         {campaign.slug}
                       </td>
                       <td className="px-4 py-3">
@@ -478,20 +478,20 @@ export default function CampaignsPage() {
                           {STATUS_LABELS[campaign.status] ?? campaign.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-gray-400">
                         {campaign.startDate ? formatDate(campaign.startDate) : (
-                          <span className="text-zinc-600">—</span>
+                          <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-gray-400">
                         {campaign.endDate ? formatDate(campaign.endDate) : (
-                          <span className="text-zinc-600">—</span>
+                          <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 tabular-nums">
+                      <td className="px-4 py-3 text-gray-400 tabular-nums">
                         {campaign._count.links}
                       </td>
-                      <td className="px-4 py-3 text-zinc-500">
+                      <td className="px-4 py-3 text-gray-400">
                         {formatDate(campaign.createdAt)}
                       </td>
                       {!isViewer && (
@@ -519,7 +519,7 @@ export default function CampaignsPage() {
                                     size="icon-sm"
                                     title="Excluir"
                                     onClick={() => setDeletingId(campaign.id)}
-                                    className="text-zinc-400 hover:text-red-400"
+                                    className="text-gray-400 hover:text-red-700"
                                   />
                                 }
                               >
@@ -530,12 +530,12 @@ export default function CampaignsPage() {
                                   <AlertDialogTitle>Excluir campanha</AlertDialogTitle>
                                   <AlertDialogDescription>
                                     Tem certeza que deseja excluir{" "}
-                                    <strong className="text-zinc-200">
+                                    <strong className="text-gray-800">
                                       {campaign.name}
                                     </strong>
                                     ?
                                     {campaign._count.links > 0 && (
-                                      <span className="block mt-1 text-yellow-400">
+                                      <span className="block mt-1 text-yellow-700">
                                         Esta campanha possui {campaign._count.links} link(s) e será arquivada em vez de excluída.
                                       </span>
                                     )}

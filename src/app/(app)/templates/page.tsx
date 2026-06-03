@@ -188,7 +188,7 @@ function TemplateFormDialog({
               placeholder="ex: Podcast Padrão"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              className="bg-zinc-900 border-zinc-800"
+              className="bg-white border-gray-100"
             />
           </div>
 
@@ -196,7 +196,7 @@ function TemplateFormDialog({
           <div className="space-y-1.5">
             <Label>Veículo (opcional)</Label>
             <Select value={form.vehicleId} onValueChange={(v) => v !== null && set("vehicleId", v)}>
-              <SelectTrigger className="bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="bg-white border-gray-100">
                 <SelectValue placeholder="Global (sem veículo)" />
               </SelectTrigger>
               <SelectContent>
@@ -208,16 +208,16 @@ function TemplateFormDialog({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-gray-400">
               Templates sem veículo ficam disponíveis para todos os links.
             </p>
           </div>
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-gray-100" />
 
           {/* UTM Fields */}
           <div>
-            <p className="text-sm font-medium text-zinc-300 mb-3">Parâmetros UTM</p>
+            <p className="text-sm font-medium text-gray-600 mb-3">Parâmetros UTM</p>
             <div className="grid grid-cols-2 gap-3">
               {(
                 [
@@ -234,7 +234,7 @@ function TemplateFormDialog({
                     placeholder={field}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
-                    className="bg-zinc-900 border-zinc-800"
+                    className="bg-white border-gray-100"
                   />
                 </div>
               ))}
@@ -245,7 +245,7 @@ function TemplateFormDialog({
                   placeholder="term"
                   value={form.term}
                   onChange={(e) => set("term", e.target.value)}
-                  className="bg-zinc-900 border-zinc-800"
+                  className="bg-white border-gray-100"
                 />
               </div>
             </div>
@@ -311,9 +311,9 @@ export default function TemplatesPage() {
 
   const utmCell = (value: string | null) =>
     value ? (
-      <span className="font-mono text-xs text-zinc-200">{value}</span>
+      <span className="font-mono text-xs text-gray-800">{value}</span>
     ) : (
-      <span className="text-zinc-600 text-xs">—</span>
+      <span className="text-gray-300 text-xs">—</span>
     );
 
   return (
@@ -321,8 +321,8 @@ export default function TemplatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Templates UTM</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900">Templates UTM</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
             Pré-configurações de UTM reutilizáveis por veículo
           </p>
         </div>
@@ -342,26 +342,26 @@ export default function TemplatesPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-zinc-800 overflow-hidden">
+      <div className="rounded-lg border border-gray-100 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-zinc-800 hover:bg-transparent">
-              <TableHead className="text-zinc-400">Nome</TableHead>
-              <TableHead className="text-zinc-400">Veículo</TableHead>
-              <TableHead className="text-zinc-400">Source</TableHead>
-              <TableHead className="text-zinc-400">Medium</TableHead>
-              <TableHead className="text-zinc-400">Campaign</TableHead>
-              <TableHead className="text-zinc-400">Content</TableHead>
-              <TableHead className="text-zinc-400">Term</TableHead>
+            <TableRow className="border-gray-100 hover:bg-transparent">
+              <TableHead className="text-gray-400">Nome</TableHead>
+              <TableHead className="text-gray-400">Veículo</TableHead>
+              <TableHead className="text-gray-400">Source</TableHead>
+              <TableHead className="text-gray-400">Medium</TableHead>
+              <TableHead className="text-gray-400">Campaign</TableHead>
+              <TableHead className="text-gray-400">Content</TableHead>
+              <TableHead className="text-gray-400">Term</TableHead>
               {!isViewer && (
-                <TableHead className="text-zinc-400 text-right">Ações</TableHead>
+                <TableHead className="text-gray-400 text-right">Ações</TableHead>
               )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i} className="border-zinc-800">
+                <TableRow key={i} className="border-gray-100">
                   {Array.from({ length: isViewer ? 7 : 8 }).map((__, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
@@ -370,9 +370,9 @@ export default function TemplatesPage() {
                 </TableRow>
               ))
             ) : templates.length === 0 ? (
-              <TableRow className="border-zinc-800">
+              <TableRow className="border-gray-100">
                 <TableCell colSpan={isViewer ? 7 : 8} className="h-32 text-center">
-                  <div className="flex flex-col items-center gap-2 text-zinc-500">
+                  <div className="flex flex-col items-center gap-2 text-gray-400">
                     <LayoutTemplate className="h-8 w-8" />
                     <p className="text-sm">Nenhum template encontrado</p>
                     {!isViewer && (
@@ -385,9 +385,9 @@ export default function TemplatesPage() {
               </TableRow>
             ) : (
               templates.map((tpl) => (
-                <TableRow key={tpl.id} className="border-zinc-800 hover:bg-zinc-900/50">
+                <TableRow key={tpl.id} className="border-gray-100 hover:bg-white/50">
                   <TableCell>
-                    <span className="text-sm font-medium text-zinc-200">{tpl.name}</span>
+                    <span className="text-sm font-medium text-gray-800">{tpl.name}</span>
                   </TableCell>
                   <TableCell>
                     {tpl.vehicle ? (
@@ -395,7 +395,7 @@ export default function TemplatesPage() {
                         {tpl.vehicle.name}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs text-zinc-500 border-zinc-700">
+                      <Badge variant="outline" className="text-xs text-gray-400 border-gray-200">
                         Global
                       </Badge>
                     )}
@@ -417,7 +417,7 @@ export default function TemplatesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+                              className="h-8 w-8 text-gray-400 hover:text-gray-900"
                               title="Editar"
                             >
                               <Pencil className="h-4 w-4" />
@@ -430,7 +430,7 @@ export default function TemplatesPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-red-400"
+                                className="h-8 w-8 text-gray-400 hover:text-red-700"
                                 title="Deletar"
                               />
                             }
@@ -442,7 +442,7 @@ export default function TemplatesPage() {
                               <AlertDialogTitle>Deletar template?</AlertDialogTitle>
                               <AlertDialogDescription>
                                 O template{" "}
-                                <strong className="text-zinc-200">{tpl.name}</strong> será
+                                <strong className="text-gray-800">{tpl.name}</strong> será
                                 removido permanentemente.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -468,7 +468,7 @@ export default function TemplatesPage() {
       </div>
 
       {!loading && templates.length > 0 && (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-gray-300">
           {templates.length} template{templates.length !== 1 ? "s" : ""} cadastrado
           {templates.length !== 1 ? "s" : ""}
         </p>

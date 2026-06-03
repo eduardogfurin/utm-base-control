@@ -83,12 +83,12 @@ function QrCard({ link }: { link: Link }) {
   };
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden flex flex-col">
+    <div className="rounded-lg border border-gray-100 bg-white overflow-hidden flex flex-col">
       {/* QR Preview */}
       <Dialog>
         <DialogTrigger
           render={
-            <button className="flex items-center justify-center p-6 bg-zinc-950 hover:bg-zinc-900 transition-colors cursor-zoom-in group" />
+            <button className="flex items-center justify-center p-6 bg-gray-50 hover:bg-gray-50 transition-colors cursor-zoom-in group" />
           }
         >
           <div
@@ -105,7 +105,7 @@ function QrCard({ link }: { link: Link }) {
               className="h-64 w-64 rounded-lg overflow-hidden bg-white p-3"
               dangerouslySetInnerHTML={{ __html: qr.svgData }}
             />
-            <p className="text-xs text-zinc-400 text-center break-all">
+            <p className="text-xs text-gray-400 text-center break-all">
               {link.rebrandly
                 ? `https://${link.rebrandly.shortUrl}`
                 : link.finalUrl}
@@ -127,12 +127,12 @@ function QrCard({ link }: { link: Link }) {
       {/* Card Body */}
       <div className="p-4 flex flex-col gap-3 flex-1">
         <div>
-          <p className="font-mono text-sm font-medium text-zinc-100 truncate">{link.slug}</p>
+          <p className="font-mono text-sm font-medium text-gray-900 truncate">{link.slug}</p>
           <div className="flex items-center gap-1.5 mt-1">
             <Badge variant="secondary" className="text-xs">
               {link.vehicle.name}
             </Badge>
-            <Badge variant="outline" className="text-xs text-zinc-500 border-zinc-700">
+            <Badge variant="outline" className="text-xs text-gray-400 border-gray-200">
               {link.campaign.name}
             </Badge>
           </div>
@@ -173,7 +173,7 @@ function QrCard({ link }: { link: Link }) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-zinc-400 hover:text-zinc-100"
+            className="h-8 px-2 text-gray-400 hover:text-gray-900"
             title="Copiar URL"
             onClick={handleCopyUrl}
           >
@@ -189,8 +189,8 @@ function QrCard({ link }: { link: Link }) {
 
 function QrCardSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
-      <div className="flex items-center justify-center p-6 bg-zinc-950">
+    <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+      <div className="flex items-center justify-center p-6 bg-gray-50">
         <Skeleton className="h-[150px] w-[150px] rounded" />
       </div>
       <div className="p-4 space-y-3">
@@ -257,13 +257,13 @@ export default function QrCodesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">QR Codes</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900">QR Codes</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
             QR Codes gerados automaticamente para seus links
           </p>
         </div>
         {!loading && (
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-gray-400">
             {filteredLinks.length} QR Code{filteredLinks.length !== 1 ? "s" : ""}
           </span>
         )}
@@ -272,7 +272,7 @@ export default function QrCodesPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={filterVehicleId} onValueChange={(v) => v !== null && setFilterVehicleId(v)}>
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800">
+          <SelectTrigger className="w-48 bg-white border-gray-100">
             <SelectValue placeholder="Todos os veículos" />
           </SelectTrigger>
           <SelectContent>
@@ -286,7 +286,7 @@ export default function QrCodesPage() {
         </Select>
 
         <Select value={filterCampaignId} onValueChange={(v) => v !== null && setFilterCampaignId(v)}>
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800">
+          <SelectTrigger className="w-48 bg-white border-gray-100">
             <SelectValue placeholder="Todas as campanhas" />
           </SelectTrigger>
           <SelectContent>
@@ -308,13 +308,13 @@ export default function QrCodesPage() {
           ))}
         </div>
       ) : filteredLinks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/30 py-24 gap-4">
-          <div className="rounded-full bg-zinc-800 p-4">
-            <QrCode className="h-10 w-10 text-zinc-500" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white/30 py-24 gap-4">
+          <div className="rounded-full bg-gray-100 p-4">
+            <QrCode className="h-10 w-10 text-gray-400" />
           </div>
           <div className="text-center">
-            <p className="text-zinc-300 font-medium">Nenhum QR Code encontrado</p>
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-gray-600 font-medium">Nenhum QR Code encontrado</p>
+            <p className="text-sm text-gray-400 mt-1">
               {links.length === 0
                 ? "Crie links com QR Code na página de Links"
                 : "Nenhum QR Code corresponde aos filtros selecionados"}

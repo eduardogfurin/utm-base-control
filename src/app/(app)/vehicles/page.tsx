@@ -63,22 +63,22 @@ const CATEGORY_LABELS: Record<VehicleCategory, string> = {
 }
 
 const CATEGORY_COLORS: Record<VehicleCategory, string> = {
-  PODCAST: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-  INFLUENCER: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-  AFFILIATE: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  CRM: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  META_ADS: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  GOOGLE_ADS: "bg-red-500/10 text-red-400 border-red-500/20",
-  YOUTUBE: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  PARTNER: "bg-teal-500/10 text-teal-400 border-teal-500/20",
-  EVENT: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  OTHER: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  PODCAST: "bg-violet-50 text-violet-700 border-violet-200",
+  INFLUENCER: "bg-pink-50 text-pink-700 border-pink-200",
+  AFFILIATE: "bg-orange-50 text-orange-600 border-orange-200",
+  CRM: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  META_ADS: "bg-blue-50 text-blue-700 border-blue-200",
+  GOOGLE_ADS: "bg-red-50 text-red-700 border-red-200",
+  YOUTUBE: "bg-rose-50 text-rose-700 border-rose-200",
+  PARTNER: "bg-teal-50 text-teal-700 border-teal-200",
+  EVENT: "bg-amber-50 text-amber-700 border-amber-200",
+  OTHER: "bg-gray-100 text-gray-400 border-gray-200",
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  INACTIVE: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  ARCHIVED: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  ACTIVE: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  INACTIVE: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  ARCHIVED: "bg-gray-100 text-gray-400 border-gray-200",
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -128,7 +128,7 @@ function Badge({ className, children }: { className?: string; children: React.Re
 }
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-zinc-800", className)} />
+  return <div className={cn("animate-pulse rounded-md bg-gray-100", className)} />
 }
 
 // ─── Vehicle Dialog ────────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Nome</label>
+            <label className="text-sm font-medium text-gray-600">Nome</label>
             <Input
               {...form.register("name", {
                 onChange: (e) => {
@@ -222,29 +222,29 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
               placeholder="Ex: Podcast Diário"
             />
             {form.formState.errors.name && (
-              <p className="text-xs text-red-400">{form.formState.errors.name.message}</p>
+              <p className="text-xs text-red-700">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           {/* Slug */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Slug</label>
+            <label className="text-sm font-medium text-gray-600">Slug</label>
             <Input
               {...form.register("slug")}
               placeholder="ex: podcast-diario"
               className="font-mono text-xs"
             />
             {form.formState.errors.slug && (
-              <p className="text-xs text-red-400">{form.formState.errors.slug.message}</p>
+              <p className="text-xs text-red-700">{form.formState.errors.slug.message}</p>
             )}
           </div>
 
           {/* Category */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Categoria</label>
+            <label className="text-sm font-medium text-gray-600">Categoria</label>
             <select
               {...form.register("category")}
-              className="h-8 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 text-sm text-zinc-100 outline-none focus:border-zinc-500 focus:ring-0"
+              className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
             >
               {VEHICLE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -253,14 +253,14 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
               ))}
             </select>
             {form.formState.errors.category && (
-              <p className="text-xs text-red-400">{form.formState.errors.category.message}</p>
+              <p className="text-xs text-red-700">{form.formState.errors.category.message}</p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">
-              Descrição <span className="text-zinc-500">(opcional)</span>
+            <label className="text-sm font-medium text-gray-600">
+              Descrição <span className="text-gray-400">(opcional)</span>
             </label>
             <Textarea
               {...form.register("description")}
@@ -271,10 +271,10 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
 
           {/* Status */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-300">Status</label>
+            <label className="text-sm font-medium text-gray-600">Status</label>
             <select
               {...form.register("status")}
-              className="h-8 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 text-sm text-zinc-100 outline-none focus:border-zinc-500 focus:ring-0"
+              className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
             >
               <option value="ACTIVE">Ativo</option>
               <option value="INACTIVE">Inativo</option>
@@ -379,8 +379,8 @@ export default function VehiclesPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-100">Veículos</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-xl font-semibold text-gray-900">Veículos</h1>
+          <p className="text-sm text-gray-400 mt-1">
             Canais de distribuição de tráfego
           </p>
         </div>
@@ -405,40 +405,40 @@ export default function VehiclesPage() {
       />
 
       {/* Table */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
         {error ? (
-          <div className="p-8 text-center text-sm text-red-400">{error}</div>
+          <div className="p-8 text-center text-sm text-red-700">{error}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <tr className="border-b border-gray-100">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Slug
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Categoria
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Links
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Criado em
                   </th>
                   {!isViewer && (
-                    <th className="px-4 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Ações
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
@@ -453,7 +453,7 @@ export default function VehiclesPage() {
                   <tr>
                     <td
                       colSpan={isViewer ? 6 : 7}
-                      className="px-4 py-12 text-center text-sm text-zinc-500"
+                      className="px-4 py-12 text-center text-sm text-gray-400"
                     >
                       Nenhum veículo cadastrado
                     </td>
@@ -462,12 +462,12 @@ export default function VehiclesPage() {
                   vehicles.map((vehicle) => (
                     <tr
                       key={vehicle.id}
-                      className="hover:bg-zinc-800/40 transition-colors"
+                      className="hover:bg-gray-50/60 transition-colors"
                     >
-                      <td className="px-4 py-3 font-medium text-zinc-200">
+                      <td className="px-4 py-3 font-medium text-gray-800">
                         {vehicle.name}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-zinc-400">
+                      <td className="px-4 py-3 font-mono text-xs text-gray-400">
                         {vehicle.slug}
                       </td>
                       <td className="px-4 py-3">
@@ -480,10 +480,10 @@ export default function VehiclesPage() {
                           {STATUS_LABELS[vehicle.status] ?? vehicle.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 tabular-nums">
+                      <td className="px-4 py-3 text-gray-400 tabular-nums">
                         {vehicle._count.links}
                       </td>
-                      <td className="px-4 py-3 text-zinc-500">
+                      <td className="px-4 py-3 text-gray-400">
                         {formatDate(vehicle.createdAt)}
                       </td>
                       {!isViewer && (
@@ -511,7 +511,7 @@ export default function VehiclesPage() {
                                     size="icon-sm"
                                     title="Excluir"
                                     onClick={() => setDeletingId(vehicle.id)}
-                                    className="text-zinc-400 hover:text-red-400"
+                                    className="text-gray-400 hover:text-red-700"
                                   />
                                 }
                               >
@@ -522,9 +522,9 @@ export default function VehiclesPage() {
                                   <AlertDialogTitle>Excluir veículo</AlertDialogTitle>
                                   <AlertDialogDescription>
                                     Tem certeza que deseja excluir{" "}
-                                    <strong className="text-zinc-200">{vehicle.name}</strong>?
+                                    <strong className="text-gray-800">{vehicle.name}</strong>?
                                     {vehicle._count.links > 0 && (
-                                      <span className="block mt-1 text-yellow-400">
+                                      <span className="block mt-1 text-yellow-700">
                                         Este veículo possui {vehicle._count.links} link(s) e será arquivado em vez de excluído.
                                       </span>
                                     )}

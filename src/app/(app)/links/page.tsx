@@ -210,7 +210,7 @@ function QrCodeDialog({ link }: { link: Link }) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+            className="h-8 w-8 text-gray-400 hover:text-gray-900"
             title="Ver QR Code"
             disabled={!link.qrCode}
           />
@@ -231,9 +231,9 @@ function QrCodeDialog({ link }: { link: Link }) {
               dangerouslySetInnerHTML={{ __html: svgData }}
             />
           ) : (
-            <p className="text-zinc-500 text-sm">QR Code não disponível</p>
+            <p className="text-gray-400 text-sm">QR Code não disponível</p>
           )}
-          <p className="text-xs text-zinc-500 text-center break-all">{link.finalUrl}</p>
+          <p className="text-xs text-gray-400 text-center break-all">{link.finalUrl}</p>
           <div className="flex gap-2 w-full">
             <Button
               variant="outline"
@@ -268,22 +268,22 @@ function UtmPopover({ link }: { link: Link }) {
     { key: "utm_term", value: link.utmTerm },
   ].filter((u) => u.value);
 
-  if (utms.length === 0) return <span className="text-zinc-600 text-xs">—</span>;
+  if (utms.length === 0) return <span className="text-gray-300 text-xs">—</span>;
 
   return (
     <Popover>
       <PopoverTrigger
-        render={<button className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-100 transition-colors" />}
+        render={<button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-900 transition-colors" />}
       >
         {utms.length} param{utms.length > 1 ? "s" : ""}
         <ChevronDown className="h-3 w-3" />
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3 bg-zinc-900 border-zinc-800">
+      <PopoverContent className="w-64 p-3 bg-white border-gray-100">
         <div className="space-y-1.5">
           {utms.map((u) => (
             <div key={u.key} className="flex items-start justify-between gap-2">
-              <span className="text-xs text-zinc-500 font-mono shrink-0">{u.key}</span>
-              <span className="text-xs text-zinc-200 text-right break-all">{u.value}</span>
+              <span className="text-xs text-gray-400 font-mono shrink-0">{u.key}</span>
+              <span className="text-xs text-gray-800 text-right break-all">{u.value}</span>
             </div>
           ))}
         </div>
@@ -448,7 +448,7 @@ function LinkFormDialog({
               placeholder="https://exemplo.com/pagina"
               value={form.baseUrl}
               onChange={(e) => set("baseUrl", e.target.value)}
-              className="bg-zinc-900 border-zinc-800"
+              className="bg-white border-gray-100"
             />
           </div>
 
@@ -457,7 +457,7 @@ function LinkFormDialog({
             <div className="space-y-1.5">
               <Label>Veículo *</Label>
               <Select value={form.vehicleId} onValueChange={(v) => v !== null && set("vehicleId", v)}>
-                <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                <SelectTrigger className="bg-white border-gray-100">
                   <SelectValue placeholder="Selecionar veículo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -472,7 +472,7 @@ function LinkFormDialog({
             <div className="space-y-1.5">
               <Label>Campanha *</Label>
               <Select value={form.campaignId} onValueChange={(v) => v !== null && set("campaignId", v)}>
-                <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                <SelectTrigger className="bg-white border-gray-100">
                   <SelectValue placeholder="Selecionar campanha" />
                 </SelectTrigger>
                 <SelectContent>
@@ -494,15 +494,15 @@ function LinkFormDialog({
               placeholder="slug-automatico"
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              className="bg-zinc-900 border-zinc-800 font-mono text-sm"
+              className="bg-white border-gray-100 font-mono text-sm"
             />
           </div>
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-gray-100" />
 
           {/* UTM Fields */}
           <div>
-            <p className="text-sm font-medium text-zinc-300 mb-3">Parâmetros UTM</p>
+            <p className="text-sm font-medium text-gray-600 mb-3">Parâmetros UTM</p>
             <div className="grid grid-cols-2 gap-3">
               {(
                 [
@@ -519,7 +519,7 @@ function LinkFormDialog({
                     placeholder={label.replace("UTM ", "").toLowerCase()}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
-                    className="bg-zinc-900 border-zinc-800"
+                    className="bg-white border-gray-100"
                   />
                 </div>
               ))}
@@ -530,7 +530,7 @@ function LinkFormDialog({
                   placeholder="term"
                   value={form.utmTerm}
                   onChange={(e) => set("utmTerm", e.target.value)}
-                  className="bg-zinc-900 border-zinc-800"
+                  className="bg-white border-gray-100"
                 />
               </div>
             </div>
@@ -538,9 +538,9 @@ function LinkFormDialog({
 
           {/* Preview */}
           {form.baseUrl && (
-            <div className="rounded-md bg-zinc-900 border border-zinc-800 p-3">
-              <p className="text-xs text-zinc-500 mb-1.5 font-medium">Preview da URL final</p>
-              <p className="text-xs text-zinc-300 break-all font-mono leading-relaxed">
+            <div className="rounded-md bg-white border border-gray-100 p-3">
+              <p className="text-xs text-gray-400 mb-1.5 font-medium">Preview da URL final</p>
+              <p className="text-xs text-gray-600 break-all font-mono leading-relaxed">
                 {previewUrl}
               </p>
             </div>
@@ -548,10 +548,10 @@ function LinkFormDialog({
 
           {/* Rebrandly */}
           {hasRebrandly && mode === "create" && (
-            <div className="flex items-center justify-between rounded-md border border-zinc-800 p-3">
+            <div className="flex items-center justify-between rounded-md border border-gray-100 p-3">
               <div>
                 <p className="text-sm font-medium">Encurtar via Rebrandly</p>
-                <p className="text-xs text-zinc-500">Gera um link curto branded</p>
+                <p className="text-xs text-gray-400">Gera um link curto branded</p>
               </div>
               <Switch
                 checked={form.shortenWithRebrandly}
@@ -655,8 +655,8 @@ export default function LinksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Links</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900">Links</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
             Gerencie seus links UTM e links curtos
           </p>
         </div>
@@ -680,7 +680,7 @@ export default function LinksPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={filterVehicleId} onValueChange={(v) => v !== null && setFilterVehicleId(v)}>
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800">
+          <SelectTrigger className="w-48 bg-white border-gray-100">
             <SelectValue placeholder="Todos os veículos" />
           </SelectTrigger>
           <SelectContent>
@@ -694,7 +694,7 @@ export default function LinksPage() {
         </Select>
 
         <Select value={filterCampaignId} onValueChange={(v) => v !== null && setFilterCampaignId(v)}>
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800">
+          <SelectTrigger className="w-48 bg-white border-gray-100">
             <SelectValue placeholder="Todas as campanhas" />
           </SelectTrigger>
           <SelectContent>
@@ -711,31 +711,31 @@ export default function LinksPage() {
           placeholder="Buscar por slug ou URL..."
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}
-          className="w-64 bg-zinc-900 border-zinc-800"
+          className="w-64 bg-white border-gray-100"
         />
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-zinc-800 overflow-hidden">
+      <div className="rounded-lg border border-gray-100 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-zinc-800 hover:bg-transparent">
-              <TableHead className="text-zinc-400">Slug</TableHead>
-              <TableHead className="text-zinc-400">URL Base</TableHead>
-              <TableHead className="text-zinc-400">Veículo</TableHead>
-              <TableHead className="text-zinc-400">Campanha</TableHead>
-              <TableHead className="text-zinc-400">UTMs</TableHead>
-              <TableHead className="text-zinc-400">Link Curto</TableHead>
-              <TableHead className="text-zinc-400 text-right">Cliques</TableHead>
-              <TableHead className="text-zinc-400">Status</TableHead>
-              <TableHead className="text-zinc-400">Criado</TableHead>
-              <TableHead className="text-zinc-400 text-right">Ações</TableHead>
+            <TableRow className="border-gray-100 hover:bg-transparent">
+              <TableHead className="text-gray-400">Slug</TableHead>
+              <TableHead className="text-gray-400">URL Base</TableHead>
+              <TableHead className="text-gray-400">Veículo</TableHead>
+              <TableHead className="text-gray-400">Campanha</TableHead>
+              <TableHead className="text-gray-400">UTMs</TableHead>
+              <TableHead className="text-gray-400">Link Curto</TableHead>
+              <TableHead className="text-gray-400 text-right">Cliques</TableHead>
+              <TableHead className="text-gray-400">Status</TableHead>
+              <TableHead className="text-gray-400">Criado</TableHead>
+              <TableHead className="text-gray-400 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="border-zinc-800">
+                <TableRow key={i} className="border-gray-100">
                   {Array.from({ length: 10 }).map((__, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
@@ -744,9 +744,9 @@ export default function LinksPage() {
                 </TableRow>
               ))
             ) : links.length === 0 ? (
-              <TableRow className="border-zinc-800">
+              <TableRow className="border-gray-100">
                 <TableCell colSpan={10} className="h-32 text-center">
-                  <div className="flex flex-col items-center gap-2 text-zinc-500">
+                  <div className="flex flex-col items-center gap-2 text-gray-400">
                     <Link2 className="h-8 w-8" />
                     <p className="text-sm">Nenhum link encontrado</p>
                     {!isViewer && (
@@ -757,16 +757,16 @@ export default function LinksPage() {
               </TableRow>
             ) : (
               links.map((link) => (
-                <TableRow key={link.id} className="border-zinc-800 hover:bg-zinc-900/50">
+                <TableRow key={link.id} className="border-gray-100 hover:bg-white/50">
                   <TableCell>
-                    <span className="font-mono text-xs text-zinc-200">{link.slug}</span>
+                    <span className="font-mono text-xs text-gray-800">{link.slug}</span>
                   </TableCell>
                   <TableCell className="max-w-[180px]">
                     <a
                       href={link.baseUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-zinc-400 hover:text-zinc-100 truncate block transition-colors"
+                      className="text-xs text-gray-400 hover:text-gray-900 truncate block transition-colors"
                       title={link.baseUrl}
                     >
                       {link.baseUrl.replace(/^https?:\/\//, "").slice(0, 32)}
@@ -774,10 +774,10 @@ export default function LinksPage() {
                     </a>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-zinc-300">{link.vehicle.name}</span>
+                    <span className="text-xs text-gray-600">{link.vehicle.name}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-zinc-300">{link.campaign.name}</span>
+                    <span className="text-xs text-gray-600">{link.campaign.name}</span>
                   </TableCell>
                   <TableCell>
                     <UtmPopover link={link} />
@@ -788,17 +788,17 @@ export default function LinksPage() {
                         href={`https://${link.rebrandly.shortUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                        className="text-xs text-blue-700 hover:text-blue-300 flex items-center gap-1 transition-colors"
                       >
                         {link.rebrandly.shortUrl}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     ) : (
-                      <span className="text-zinc-600 text-xs">—</span>
+                      <span className="text-gray-300 text-xs">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-xs text-zinc-300 tabular-nums">
+                    <span className="text-xs text-gray-600 tabular-nums">
                       {link.rebrandly ? link.rebrandly.clicks.toLocaleString("pt-BR") : "—"}
                     </span>
                   </TableCell>
@@ -808,7 +808,7 @@ export default function LinksPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-zinc-500">{formatDate(link.createdAt)}</span>
+                    <span className="text-xs text-gray-400">{formatDate(link.createdAt)}</span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-0.5">
@@ -816,7 +816,7 @@ export default function LinksPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+                        className="h-8 w-8 text-gray-400 hover:text-gray-900"
                         title="Copiar URL completa"
                         onClick={() => copyToClipboard(link.finalUrl, "URL completa")}
                       >
@@ -828,7 +828,7 @@ export default function LinksPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+                          className="h-8 w-8 text-gray-400 hover:text-gray-900"
                           title="Copiar link curto"
                           onClick={() =>
                             copyToClipboard(
@@ -857,7 +857,7 @@ export default function LinksPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+                              className="h-8 w-8 text-gray-400 hover:text-gray-900"
                               title="Editar"
                             >
                               <Pencil className="h-4 w-4" />
@@ -874,7 +874,7 @@ export default function LinksPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-red-400"
+                                className="h-8 w-8 text-gray-400 hover:text-red-700"
                                 title="Deletar"
                               />
                             }
@@ -885,7 +885,7 @@ export default function LinksPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Deletar link?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                O link <strong className="text-zinc-200">{link.slug}</strong> será
+                                O link <strong className="text-gray-800">{link.slug}</strong> será
                                 removido permanentemente. Esta ação não pode ser desfeita.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -911,7 +911,7 @@ export default function LinksPage() {
       </div>
 
       {!loading && links.length > 0 && (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-gray-300">
           {links.length} link{links.length !== 1 ? "s" : ""} encontrado{links.length !== 1 ? "s" : ""}
         </p>
       )}
