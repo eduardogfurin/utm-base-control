@@ -453,11 +453,11 @@ function LinkFormDialog({
           </div>
 
           {/* Vehicle + Campaign */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Veículo *</Label>
               <Select value={form.vehicleId} onValueChange={(v) => v !== null && set("vehicleId", v)}>
-                <SelectTrigger className="bg-white border-gray-100">
+                <SelectTrigger className="w-full bg-white border-gray-200">
                   <SelectValue placeholder="Selecionar veículo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -472,7 +472,7 @@ function LinkFormDialog({
             <div className="space-y-1.5">
               <Label>Campanha *</Label>
               <Select value={form.campaignId} onValueChange={(v) => v !== null && set("campaignId", v)}>
-                <SelectTrigger className="bg-white border-gray-100">
+                <SelectTrigger className="w-full bg-white border-gray-200">
                   <SelectValue placeholder="Selecionar campanha" />
                 </SelectTrigger>
                 <SelectContent>
@@ -494,7 +494,7 @@ function LinkFormDialog({
               placeholder="slug-automatico"
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              className="bg-white border-gray-100 font-mono text-sm"
+              className="bg-white border-orange-300 focus-visible:ring-orange-400 font-mono text-sm text-gray-400 placeholder:text-gray-300"
             />
           </div>
 
@@ -720,12 +720,8 @@ export default function LinksPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent">
-              <TableHead className="text-gray-400">Slug</TableHead>
-              <TableHead className="text-gray-400">URL Base</TableHead>
-              <TableHead className="text-gray-400">Veículo</TableHead>
-              <TableHead className="text-gray-400">Campanha</TableHead>
+              <TableHead className="text-gray-400">Link</TableHead>
               <TableHead className="text-gray-400">UTMs</TableHead>
-              <TableHead className="text-gray-400">Link Curto</TableHead>
               <TableHead className="text-gray-400 text-right">Cliques</TableHead>
               <TableHead className="text-gray-400">Status</TableHead>
               <TableHead className="text-gray-400">Criado</TableHead>
@@ -736,7 +732,7 @@ export default function LinksPage() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-gray-100">
-                  {Array.from({ length: 10 }).map((__, j) => (
+                  {Array.from({ length: 6 }).map((__, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -745,7 +741,7 @@ export default function LinksPage() {
               ))
             ) : links.length === 0 ? (
               <TableRow className="border-gray-100">
-                <TableCell colSpan={10} className="h-32 text-center">
+                <TableCell colSpan={6} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2 text-gray-400">
                     <Link2 className="h-8 w-8" />
                     <p className="text-sm">Nenhum link encontrado</p>
@@ -757,49 +753,39 @@ export default function LinksPage() {
               </TableRow>
             ) : (
               links.map((link) => (
-                <TableRow key={link.id} className="border-gray-100 hover:bg-white/50">
-                  <TableCell>
-                    <span className="font-mono text-xs text-gray-800">{link.slug}</span>
-                  </TableCell>
-                  <TableCell className="max-w-[180px]">
-                    <a
-                      href={link.baseUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-gray-900 truncate block transition-colors"
-                      title={link.baseUrl}
-                    >
-                      {link.baseUrl.replace(/^https?:\/\//, "").slice(0, 32)}
-                      {link.baseUrl.length > 40 ? "…" : ""}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-gray-600">{link.vehicle.name}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-gray-600">{link.campaign.name}</span>
+                <TableRow key={link.id} className="border-gray-100 hover:bg-gray-50/50">
+                  {/* Link column — short URL + campaign/vehicle below */}
+                  <TableCell className="min-w-[220px]">
+                    <div className="flex items-start gap-2.5">
+                      <div className="mt-0.5 w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                        <Link2 className="h-3.5 w-3.5 text-gray-400" />
+                      </div>
+                      <div className="min-w-0">
+                        {link.rebrandly ? (
+                          <a
+                            href={`https://${link.rebrandly.shortUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-gray-800 hover:text-orange-500 flex items-center gap-1 transition-colors"
+                          >
+                            {link.rebrandly.shortUrl}
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </a>
+                        ) : (
+                          <span className="text-sm font-medium text-gray-800 font-mono">/{link.slug}</span>
+                        )}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {link.vehicle.name} · {link.campaign.name}
+                        </p>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <UtmPopover link={link} />
                   </TableCell>
-                  <TableCell>
-                    {link.rebrandly ? (
-                      <a
-                        href={`https://${link.rebrandly.shortUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-700 hover:text-blue-300 flex items-center gap-1 transition-colors"
-                      >
-                        {link.rebrandly.shortUrl}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <span className="text-gray-300 text-xs">—</span>
-                    )}
-                  </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-xs text-gray-600 tabular-nums">
-                      {link.rebrandly ? link.rebrandly.clicks.toLocaleString("pt-BR") : "—"}
+                    <span className="text-sm font-semibold text-gray-700 tabular-nums">
+                      {link.rebrandly ? `${(link.rebrandly.clicks / 1000).toFixed(link.rebrandly.clicks >= 1000 ? 1 : 0)}${link.rebrandly.clicks >= 1000 ? "k" : ""} clicks` : "—"}
                     </span>
                   </TableCell>
                   <TableCell>

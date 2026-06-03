@@ -116,13 +116,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Rebrandly integration — only if API key is configured
+    // Rebrandly integration — use the user's own integration key first,
+    // fall back to global AppSettings if available
     let urlForQr = finalUrl;
-    const settings = await prisma.appSettings.findFirst();
-    if (settings?.rebrandlyApiKey && settings?.rebrandlyDomain) {
+
+    const userIntegration = await prisma.userIntegration.findUnique({
+      where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
+    });
+
+    const globalSettings = await prisma.appSettings.findFirst();
+
+    const rebrandlyApiKey = userIntegration?.apiKey ?? globalSettings?.rebrandlyApiKey ?? null;
+    const rebrandlyDomain = userIntegration?.domain ?? globalSettings?.rebrandlyDomain ?? null;
+
+    if (rebrandlyApiKey) {
       try {
         const rebrandlyLink = await rebrandlyCreateLink(
-          { apiKey: settings.rebrandlyApiKey, domain: settings.rebrandlyDomain },
+          { apiKey: rebrandlyApiKey, domain: rebrandlyDomain ?? "rebrand.ly" },
           { destination: finalUrl, slug, title: slug }
         );
 
