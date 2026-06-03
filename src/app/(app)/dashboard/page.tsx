@@ -120,7 +120,7 @@ function RankingTable({ title, rows, loading, emptyMessage }: RankingTableProps)
                   )}
                 </div>
               </div>
-              <span className="text-sm font-semibold text-violet-600 tabular-nums shrink-0">
+              <span className="text-sm font-semibold text-orange-500 tabular-nums shrink-0">
                 {row.clicks.toLocaleString("pt-BR")}
               </span>
             </div>
@@ -190,14 +190,14 @@ export default function DashboardPage() {
     {
       label: "Total de Links",
       value: data?.totalLinks ?? 0,
-      icon: <Link2 size={16} className="text-violet-600" />,
-      color: "bg-violet-50",
+      icon: <Link2 size={16} className="text-orange-500" />,
+      color: "bg-orange-50",
     },
     {
       label: "Total de Cliques",
       value: data?.totalClicks ?? 0,
-      icon: <TrendingUp size={16} className="text-indigo-600" />,
-      color: "bg-indigo-50",
+      icon: <TrendingUp size={16} className="text-amber-600" />,
+      color: "bg-amber-50",
     },
     {
       label: "Campanhas Ativas",
@@ -267,12 +267,12 @@ export default function DashboardPage() {
                 stroke="url(#lineGradient)"
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 4, fill: "#7c3aed", strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: "#f97316", strokeWidth: 0 }}
               />
               <defs>
                 <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#7c3aed" />
-                  <stop offset="100%" stopColor="#4f46e5" />
+                  <stop offset="0%" stopColor="#f97316" />
+                  <stop offset="100%" stopColor="#f59e0b" />
                 </linearGradient>
               </defs>
             </LineChart>

@@ -147,7 +147,7 @@ function LoginForm() {
         <Button
           type="submit"
           disabled={loadingCredentials}
-          className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-sm"
+          className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-sm"
         >
           {loadingCredentials ? (
             <Loader2 size={15} className="animate-spin mr-2" />
@@ -161,11 +161,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
       <div className="w-full max-w-sm px-4">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-md">
             <Link2 size={18} className="text-white" />
           </div>
           <span className="text-xl font-semibold text-gray-900">UTM Base Control</span>
@@ -177,7 +177,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-400 mt-5">
           Não tem conta?{" "}
-          <Link href="/register" className="text-violet-600 hover:text-violet-500 font-medium">
+          <Link href="/register" className="text-orange-500 hover:text-orange-400 font-medium">
             Criar conta
           </Link>
         </p>

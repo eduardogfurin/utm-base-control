@@ -88,7 +88,7 @@ const providers = [
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className="text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mx-auto shadow-lg">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center mx-auto shadow-lg">
         <Link2 size={28} className="text-white" />
       </div>
       <div>
@@ -103,15 +103,15 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           { icon: <Link2 size={16} />, label: "Crie links UTM" },
           { icon: <CheckCircle2 size={16} />, label: "Monitore cliques" },
         ].map((item, i) => (
-          <div key={i} className="bg-violet-50 rounded-xl p-3 text-center">
-            <div className="text-violet-600 flex justify-center mb-1">{item.icon}</div>
+          <div key={i} className="bg-orange-50 rounded-xl p-3 text-center">
+            <div className="text-orange-500 flex justify-center mb-1">{item.icon}</div>
             <p className="text-xs text-gray-600 font-medium leading-tight">{item.label}</p>
           </div>
         ))}
       </div>
       <Button
         onClick={onNext}
-        className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-8 shadow-sm"
+        className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white px-8 shadow-sm"
       >
         Começar configuração
         <ArrowRight size={16} className="ml-2" />
@@ -148,7 +148,7 @@ function StepSelectProvider({
             className={cn(
               "w-full text-left rounded-xl border-2 p-4 flex items-center gap-4 transition-all duration-150",
               selected === p.id
-                ? "border-violet-500 bg-violet-50/50"
+                ? "border-orange-400 bg-orange-50/50"
                 : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
             )}
           >
@@ -160,7 +160,7 @@ function StepSelectProvider({
               <p className="text-xs text-gray-400 mt-0.5">{p.description}</p>
             </div>
             {selected === p.id && (
-              <CheckCircle2 size={18} className="text-violet-600 flex-shrink-0" />
+              <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0" />
             )}
           </button>
         ))}
@@ -174,7 +174,7 @@ function StepSelectProvider({
         <Button
           onClick={onNext}
           disabled={!selected}
-          className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white"
+          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
         >
           Continuar
           <ArrowRight size={16} className="ml-2" />
@@ -216,7 +216,7 @@ function StepApiKey({
         <ol className="space-y-2">
           {provider.apiKeyGuide.steps.map((step, i) => (
             <li key={i} className="flex gap-2.5 text-xs text-gray-600">
-              <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-700 font-semibold flex items-center justify-center flex-shrink-0 text-[10px]">
+              <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-700 font-semibold flex items-center justify-center flex-shrink-0 text-[10px]">
                 {i + 1}
               </span>
               {step}
@@ -231,7 +231,7 @@ function StepApiKey({
             href={provider.apiKeyGuide.docsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-violet-600 hover:text-violet-500 font-medium"
+            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-violet-500 font-medium"
           >
             Abrir painel do {provider.name}
             <ExternalLink size={11} />
@@ -263,7 +263,7 @@ function StepApiKey({
         <Button
           onClick={onNext}
           disabled={!apiKey.trim() || loading}
-          className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white"
+          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
         >
           {loading ? (
             <Loader2 size={16} className="animate-spin mr-2" />
@@ -291,7 +291,7 @@ function StepImport({
 }) {
   return (
     <div className="space-y-5 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mx-auto shadow-lg">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center mx-auto shadow-lg">
         {imported !== null ? (
           <CheckCircle2 size={28} className="text-white" />
         ) : (
@@ -304,12 +304,12 @@ function StepImport({
           <div>
             <h2 className="text-xl font-bold text-gray-900">Tudo pronto!</h2>
             <p className="text-gray-500 mt-2">
-              <span className="font-semibold text-emerald-600">{imported} links</span> importados com sucesso do {provider.name}.
+              <span className="font-semibold text-orange-500">{imported} links</span> importados com sucesso do {provider.name}.
             </p>
           </div>
           <Button
             onClick={onSkip}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-8"
+            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white px-8"
           >
             Ir para o dashboard
             <ArrowRight size={16} className="ml-2" />
@@ -328,7 +328,7 @@ function StepImport({
             <Button
               onClick={onImport}
               disabled={importing}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
             >
               {importing ? (
                 <Loader2 size={16} className="animate-spin mr-2" />
@@ -418,12 +418,12 @@ export function OnboardingWizard() {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-white to-violet-50/40 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-white to-orange-50/40 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
           <div
-            className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </div>
@@ -436,9 +436,9 @@ export function OnboardingWizard() {
                 className={cn(
                   "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all",
                   i < step
-                    ? "bg-violet-500 text-white"
+                    ? "bg-orange-500 text-white"
                     : i === step
-                    ? "bg-violet-100 text-violet-700 ring-2 ring-violet-300"
+                    ? "bg-orange-100 text-orange-700 ring-2 ring-orange-300"
                     : "bg-gray-100 text-gray-400"
                 )}
               >

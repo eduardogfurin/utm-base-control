@@ -52,7 +52,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="h-14 flex items-center px-4 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
             <Link2 size={13} className="text-white" />
           </div>
           <span className="font-semibold text-sm text-gray-800 tracking-tight">UTM Base Control</span>
@@ -74,13 +74,13 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
                 active
-                  ? "bg-violet-50 text-violet-700 font-medium"
+                  ? "bg-orange-50 text-orange-700 font-medium"
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
               )}
             >
               <Icon
                 size={15}
-                className={active ? "text-violet-600" : "text-gray-400"}
+                className={active ? "text-orange-500" : "text-gray-400"}
               />
               {item.label}
             </Link>
@@ -102,13 +102,13 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
                     active
-                      ? "bg-violet-50 text-violet-700 font-medium"
+                      ? "bg-orange-50 text-orange-700 font-medium"
                       : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
                   )}
                 >
                   <Icon
                     size={15}
-                    className={active ? "text-violet-600" : "text-gray-400"}
+                    className={active ? "text-orange-500" : "text-gray-400"}
                   />
                   {item.label}
                 </Link>
@@ -122,7 +122,7 @@ export function Sidebar() {
       <div className="border-t border-gray-100 p-3">
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left cursor-pointer">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
               {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
             </div>
             <div className="flex-1 min-w-0">
