@@ -127,7 +127,7 @@ export default function DashboardPage() {
         </div>
         <a
           href="/links"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#383644] hover:bg-[#1C1B21] text-white text-sm font-medium px-4 py-2 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-[#1C1B21] hover:bg-orange-500 text-white text-sm font-medium px-4 py-2 transition-colors duration-300"
         >
           <Link2 size={14} />
           Novo Link

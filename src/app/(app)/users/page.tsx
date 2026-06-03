@@ -235,7 +235,7 @@ export default function UsersPage() {
         <Button
           size="sm"
           onClick={() => setCreateOpen(true)}
-          className="bg-orange-500 hover:bg-orange-600 text-white"
+          className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
         >
           <Plus size={14} className="mr-1.5" />
           Novo Usuário
@@ -430,7 +430,7 @@ export default function UsersPage() {
               <Button
                 type="submit"
                 disabled={createLoading}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
               >
                 {createLoading && (
                   <Loader2 size={14} className="animate-spin mr-1.5" />
@@ -500,7 +500,7 @@ export default function UsersPage() {
               <Button
                 type="submit"
                 disabled={editLoading}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
               >
                 {editLoading && (
                   <Loader2 size={14} className="animate-spin mr-1.5" />

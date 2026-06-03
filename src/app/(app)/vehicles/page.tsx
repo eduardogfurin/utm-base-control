@@ -283,7 +283,11 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
           </div>
 
           <DialogFooter showCloseButton>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+            >
               {form.formState.isSubmitting ? "Salvando..." : isEditing ? "Salvar" : "Criar"}
             </Button>
           </DialogFooter>
@@ -385,7 +389,10 @@ export default function VehiclesPage() {
           </p>
         </div>
         {!isViewer && (
-          <Button onClick={openCreate}>
+          <Button
+            onClick={openCreate}
+            className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+          >
             <PlusIcon className="size-4" />
             Novo Veículo
           </Button>

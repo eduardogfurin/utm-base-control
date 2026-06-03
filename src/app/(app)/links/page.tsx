@@ -732,7 +732,7 @@ export default function LinksPage() {
             hasUserRebrandly={hasUserRebrandly}
             onSuccess={fetchLinks}
             trigger={
-              <Button className="gap-2">
+              <Button className="gap-2 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300">
                 <Plus className="h-4 w-4" />
                 Novo Link
               </Button>
