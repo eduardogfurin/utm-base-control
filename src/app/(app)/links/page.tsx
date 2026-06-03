@@ -120,6 +120,12 @@ interface AppSettings {
   rebrandlyStatus: boolean;
 }
 
+interface RebrandlyDomain {
+  id: string;
+  fullName: string;
+  active: boolean;
+}
+
 // ─── Form state ───────────────────────────────────────────────────────────────
 
 interface LinkFormState {
@@ -133,6 +139,7 @@ interface LinkFormState {
   utmContent: string;
   utmTerm: string;
   shortenWithRebrandly: boolean;
+  rebrandlyDomain: string;
 }
 
 const emptyForm: LinkFormState = {
@@ -146,6 +153,7 @@ const emptyForm: LinkFormState = {
   utmContent: "",
   utmTerm: "",
   shortenWithRebrandly: false,
+  rebrandlyDomain: "",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -315,6 +323,7 @@ function LinkFormDialog({
 }: LinkFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([]);
   const [form, setForm] = useState<LinkFormState>(
     link
       ? {
@@ -328,11 +337,26 @@ function LinkFormDialog({
           utmContent: link.utmContent ?? "",
           utmTerm: link.utmTerm ?? "",
           shortenWithRebrandly: !!link.rebrandly,
+          rebrandlyDomain: link.rebrandly?.shortUrl?.split("/")[0] ?? "",
         }
       : { ...emptyForm }
   );
 
   const hasRebrandly = !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
+
+  // Load Rebrandly domains when dialog opens
+  useEffect(() => {
+    if (!open || !hasRebrandly) return;
+    fetch("/api/integrations/rebrandly/domains")
+      .then((r) => r.json())
+      .then((data: RebrandlyDomain[]) => {
+        setRebrandlyDomains(data ?? []);
+        if (data?.length && !form.rebrandlyDomain) {
+          setForm((prev) => ({ ...prev, rebrandlyDomain: data[0].fullName }));
+        }
+      })
+      .catch(() => {});
+  }, [open, hasRebrandly]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const previewUrl = buildUtmUrl(form.baseUrl, {
     utmSource: form.utmSource || null,
@@ -399,6 +423,7 @@ function LinkFormDialog({
         utmContent: form.utmContent || undefined,
         utmTerm: form.utmTerm || undefined,
         shortenWithRebrandly: form.shortenWithRebrandly,
+        rebrandlyDomain: form.rebrandlyDomain || undefined,
       };
 
       const url = mode === "edit" ? `/api/links/${link!.id}` : "/api/links";
@@ -452,37 +477,35 @@ function LinkFormDialog({
             />
           </div>
 
-          {/* Vehicle + Campaign */}
+          {/* Vehicle + Campaign — native selects to avoid @base-ui display bug */}
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Veículo *</Label>
-              <Select value={form.vehicleId} onValueChange={(v) => v !== null && set("vehicleId", v)}>
-                <SelectTrigger className="w-full bg-white border-gray-200">
-                  <SelectValue placeholder="Selecionar veículo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="vehicleId">Veículo *</Label>
+              <select
+                id="vehicleId"
+                value={form.vehicleId}
+                onChange={(e) => set("vehicleId", e.target.value)}
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+              >
+                <option value="" disabled>Selecionar veículo</option>
+                {vehicles.map((v) => (
+                  <option key={v.id} value={v.id}>{v.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
-              <Label>Campanha *</Label>
-              <Select value={form.campaignId} onValueChange={(v) => v !== null && set("campaignId", v)}>
-                <SelectTrigger className="w-full bg-white border-gray-200">
-                  <SelectValue placeholder="Selecionar campanha" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campaigns.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="campaignId">Campanha *</Label>
+              <select
+                id="campaignId"
+                value={form.campaignId}
+                onChange={(e) => set("campaignId", e.target.value)}
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+              >
+                <option value="" disabled>Selecionar campanha</option>
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -506,17 +529,17 @@ function LinkFormDialog({
             <div className="grid grid-cols-2 gap-3">
               {(
                 [
-                  { field: "utmSource", label: "UTM Source" },
-                  { field: "utmMedium", label: "UTM Medium" },
-                  { field: "utmCampaign", label: "UTM Campaign" },
-                  { field: "utmContent", label: "UTM Content" },
-                ] as { field: keyof LinkFormState; label: string }[]
-              ).map(({ field, label }) => (
+                  { field: "utmSource", label: "UTM Source", placeholder: "ex: google" },
+                  { field: "utmMedium", label: "UTM Medium", placeholder: "ex: cpc" },
+                  { field: "utmCampaign", label: "UTM Campaign", placeholder: "ex: lancamento-2026" },
+                  { field: "utmContent", label: "UTM Content", placeholder: "ex: banner-topo" },
+                ] as { field: keyof LinkFormState; label: string; placeholder: string }[]
+              ).map(({ field, label, placeholder }) => (
                 <div key={field} className="space-y-1.5">
                   <Label htmlFor={field}>{label}</Label>
                   <Input
                     id={field}
-                    placeholder={label.replace("UTM ", "").toLowerCase()}
+                    placeholder={placeholder}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
                     className="bg-white border-gray-100"
@@ -527,7 +550,7 @@ function LinkFormDialog({
                 <Label htmlFor="utmTerm">UTM Term</Label>
                 <Input
                   id="utmTerm"
-                  placeholder="term"
+                  placeholder="ex: palavra-chave"
                   value={form.utmTerm}
                   onChange={(e) => set("utmTerm", e.target.value)}
                   className="bg-white border-gray-100"
@@ -548,15 +571,32 @@ function LinkFormDialog({
 
           {/* Rebrandly */}
           {hasRebrandly && mode === "create" && (
-            <div className="flex items-center justify-between rounded-md border border-gray-100 p-3">
-              <div>
-                <p className="text-sm font-medium">Encurtar via Rebrandly</p>
-                <p className="text-xs text-gray-400">Gera um link curto branded</p>
+            <div className="rounded-md border border-gray-100 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Encurtar via Rebrandly</p>
+                  <p className="text-xs text-gray-400">Gera um link curto com domínio personalizado</p>
+                </div>
+                <Switch
+                  checked={form.shortenWithRebrandly}
+                  onCheckedChange={(v) => set("shortenWithRebrandly", v)}
+                />
               </div>
-              <Switch
-                checked={form.shortenWithRebrandly}
-                onCheckedChange={(v) => set("shortenWithRebrandly", v)}
-              />
+              {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="rebrandlyDomain">Domínio</Label>
+                  <select
+                    id="rebrandlyDomain"
+                    value={form.rebrandlyDomain}
+                    onChange={(e) => set("rebrandlyDomain", e.target.value)}
+                    className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+                  >
+                    {rebrandlyDomains.map((d) => (
+                      <option key={d.id} value={d.fullName}>{d.fullName}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

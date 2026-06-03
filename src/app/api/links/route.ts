@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       utmCampaign,
       utmContent,
       utmTerm,
+      rebrandlyDomain: selectedDomain,
     } = body;
 
     if (!baseUrl || !vehicleId || !campaignId) {
@@ -127,12 +128,17 @@ export async function POST(request: NextRequest) {
     const globalSettings = await prisma.appSettings.findFirst();
 
     const rebrandlyApiKey = userIntegration?.apiKey ?? globalSettings?.rebrandlyApiKey ?? null;
-    const rebrandlyDomain = userIntegration?.domain ?? globalSettings?.rebrandlyDomain ?? null;
+    // Priority: domain chosen in form > saved on integration > global settings > default
+    const rebrandlyDomain =
+      selectedDomain ||
+      userIntegration?.domain ||
+      globalSettings?.rebrandlyDomain ||
+      "rebrand.ly";
 
     if (rebrandlyApiKey) {
       try {
         const rebrandlyLink = await rebrandlyCreateLink(
-          { apiKey: rebrandlyApiKey, domain: rebrandlyDomain ?? "rebrand.ly" },
+          { apiKey: rebrandlyApiKey, domain: rebrandlyDomain },
           { destination: finalUrl, slug, title: slug }
         );
 
