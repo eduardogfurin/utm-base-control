@@ -308,6 +308,7 @@ interface LinkFormDialogProps {
   vehicles: Vehicle[];
   campaigns: Campaign[];
   settings: AppSettings | null;
+  hasUserRebrandly?: boolean;
   onSuccess: () => void;
   trigger: React.ReactNode;
 }
@@ -318,6 +319,7 @@ function LinkFormDialog({
   vehicles,
   campaigns,
   settings,
+  hasUserRebrandly = false,
   onSuccess,
   trigger,
 }: LinkFormDialogProps) {
@@ -342,7 +344,8 @@ function LinkFormDialog({
       : { ...emptyForm }
   );
 
-  const hasRebrandly = !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
+  // True if user has their own Rebrandly integration OR global settings have an API key
+  const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
   // Load Rebrandly domains when dialog opens
   useEffect(() => {
@@ -627,6 +630,7 @@ export default function LinksPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [hasUserRebrandly, setHasUserRebrandly] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -654,14 +658,24 @@ export default function LinksPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [vehiclesRes, campaignsRes, settingsRes] = await Promise.all([
+        const [vehiclesRes, campaignsRes, settingsRes, integrationsRes] = await Promise.all([
           fetch("/api/vehicles"),
           fetch("/api/campaigns"),
           fetch("/api/settings"),
+          fetch("/api/integrations"),
         ]);
         if (vehiclesRes.ok) setVehicles(await vehiclesRes.json());
         if (campaignsRes.ok) setCampaigns(await campaignsRes.json());
         if (settingsRes.ok) setSettings(await settingsRes.json());
+        if (integrationsRes.ok) {
+          const integrations = await integrationsRes.json();
+          setHasUserRebrandly(
+            Array.isArray(integrations) &&
+            integrations.some((i: { provider: string; isActive: boolean }) =>
+              i.provider === "REBRANDLY" && i.isActive
+            )
+          );
+        }
         await fetchLinks();
       } finally {
         setLoading(false);
@@ -706,6 +720,7 @@ export default function LinksPage() {
             vehicles={vehicles}
             campaigns={campaigns}
             settings={settings}
+            hasUserRebrandly={hasUserRebrandly}
             onSuccess={fetchLinks}
             trigger={
               <Button className="gap-2">
@@ -878,6 +893,7 @@ export default function LinksPage() {
                           vehicles={vehicles}
                           campaigns={campaigns}
                           settings={settings}
+                          hasUserRebrandly={hasUserRebrandly}
                           onSuccess={fetchLinks}
                           trigger={
                             <Button
