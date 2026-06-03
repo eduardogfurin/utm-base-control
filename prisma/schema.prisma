@@ -50,22 +50,24 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole  @default(MARKETING)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String?   @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String?
+  role                UserRole  @default(MARKETING)
+  onboardingCompleted Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  vehicles  Vehicle[]
-  campaigns Campaign[]
-  links     Link[]
-  auditLogs AuditLog[]
+  accounts     Account[]
+  sessions     Session[]
+  vehicles     Vehicle[]
+  campaigns    Campaign[]
+  links        Link[]
+  auditLogs    AuditLog[]
+  integrations UserIntegration[]
 }
 
 // ─── Core Entities ────────────────────────────────────────────────────────────
@@ -190,6 +192,31 @@ model QrCode {
   updatedAt DateTime @updatedAt
 
   link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+}
+
+// ─── Integrations ─────────────────────────────────────────────────────────────
+
+enum IntegrationProvider {
+  REBRANDLY
+  BITLY
+  TINYURL
+  CUSTOM
+}
+
+model UserIntegration {
+  id         String              @id @default(cuid())
+  userId     String
+  provider   IntegrationProvider
+  apiKey     String
+  domain     String?
+  isActive   Boolean             @default(true)
+  lastSyncAt DateTime?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
 }
 
 // ─── Settings ────────────────────────────────────────────────────────────────

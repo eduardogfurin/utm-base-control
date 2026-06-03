@@ -11,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { TrendingUp, Link2, Megaphone, Radio } from "lucide-react"
+import { TrendingUp, Link2, Megaphone, Radio, ArrowUpRight } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -31,9 +31,7 @@ interface DashboardData {
 
 function Skeleton({ className }: { className?: string }) {
   return (
-    <div
-      className={`animate-pulse rounded-md bg-zinc-800 ${className ?? ""}`}
-    />
+    <div className={`animate-pulse rounded-lg bg-gray-100 ${className ?? ""}`} />
   )
 }
 
@@ -43,24 +41,30 @@ interface KpiCardProps {
   label: string
   value: number | string
   icon: React.ReactNode
+  color: string
   loading: boolean
 }
 
-function KpiCard({ label, value, icon, loading }: KpiCardProps) {
+function KpiCard({ label, value, icon, color, loading }: KpiCardProps) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 flex flex-col gap-3">
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
           {label}
         </span>
-        <span className="text-zinc-500">{icon}</span>
+        <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${color}`}>
+          {icon}
+        </span>
       </div>
       {loading ? (
         <Skeleton className="h-8 w-24" />
       ) : (
-        <span className="text-3xl font-semibold text-zinc-100 tabular-nums">
-          {value.toLocaleString("pt-BR")}
-        </span>
+        <div className="flex items-end justify-between">
+          <span className="text-3xl font-bold text-gray-900 tabular-nums">
+            {value.toLocaleString("pt-BR")}
+          </span>
+          <ArrowUpRight size={14} className="text-gray-300 mb-1" />
+        </div>
       )}
     </div>
   )
@@ -83,11 +87,11 @@ interface RankingTableProps {
 
 function RankingTable({ title, rows, loading, emptyMessage }: RankingTableProps) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
-      <div className="px-5 py-4 border-b border-zinc-800">
-        <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+    <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+      <div className="px-5 py-4 border-b border-gray-50">
+        <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
       </div>
-      <div className="divide-y divide-zinc-800">
+      <div className="divide-y divide-gray-50">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="px-5 py-3 flex items-center justify-between gap-4">
@@ -96,27 +100,27 @@ function RankingTable({ title, rows, loading, emptyMessage }: RankingTableProps)
             </div>
           ))
         ) : rows.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm text-zinc-500">
+          <div className="px-5 py-8 text-center text-sm text-gray-400">
             {emptyMessage}
           </div>
         ) : (
           rows.map((row, idx) => (
             <div
               key={idx}
-              className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-zinc-800/50 transition-colors"
+              className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-gray-50/50 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-xs font-mono text-zinc-500 w-4 shrink-0">
+                <span className="text-xs font-semibold text-gray-300 w-4 shrink-0">
                   {idx + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm text-zinc-200 truncate">{row.label}</p>
+                  <p className="text-sm text-gray-700 truncate font-medium">{row.label}</p>
                   {row.sub && (
-                    <p className="text-xs text-zinc-500 truncate">{row.sub}</p>
+                    <p className="text-xs text-gray-400 truncate">{row.sub}</p>
                   )}
                 </div>
               </div>
-              <span className="text-sm font-medium text-zinc-300 tabular-nums shrink-0">
+              <span className="text-sm font-semibold text-violet-600 tabular-nums shrink-0">
                 {row.clicks.toLocaleString("pt-BR")}
               </span>
             </div>
@@ -140,9 +144,9 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs shadow-xl">
-      <p className="text-zinc-400 mb-1">{label ? formatDate(label) : ""}</p>
-      <p className="text-zinc-100 font-semibold">
+    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
+      <p className="text-gray-400 mb-1">{label ? formatDate(label) : ""}</p>
+      <p className="text-gray-900 font-semibold">
         {payload[0].value.toLocaleString("pt-BR")} cliques
       </p>
     </div>
@@ -177,7 +181,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-red-400">{error}</p>
+        <p className="text-sm text-red-500">{error}</p>
       </div>
     )
   }
@@ -186,35 +190,31 @@ export default function DashboardPage() {
     {
       label: "Total de Links",
       value: data?.totalLinks ?? 0,
-      icon: <Link2 className="size-4" />,
+      icon: <Link2 size={16} className="text-violet-600" />,
+      color: "bg-violet-50",
     },
     {
       label: "Total de Cliques",
       value: data?.totalClicks ?? 0,
-      icon: <TrendingUp className="size-4" />,
+      icon: <TrendingUp size={16} className="text-indigo-600" />,
+      color: "bg-indigo-50",
     },
     {
       label: "Campanhas Ativas",
       value: data?.activeCampaigns ?? 0,
-      icon: <Megaphone className="size-4" />,
+      icon: <Megaphone size={16} className="text-sky-600" />,
+      color: "bg-sky-50",
     },
     {
       label: "Veículos Ativos",
       value: data?.activeVehicles ?? 0,
-      icon: <Radio className="size-4" />,
+      icon: <Radio size={16} className="text-emerald-600" />,
+      color: "bg-emerald-50",
     },
   ]
 
   return (
-    <div className="space-y-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-xl font-semibold text-zinc-100">Dashboard</h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Visão geral de performance de links e campanhas
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
@@ -223,14 +223,15 @@ export default function DashboardPage() {
             label={kpi.label}
             value={kpi.value}
             icon={kpi.icon}
+            color={kpi.color}
             loading={loading}
           />
         ))}
       </div>
 
       {/* Line chart */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-        <h3 className="text-sm font-semibold text-zinc-100 mb-5">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-800 mb-5">
           Cliques nos últimos 30 dias
         </h3>
         {loading ? (
@@ -241,10 +242,10 @@ export default function DashboardPage() {
               data={data?.clicksOverTime ?? []}
               margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
               <XAxis
                 dataKey="date"
-                tick={{ fill: "#71717a", fontSize: 11 }}
+                tick={{ fill: "#9ca3af", fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v: string) => {
@@ -254,7 +255,7 @@ export default function DashboardPage() {
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fill: "#71717a", fontSize: 11 }}
+                tick={{ fill: "#9ca3af", fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -263,11 +264,17 @@ export default function DashboardPage() {
               <Line
                 type="monotone"
                 dataKey="clicks"
-                stroke="#6366f1"
-                strokeWidth={2}
+                stroke="url(#lineGradient)"
+                strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: "#7c3aed", strokeWidth: 0 }}
               />
+              <defs>
+                <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#7c3aed" />
+                  <stop offset="100%" stopColor="#4f46e5" />
+                </linearGradient>
+              </defs>
             </LineChart>
           </ResponsiveContainer>
         )}

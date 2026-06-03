@@ -48,24 +48,22 @@ export function Sidebar() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <aside className="w-60 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
+    <aside className="w-60 min-h-screen bg-white border-r border-gray-100 flex flex-col shadow-sm">
       {/* Logo */}
-      <div className="h-14 flex items-center px-4 border-b border-zinc-800">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-violet-600 rounded-md flex items-center justify-center">
-            <Link2 size={14} className="text-white" />
+      <div className="h-14 flex items-center px-4 border-b border-gray-100">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm">
+            <Link2 size={13} className="text-white" />
           </div>
-          <span className="font-semibold text-sm text-white">UTM Base Control</span>
+          <span className="font-semibold text-sm text-gray-800 tracking-tight">UTM Base Control</span>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
-        <div className="px-2 mb-2">
-          <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
-            Principal
-          </p>
-        </div>
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+        <p className="px-2 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+          Principal
+        </p>
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = pathname.startsWith(item.href);
@@ -74,13 +72,16 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm transition-colors",
+                "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
                 active
-                  ? "bg-violet-600/15 text-violet-400"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
+                  ? "bg-violet-50 text-violet-700 font-medium"
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
               )}
             >
-              <Icon size={15} />
+              <Icon
+                size={15}
+                className={active ? "text-violet-600" : "text-gray-400"}
+              />
               {item.label}
             </Link>
           );
@@ -88,11 +89,9 @@ export function Sidebar() {
 
         {isAdmin && (
           <>
-            <div className="px-2 mt-4 mb-2">
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
-                Admin
-              </p>
-            </div>
+            <p className="px-2 mt-5 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+              Admin
+            </p>
             {adminItems.map((item) => {
               const Icon = item.icon;
               const active = pathname.startsWith(item.href);
@@ -101,13 +100,16 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm transition-colors",
+                    "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
                     active
-                      ? "bg-violet-600/15 text-violet-400"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
+                      ? "bg-violet-50 text-violet-700 font-medium"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
                   )}
                 >
-                  <Icon size={15} />
+                  <Icon
+                    size={15}
+                    className={active ? "text-violet-600" : "text-gray-400"}
+                  />
                   {item.label}
                 </Link>
               );
@@ -117,26 +119,26 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div className="border-t border-zinc-800 p-2">
+      <div className="border-t border-gray-100 p-3">
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-zinc-800/60 transition-colors text-left cursor-pointer">
-              <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0">
-                {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-zinc-200 truncate">
-                  {session?.user?.name ?? "Usuário"}
-                </p>
-                <p className="text-[10px] text-zinc-500 truncate">
-                  {session?.user?.email}
-                </p>
-              </div>
-              <ChevronDown size={12} className="text-zinc-500 flex-shrink-0" />
+          <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left cursor-pointer">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
+              {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-700 truncate">
+                {session?.user?.name ?? "Usuário"}
+              </p>
+              <p className="text-[10px] text-gray-400 truncate">
+                {session?.user?.email}
+              </p>
+            </div>
+            <ChevronDown size={12} className="text-gray-400 flex-shrink-0" />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-52">
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-red-400 focus:text-red-400"
+              className="text-red-500 focus:text-red-500 focus:bg-red-50"
             >
               <LogOut size={14} className="mr-2" />
               Sair

@@ -79,10 +79,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 space-y-5">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
       <div>
-        <h1 className="text-lg font-semibold text-zinc-100">Acessar plataforma</h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <h1 className="text-xl font-semibold text-gray-900">Bem-vindo de volta</h1>
+        <p className="text-sm text-gray-400 mt-1">
           Entre com Google ou use seu email e senha
         </p>
       </div>
@@ -91,7 +91,7 @@ function LoginForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full flex items-center gap-3 bg-zinc-800 border-zinc-700 text-zinc-100 hover:bg-zinc-700 hover:text-white"
+        className="w-full flex items-center gap-3 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm"
         onClick={handleGoogleSignIn}
         disabled={loadingGoogle}
       >
@@ -105,49 +105,49 @@ function LoginForm() {
 
       {/* Divisor */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-zinc-800" />
-        <span className="text-xs text-zinc-500">ou continue com email</span>
-        <div className="flex-1 h-px bg-zinc-800" />
+        <div className="flex-1 h-px bg-gray-100" />
+        <span className="text-xs text-gray-400">ou continue com email</span>
+        <div className="flex-1 h-px bg-gray-100" />
       </div>
 
       {/* Formulário email/senha */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-zinc-300 text-sm">
+          <Label htmlFor="email" className="text-gray-600 text-sm font-medium">
             Email
           </Label>
           <Input
             id="email"
             type="email"
             placeholder="seu@email.com"
-            className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white"
             {...register("email")}
           />
           {errors.email && (
-            <p className="text-xs text-red-400">{errors.email.message}</p>
+            <p className="text-xs text-red-500">{errors.email.message}</p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-zinc-300 text-sm">
+          <Label htmlFor="password" className="text-gray-600 text-sm font-medium">
             Senha
           </Label>
           <Input
             id="password"
             type="password"
             placeholder="••••••••"
-            className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white"
             {...register("password")}
           />
           {errors.password && (
-            <p className="text-xs text-red-400">{errors.password.message}</p>
+            <p className="text-xs text-red-500">{errors.password.message}</p>
           )}
         </div>
 
         <Button
           type="submit"
           disabled={loadingCredentials}
-          className="w-full bg-violet-600 hover:bg-violet-500 text-white"
+          className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-sm"
         >
           {loadingCredentials ? (
             <Loader2 size={15} className="animate-spin mr-2" />
@@ -161,28 +161,28 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
       <div className="w-full max-w-sm px-4">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-9 h-9 bg-violet-600 rounded-lg flex items-center justify-center">
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
             <Link2 size={18} className="text-white" />
           </div>
-          <span className="text-xl font-semibold text-white">UTM Base Control</span>
+          <span className="text-xl font-semibold text-gray-900">UTM Base Control</span>
         </div>
 
-        <Suspense fallback={<div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 h-64 animate-pulse" />}>
+        <Suspense fallback={<div className="bg-white rounded-2xl border border-gray-100 p-8 h-64 animate-pulse" />}>
           <LoginForm />
         </Suspense>
 
-        <p className="text-center text-sm text-zinc-500 mt-4">
+        <p className="text-center text-sm text-gray-400 mt-5">
           Não tem conta?{" "}
-          <Link href="/register" className="text-violet-400 hover:text-violet-300">
+          <Link href="/register" className="text-violet-600 hover:text-violet-500 font-medium">
             Criar conta
           </Link>
         </p>
 
-        <p className="text-center text-xs text-zinc-600 mt-3">
+        <p className="text-center text-xs text-gray-300 mt-3">
           UTM Base Control v1
         </p>
       </div>
