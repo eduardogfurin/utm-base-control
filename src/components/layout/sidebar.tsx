@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -16,12 +16,14 @@ import {
   Users,
   LogOut,
   ChevronDown,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -43,6 +45,7 @@ const adminItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -136,6 +139,24 @@ export function Sidebar() {
             <ChevronDown size={12} className="text-gray-400 flex-shrink-0" />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-52">
+            {isAdmin && (
+              <>
+                <DropdownMenuItem onClick={() => router.push("/users")}>
+                  <Users size={14} className="text-gray-400" />
+                  Usuários
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/settings")}>
+                  <Settings size={14} className="text-gray-400" />
+                  Configurações
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={() => router.push("/integrations")}>
+              <UserCircle size={14} className="text-gray-400" />
+              Meu Perfil / Integrações
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="text-red-500 focus:text-red-500 focus:bg-red-50"

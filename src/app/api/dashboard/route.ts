@@ -10,20 +10,24 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parallel queries for efficiency
     const [
       totalLinks,
       activeCampaigns,
       activeVehicles,
       allRebrandlyLinks,
-      linksWithRebrandly,
+      linksRaw,
     ] = await Promise.all([
       prisma.link.count(),
       prisma.campaign.count({ where: { status: "ACTIVE" } }),
       prisma.vehicle.count({ where: { status: "ACTIVE" } }),
       prisma.rebrandlyLink.findMany({ select: { clicks: true } }),
       prisma.link.findMany({
-        include: {
+        select: {
+          id: true,
+          slug: true,
+          createdAt: true,
+          vehicleId: true,
+          campaignId: true,
           rebrandly: { select: { clicks: true, shortUrl: true } },
           vehicle: { select: { id: true, name: true } },
           campaign: { select: { id: true, name: true } },
@@ -31,44 +35,37 @@ export async function GET(_request: NextRequest) {
       }),
     ]);
 
-    // Total clicks — sum of all RebrandlyLink.clicks
     const totalClicks = allRebrandlyLinks.reduce((sum, r) => sum + r.clicks, 0);
 
-    // Top vehicles — group by vehicle, sum clicks
+    // Top vehicles
     const vehicleClickMap = new Map<string, { name: string; clicks: number }>();
-    for (const link of linksWithRebrandly) {
+    for (const link of linksRaw) {
+      if (!link.vehicle) continue;
       const clicks = link.rebrandly?.clicks ?? 0;
-      const key = link.vehicle.id;
-      const entry = vehicleClickMap.get(key);
-      if (entry) {
-        entry.clicks += clicks;
-      } else {
-        vehicleClickMap.set(key, { name: link.vehicle.name, clicks });
-      }
+      const entry = vehicleClickMap.get(link.vehicleId);
+      if (entry) entry.clicks += clicks;
+      else vehicleClickMap.set(link.vehicleId, { name: link.vehicle.name, clicks });
     }
     const topVehicles = Array.from(vehicleClickMap.values())
       .sort((a, b) => b.clicks - a.clicks)
       .slice(0, 5);
 
-    // Top campaigns — group by campaign, sum clicks
+    // Top campaigns
     const campaignClickMap = new Map<string, { name: string; clicks: number }>();
-    for (const link of linksWithRebrandly) {
+    for (const link of linksRaw) {
+      if (!link.campaign) continue;
       const clicks = link.rebrandly?.clicks ?? 0;
-      const key = link.campaign.id;
-      const entry = campaignClickMap.get(key);
-      if (entry) {
-        entry.clicks += clicks;
-      } else {
-        campaignClickMap.set(key, { name: link.campaign.name, clicks });
-      }
+      const entry = campaignClickMap.get(link.campaignId);
+      if (entry) entry.clicks += clicks;
+      else campaignClickMap.set(link.campaignId, { name: link.campaign.name, clicks });
     }
     const topCampaigns = Array.from(campaignClickMap.values())
       .sort((a, b) => b.clicks - a.clicks)
       .slice(0, 5);
 
-    // Top links by clicks
-    const topLinks = linksWithRebrandly
-      .filter((l) => l.rebrandly !== null)
+    // Top links
+    const topLinks = linksRaw
+      .filter((l) => l.rebrandly)
       .map((l) => ({
         slug: l.slug,
         shortUrl: l.rebrandly!.shortUrl,
@@ -77,24 +74,20 @@ export async function GET(_request: NextRequest) {
       .sort((a, b) => b.clicks - a.clicks)
       .slice(0, 10);
 
-    // Clicks over time — last 30 days skeleton
+    // Clicks over time — last 30 days
     const clicksByDate = new Map<string, number>();
     for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
-      const key = d.toISOString().slice(0, 10);
-      clicksByDate.set(key, 0);
+      clicksByDate.set(d.toISOString().slice(0, 10), 0);
     }
-
-    // Best-effort: distribute each link's total clicks to its creation date if within range
-    for (const link of linksWithRebrandly) {
+    for (const link of linksRaw) {
       if (!link.rebrandly || link.rebrandly.clicks === 0) continue;
       const dateKey = new Date(link.createdAt).toISOString().slice(0, 10);
       if (clicksByDate.has(dateKey)) {
         clicksByDate.set(dateKey, (clicksByDate.get(dateKey) ?? 0) + link.rebrandly.clicks);
       }
     }
-
     const clicksOverTime = Array.from(clicksByDate.entries()).map(([date, clicks]) => ({
       date,
       clicks,
