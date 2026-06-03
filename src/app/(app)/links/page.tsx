@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
@@ -9,10 +9,12 @@ import {
   QrCode,
   Pencil,
   Trash2,
-  Plus,
   Link2,
   ChevronDown,
   Check,
+  Globe,
+  ArrowRight,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,8 +128,6 @@ interface RebrandlyDomain {
   active: boolean;
 }
 
-// ─── Form state ───────────────────────────────────────────────────────────────
-
 interface LinkFormState {
   baseUrl: string;
   vehicleId: string;
@@ -183,33 +183,13 @@ function QrCodeDialog({ link }: { link: Link }) {
     try {
       const res = await fetch(`/api/links/${link.id}`);
       const data = await res.json();
-      if (data?.qrCode?.svgData) {
-        setSvgData(data.qrCode.svgData);
-      }
+      if (data?.qrCode?.svgData) setSvgData(data.qrCode.svgData);
     } catch {
       toast.error("Erro ao carregar QR Code");
     } finally {
       setLoading(false);
     }
   }, [link.id, link.qrCode?.id, svgData]);
-
-  const handleCopySvg = () => {
-    if (!svgData) return;
-    navigator.clipboard.writeText(svgData);
-    toast.success("SVG copiado!");
-  };
-
-  const handleDownloadSvg = () => {
-    if (!svgData) return;
-    const blob = new Blob([svgData], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `qr-${link.slug}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Download iniciado!");
-  };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) loadQr(); }}>
@@ -243,19 +223,10 @@ function QrCodeDialog({ link }: { link: Link }) {
           )}
           <p className="text-xs text-gray-400 text-center break-all">{link.finalUrl}</p>
           <div className="flex gap-2 w-full">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleCopySvg}
-              disabled={!svgData}
-            >
+            <Button variant="outline" className="flex-1" onClick={() => { if (svgData) { navigator.clipboard.writeText(svgData); toast.success("SVG copiado!"); } }} disabled={!svgData}>
               <Copy className="h-4 w-4 mr-2" /> Copiar SVG
             </Button>
-            <Button
-              className="flex-1"
-              onClick={handleDownloadSvg}
-              disabled={!svgData}
-            >
+            <Button className="flex-1" onClick={() => { if (svgData) { const blob = new Blob([svgData], { type: "image/svg+xml" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `qr-${link.slug}.svg`; a.click(); URL.revokeObjectURL(url); toast.success("Download iniciado!"); } }} disabled={!svgData}>
               Baixar SVG
             </Button>
           </div>
@@ -300,100 +271,70 @@ function UtmPopover({ link }: { link: Link }) {
   );
 }
 
-// ─── Link Form Dialog ─────────────────────────────────────────────────────────
+// ─── Inline Create Card ───────────────────────────────────────────────────────
 
-interface LinkFormDialogProps {
-  mode: "create" | "edit";
-  link?: Link;
+interface InlineCreateCardProps {
   vehicles: Vehicle[];
   campaigns: Campaign[];
   settings: AppSettings | null;
-  hasUserRebrandly?: boolean;
+  hasUserRebrandly: boolean;
   onSuccess: () => void;
-  trigger: React.ReactNode;
 }
 
-function LinkFormDialog({
-  mode,
-  link,
-  vehicles,
-  campaigns,
-  settings,
-  hasUserRebrandly = false,
-  onSuccess,
-  trigger,
-}: LinkFormDialogProps) {
-  const [open, setOpen] = useState(false);
+function InlineCreateCard({ vehicles, campaigns, settings, hasUserRebrandly, onSuccess }: InlineCreateCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([]);
-  const [form, setForm] = useState<LinkFormState>(
-    link
-      ? {
-          baseUrl: link.baseUrl,
-          vehicleId: link.vehicle.id,
-          campaignId: link.campaign.id,
-          slug: link.slug,
-          utmSource: link.utmSource ?? "",
-          utmMedium: link.utmMedium ?? "",
-          utmCampaign: link.utmCampaign ?? "",
-          utmContent: link.utmContent ?? "",
-          utmTerm: link.utmTerm ?? "",
-          shortenWithRebrandly: !!link.rebrandly,
-          rebrandlyDomain: link.rebrandly?.shortUrl?.split("/")[0] ?? "",
-        }
-      : { ...emptyForm }
-  );
+  const [form, setForm] = useState<LinkFormState>({ ...emptyForm });
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  // True if user has their own Rebrandly integration OR global settings have an API key
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
-  // Load Rebrandly domains when dialog opens; auto-enable toggle if user has Rebrandly
+  // Expand when user types a URL
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm((prev) => ({ ...prev, baseUrl: val }));
+    if (val && !expanded) setExpanded(true);
+    if (!val && expanded) {
+      // Only collapse if other fields are empty
+      const isEmpty = !form.vehicleId && !form.campaignId;
+      if (isEmpty) setExpanded(false);
+    }
+  };
+
+  // Load Rebrandly domains when expanded
   useEffect(() => {
-    if (!open || !hasRebrandly) return;
+    if (!expanded || !hasRebrandly) return;
     fetch("/api/integrations/rebrandly/domains")
       .then((r) => r.json())
       .then((data: RebrandlyDomain[]) => {
         setRebrandlyDomains(data ?? []);
         setForm((prev) => ({
           ...prev,
-          // Auto-enable shortening if user has Rebrandly and this is a new link
-          shortenWithRebrandly: mode === "create" ? true : prev.shortenWithRebrandly,
-          // Auto-select first domain if none chosen yet
+          shortenWithRebrandly: true,
           rebrandlyDomain: prev.rebrandlyDomain || (data?.[0]?.fullName ?? ""),
         }));
       })
       .catch(() => {});
-  }, [open, hasRebrandly, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [expanded, hasRebrandly]);
 
-  const previewUrl = buildUtmUrl(form.baseUrl, {
-    utmSource: form.utmSource || null,
-    utmMedium: form.utmMedium || null,
-    utmCampaign: form.utmCampaign || null,
-    utmContent: form.utmContent || null,
-    utmTerm: form.utmTerm || null,
-  });
-
-  const set = (field: keyof LinkFormState, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // Auto-generate slug from campaign + vehicle when creating
+  // Auto-generate slug
   useEffect(() => {
-    if (mode !== "create") return;
+    if (!expanded) return;
     const veh = vehicles.find((v) => v.id === form.vehicleId);
     const cam = campaigns.find((c) => c.id === form.campaignId);
     if (veh && cam) {
-      set("slug", slugify(`${veh.slug}-${cam.slug}`));
+      setForm((prev) => ({ ...prev, slug: slugify(`${veh.slug}-${cam.slug}`) }));
     }
-  }, [form.vehicleId, form.campaignId, mode, vehicles, campaigns]);
+  }, [form.vehicleId, form.campaignId, expanded, vehicles, campaigns]);
 
-  // Fetch templates when vehicle changes and auto-fill UTMs
+  // Fetch templates when vehicle changes
   useEffect(() => {
-    if (!form.vehicleId || mode !== "create") return;
+    if (!form.vehicleId || !expanded) return;
     fetch("/api/templates")
       .then((r) => r.json())
       .then((allTemplates: UtmTemplate[]) => {
-        // Prefer template tied to this vehicle, fall back to global
         const tpl =
           allTemplates.find((t) => t.vehicleId === form.vehicleId) ??
           allTemplates.find((t) => !t.vehicleId);
@@ -409,7 +350,25 @@ function LinkFormDialog({
         }
       })
       .catch(() => {});
-  }, [form.vehicleId, mode]);
+  }, [form.vehicleId, expanded]);
+
+  const set = (field: keyof LinkFormState, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const previewUrl = buildUtmUrl(form.baseUrl, {
+    utmSource: form.utmSource || null,
+    utmMedium: form.utmMedium || null,
+    utmCampaign: form.utmCampaign || null,
+    utmContent: form.utmContent || null,
+    utmTerm: form.utmTerm || null,
+  });
+
+  const handleCancel = () => {
+    setExpanded(false);
+    setForm({ ...emptyForm });
+    setRebrandlyDomains([]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -419,37 +378,330 @@ function LinkFormDialog({
     }
     setSaving(true);
     try {
-      const payload = {
-        baseUrl: form.baseUrl,
-        vehicleId: form.vehicleId,
-        campaignId: form.campaignId,
-        slug: form.slug || undefined,
-        utmSource: form.utmSource || undefined,
-        utmMedium: form.utmMedium || undefined,
-        utmCampaign: form.utmCampaign || undefined,
-        utmContent: form.utmContent || undefined,
-        utmTerm: form.utmTerm || undefined,
-        shortenWithRebrandly: form.shortenWithRebrandly,
-        rebrandlyDomain: form.rebrandlyDomain || undefined,
-      };
-
-      const url = mode === "edit" ? `/api/links/${link!.id}` : "/api/links";
-      const method = mode === "edit" ? "PATCH" : "POST";
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch("/api/links", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          baseUrl: form.baseUrl,
+          vehicleId: form.vehicleId,
+          campaignId: form.campaignId,
+          slug: form.slug || undefined,
+          utmSource: form.utmSource || undefined,
+          utmMedium: form.utmMedium || undefined,
+          utmCampaign: form.utmCampaign || undefined,
+          utmContent: form.utmContent || undefined,
+          utmTerm: form.utmTerm || undefined,
+          shortenWithRebrandly: form.shortenWithRebrandly,
+          rebrandlyDomain: form.rebrandlyDomain || undefined,
+        }),
       });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Erro ao criar link");
+      }
+      toast.success("Link criado com sucesso!");
+      handleCancel();
+      onSuccess();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar link");
+    } finally {
+      setSaving(false);
+    }
+  };
 
+  return (
+    <div
+      ref={cardRef}
+      className={cn(
+        "rounded-2xl bg-white border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
+        expanded
+          ? "border-orange-200 shadow-[0_4px_24px_rgba(249,115,22,0.08)]"
+          : "border-gray-100 hover:border-gray-200"
+      )}
+    >
+      <form onSubmit={handleSubmit}>
+        {/* Always-visible URL row */}
+        <div className="flex items-center gap-3 p-4">
+          <div className={cn(
+            "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+            expanded ? "bg-orange-500 scale-110" : "bg-gray-100"
+          )}>
+            <Globe size={16} className={expanded ? "text-white" : "text-gray-400"} />
+          </div>
+          <Input
+            ref={urlInputRef}
+            placeholder="Cole a URL base aqui para criar um novo link..."
+            value={form.baseUrl}
+            onChange={handleUrlChange}
+            className={cn(
+              "flex-1 border-0 bg-transparent text-sm placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto",
+              expanded && "font-medium text-gray-800"
+            )}
+          />
+          {expanded ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            >
+              <X size={14} />
+            </button>
+          ) : (
+            <ArrowRight size={15} className="text-gray-300 shrink-0" />
+          )}
+        </div>
+
+        {/* Expandable section */}
+        <div
+          className={cn(
+            "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
+            expanded ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-4">
+
+            {/* Vehicle + Campaign */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-500">Veículo *</Label>
+                <select
+                  value={form.vehicleId}
+                  onChange={(e) => set("vehicleId", e.target.value)}
+                  className="w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                >
+                  <option value="" disabled>Selecionar</option>
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-500">Campanha *</Label>
+                <select
+                  value={form.campaignId}
+                  onChange={(e) => set("campaignId", e.target.value)}
+                  className="w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                >
+                  <option value="" disabled>Selecionar</option>
+                  {campaigns.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Slug */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-500">Slug</Label>
+              <Input
+                placeholder="gerado-automaticamente"
+                value={form.slug}
+                onChange={(e) => set("slug", e.target.value)}
+                className="bg-white border-gray-200 font-mono text-xs text-gray-500 focus:border-orange-400 transition-colors duration-200"
+              />
+            </div>
+
+            <Separator className="bg-gray-100" />
+
+            {/* UTM Fields */}
+            <div>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Parâmetros UTM</p>
+              <div className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    { field: "utmSource", label: "Source", placeholder: "ex: google" },
+                    { field: "utmMedium", label: "Medium", placeholder: "ex: cpc" },
+                    { field: "utmCampaign", label: "Campaign", placeholder: "ex: lancamento-2026" },
+                    { field: "utmContent", label: "Content", placeholder: "ex: banner-topo" },
+                  ] as { field: keyof LinkFormState; label: string; placeholder: string }[]
+                ).map(({ field, label, placeholder }) => (
+                  <div key={field} className="space-y-1.5">
+                    <Label className="text-xs text-gray-500">{label}</Label>
+                    <Input
+                      placeholder={placeholder}
+                      value={form[field] as string}
+                      onChange={(e) => set(field, e.target.value)}
+                      className="bg-white border-gray-200 text-sm focus:border-orange-400 transition-colors duration-200"
+                    />
+                  </div>
+                ))}
+                <div className="col-span-2 space-y-1.5">
+                  <Label className="text-xs text-gray-500">Term</Label>
+                  <Input
+                    placeholder="ex: palavra-chave"
+                    value={form.utmTerm}
+                    onChange={(e) => set("utmTerm", e.target.value)}
+                    className="bg-white border-gray-200 text-sm focus:border-orange-400 transition-colors duration-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Preview URL */}
+            {form.baseUrl && (
+              <div className={cn(
+                "rounded-xl bg-gray-50 border border-gray-100 p-3 transition-all duration-300",
+              )}>
+                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1.5">Preview da URL final</p>
+                <p className="text-xs text-gray-600 break-all font-mono leading-relaxed">
+                  {previewUrl}
+                </p>
+              </div>
+            )}
+
+            {/* Rebrandly */}
+            {hasRebrandly && (
+              <div className="rounded-xl border border-gray-100 p-3 space-y-3 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Encurtar via Rebrandly</p>
+                    <p className="text-xs text-gray-400">Gera um link curto com domínio personalizado</p>
+                  </div>
+                  <Switch
+                    checked={form.shortenWithRebrandly}
+                    onCheckedChange={(v) => set("shortenWithRebrandly", v)}
+                  />
+                </div>
+                {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
+                  <div className={cn(
+                    "transition-all duration-300",
+                    form.shortenWithRebrandly ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+                  )}>
+                    <Label className="text-xs text-gray-500">Domínio</Label>
+                    <select
+                      value={form.rebrandlyDomain}
+                      onChange={(e) => set("rebrandlyDomain", e.target.value)}
+                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                    >
+                      {rebrandlyDomains.map((d) => (
+                        <option key={d.id} value={d.fullName}>{d.fullName}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleCancel}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={saving}
+                className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+              >
+                {saving ? "Criando..." : "Criar Link"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ─── Link Form Dialog (for edit) ──────────────────────────────────────────────
+
+interface LinkFormDialogProps {
+  link: Link;
+  vehicles: Vehicle[];
+  campaigns: Campaign[];
+  settings: AppSettings | null;
+  hasUserRebrandly?: boolean;
+  onSuccess: () => void;
+}
+
+function LinkEditDialog({
+  link,
+  vehicles,
+  campaigns,
+  settings,
+  hasUserRebrandly = false,
+  onSuccess,
+}: LinkFormDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([]);
+  const [form, setForm] = useState<LinkFormState>({
+    baseUrl: link.baseUrl,
+    vehicleId: link.vehicle.id,
+    campaignId: link.campaign.id,
+    slug: link.slug,
+    utmSource: link.utmSource ?? "",
+    utmMedium: link.utmMedium ?? "",
+    utmCampaign: link.utmCampaign ?? "",
+    utmContent: link.utmContent ?? "",
+    utmTerm: link.utmTerm ?? "",
+    shortenWithRebrandly: !!link.rebrandly,
+    rebrandlyDomain: link.rebrandly?.shortUrl?.split("/")[0] ?? "",
+  });
+
+  const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
+
+  useEffect(() => {
+    if (!open || !hasRebrandly) return;
+    fetch("/api/integrations/rebrandly/domains")
+      .then((r) => r.json())
+      .then((data: RebrandlyDomain[]) => {
+        setRebrandlyDomains(data ?? []);
+        setForm((prev) => ({
+          ...prev,
+          rebrandlyDomain: prev.rebrandlyDomain || (data?.[0]?.fullName ?? ""),
+        }));
+      })
+      .catch(() => {});
+  }, [open, hasRebrandly]);
+
+  const set = (field: keyof LinkFormState, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const previewUrl = buildUtmUrl(form.baseUrl, {
+    utmSource: form.utmSource || null,
+    utmMedium: form.utmMedium || null,
+    utmCampaign: form.utmCampaign || null,
+    utmContent: form.utmContent || null,
+    utmTerm: form.utmTerm || null,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.baseUrl || !form.vehicleId || !form.campaignId) {
+      toast.error("URL Base, Veículo e Campanha são obrigatórios");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/links/${link.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          baseUrl: form.baseUrl,
+          vehicleId: form.vehicleId,
+          campaignId: form.campaignId,
+          slug: form.slug || undefined,
+          utmSource: form.utmSource || undefined,
+          utmMedium: form.utmMedium || undefined,
+          utmCampaign: form.utmCampaign || undefined,
+          utmContent: form.utmContent || undefined,
+          utmTerm: form.utmTerm || undefined,
+          shortenWithRebrandly: form.shortenWithRebrandly,
+          rebrandlyDomain: form.rebrandlyDomain || undefined,
+        }),
+      });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error ?? "Erro ao salvar link");
       }
-
-      toast.success(mode === "create" ? "Link criado com sucesso!" : "Link atualizado!");
+      toast.success("Link atualizado!");
       setOpen(false);
-      setForm({ ...emptyForm });
       onSuccess();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao salvar link");
@@ -459,78 +711,64 @@ function LinkFormDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v);
-        if (!v && mode === "create") setForm({ ...emptyForm });
-      }}
-    >
-      <DialogTrigger render={trigger as React.ReactElement} />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-400 hover:text-gray-900"
+            title="Editar"
+          />
+        }
+      >
+        <Pencil className="h-4 w-4" />
+      </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{mode === "create" ? "Novo Link" : "Editar Link"}</DialogTitle>
+          <DialogTitle>Editar Link</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-          {/* URL Base */}
           <div className="space-y-1.5">
-            <Label htmlFor="baseUrl">URL Base *</Label>
+            <Label>URL Base *</Label>
             <Input
-              id="baseUrl"
               placeholder="https://exemplo.com/pagina"
               value={form.baseUrl}
               onChange={(e) => set("baseUrl", e.target.value)}
-              className="bg-white border-gray-100"
+              className="bg-white border-gray-200"
             />
           </div>
-
-          {/* Vehicle + Campaign — native selects to avoid @base-ui display bug */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="vehicleId">Veículo *</Label>
+              <Label>Veículo *</Label>
               <select
-                id="vehicleId"
                 value={form.vehicleId}
                 onChange={(e) => set("vehicleId", e.target.value)}
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
-                <option value="" disabled>Selecionar veículo</option>
-                {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
-                ))}
+                {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="campaignId">Campanha *</Label>
+              <Label>Campanha *</Label>
               <select
-                id="campaignId"
                 value={form.campaignId}
                 onChange={(e) => set("campaignId", e.target.value)}
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
-                <option value="" disabled>Selecionar campanha</option>
-                {campaigns.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
-
-          {/* Slug */}
           <div className="space-y-1.5">
-            <Label htmlFor="slug">Slug</Label>
+            <Label>Slug</Label>
             <Input
-              id="slug"
-              placeholder="slug-automatico"
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              className="bg-white border-orange-300 focus-visible:ring-orange-400 font-mono text-sm text-gray-400 placeholder:text-gray-300"
+              className="bg-white border-gray-200 font-mono text-sm"
             />
           </div>
-
           <Separator className="bg-gray-100" />
-
-          {/* UTM Fields */}
           <div>
             <p className="text-sm font-medium text-gray-600 mb-3">Parâmetros UTM</p>
             <div className="grid grid-cols-2 gap-3">
@@ -543,60 +781,48 @@ function LinkFormDialog({
                 ] as { field: keyof LinkFormState; label: string; placeholder: string }[]
               ).map(({ field, label, placeholder }) => (
                 <div key={field} className="space-y-1.5">
-                  <Label htmlFor={field}>{label}</Label>
+                  <Label>{label}</Label>
                   <Input
-                    id={field}
                     placeholder={placeholder}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
-                    className="bg-white border-gray-100"
+                    className="bg-white border-gray-200"
                   />
                 </div>
               ))}
               <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="utmTerm">UTM Term</Label>
+                <Label>UTM Term</Label>
                 <Input
-                  id="utmTerm"
                   placeholder="ex: palavra-chave"
                   value={form.utmTerm}
                   onChange={(e) => set("utmTerm", e.target.value)}
-                  className="bg-white border-gray-100"
+                  className="bg-white border-gray-200"
                 />
               </div>
             </div>
           </div>
-
-          {/* Preview */}
           {form.baseUrl && (
-            <div className="rounded-md bg-white border border-gray-100 p-3">
+            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
               <p className="text-xs text-gray-400 mb-1.5 font-medium">Preview da URL final</p>
-              <p className="text-xs text-gray-600 break-all font-mono leading-relaxed">
-                {previewUrl}
-              </p>
+              <p className="text-xs text-gray-600 break-all font-mono leading-relaxed">{previewUrl}</p>
             </div>
           )}
-
-          {/* Rebrandly */}
-          {hasRebrandly && mode === "create" && (
-            <div className="rounded-md border border-gray-100 p-3 space-y-3">
+          {hasRebrandly && (
+            <div className="rounded-xl border border-gray-100 p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Encurtar via Rebrandly</p>
                   <p className="text-xs text-gray-400">Gera um link curto com domínio personalizado</p>
                 </div>
-                <Switch
-                  checked={form.shortenWithRebrandly}
-                  onCheckedChange={(v) => set("shortenWithRebrandly", v)}
-                />
+                <Switch checked={form.shortenWithRebrandly} onCheckedChange={(v) => set("shortenWithRebrandly", v)} />
               </div>
               {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="rebrandlyDomain">Domínio</Label>
+                  <Label>Domínio</Label>
                   <select
-                    id="rebrandlyDomain"
                     value={form.rebrandlyDomain}
                     onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                    className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 cursor-pointer"
+                    className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
                   >
                     {rebrandlyDomains.map((d) => (
                       <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -606,23 +832,12 @@ function LinkFormDialog({
               )}
             </div>
           )}
-
           <div className="flex justify-end gap-2 pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-              disabled={saving}
-              className="text-gray-500 hover:text-gray-800"
-            >
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={saving} className="text-gray-500 hover:text-gray-800">
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={saving}
-              className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
-            >
-              {saving ? "Salvando..." : mode === "create" ? "Criar Link" : "Salvar"}
+            <Button type="submit" disabled={saving} className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300">
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>
@@ -642,7 +857,6 @@ export default function LinksPage() {
   const [hasUserRebrandly, setHasUserRebrandly] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [filterVehicleId, setFilterVehicleId] = useState("all");
   const [filterCampaignId, setFilterCampaignId] = useState("all");
   const [filterSearch, setFilterSearch] = useState("");
@@ -654,15 +868,10 @@ export default function LinksPage() {
     if (filterVehicleId !== "all") params.set("vehicleId", filterVehicleId);
     if (filterCampaignId !== "all") params.set("campaignId", filterCampaignId);
     if (filterSearch.trim()) params.set("search", filterSearch.trim());
-
     const res = await fetch(`/api/links?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
-      setLinks(data);
-    }
+    if (res.ok) setLinks(await res.json());
   }, [filterVehicleId, filterCampaignId, filterSearch]);
 
-  // Initial load
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -700,7 +909,7 @@ export default function LinksPage() {
   const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/links/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Erro ao deletar");
+      if (!res.ok) throw new Error();
       toast.success("Link deletado!");
       fetchLinks();
     } catch {
@@ -714,32 +923,23 @@ export default function LinksPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Links</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
-            Gerencie seus links UTM e links curtos
-          </p>
-        </div>
-        {!isViewer && (
-          <LinkFormDialog
-            mode="create"
-            vehicles={vehicles}
-            campaigns={campaigns}
-            settings={settings}
-            hasUserRebrandly={hasUserRebrandly}
-            onSuccess={fetchLinks}
-            trigger={
-              <Button className="gap-2 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300">
-                <Plus className="h-4 w-4" />
-                Novo Link
-              </Button>
-            }
-          />
-        )}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Links</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Gerencie seus links UTM e links curtos</p>
       </div>
+
+      {/* Inline create card */}
+      {!isViewer && (
+        <InlineCreateCard
+          vehicles={vehicles}
+          campaigns={campaigns}
+          settings={settings}
+          hasUserRebrandly={hasUserRebrandly}
+          onSuccess={fetchLinks}
+        />
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -750,9 +950,7 @@ export default function LinksPage() {
           <SelectContent>
             <SelectItem value="all">Todos os veículos</SelectItem>
             {vehicles.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name}
-              </SelectItem>
+              <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -764,9 +962,7 @@ export default function LinksPage() {
           <SelectContent>
             <SelectItem value="all">Todas as campanhas</SelectItem>
             {campaigns.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -780,10 +976,10 @@ export default function LinksPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-100 overflow-hidden">
+      <div className="rounded-xl border border-gray-100 overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-100 hover:bg-transparent">
+            <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50/60">
               <TableHead className="text-gray-400">Link</TableHead>
               <TableHead className="text-gray-400">UTMs</TableHead>
               <TableHead className="text-gray-400 text-right">Cliques</TableHead>
@@ -797,9 +993,7 @@ export default function LinksPage() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-gray-100">
                   {Array.from({ length: 6 }).map((__, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
+                    <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
@@ -810,15 +1004,17 @@ export default function LinksPage() {
                     <Link2 className="h-8 w-8" />
                     <p className="text-sm">Nenhum link encontrado</p>
                     {!isViewer && (
-                      <p className="text-xs">Crie seu primeiro link clicando em "Novo Link"</p>
+                      <p className="text-xs">Cole uma URL acima para criar seu primeiro link</p>
                     )}
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               links.map((link) => (
-                <TableRow key={link.id} className="border-gray-100 hover:bg-gray-50/50">
-                  {/* Link column — short URL + campaign/vehicle below */}
+                <TableRow
+                  key={link.id}
+                  className="border-gray-100 hover:bg-gray-50/50 transition-colors duration-150"
+                >
                   <TableCell className="min-w-[220px]">
                     <div className="flex items-start gap-2.5">
                       <div className="mt-0.5 w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
@@ -830,7 +1026,7 @@ export default function LinksPage() {
                             href={`https://${link.rebrandly.shortUrl}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-gray-800 hover:text-orange-500 flex items-center gap-1 transition-colors"
+                            className="text-sm font-medium text-gray-800 hover:text-orange-500 flex items-center gap-1 transition-colors duration-200"
                           >
                             {link.rebrandly.shortUrl}
                             <ExternalLink className="h-3 w-3 shrink-0" />
@@ -844,12 +1040,12 @@ export default function LinksPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <UtmPopover link={link} />
-                  </TableCell>
+                  <TableCell><UtmPopover link={link} /></TableCell>
                   <TableCell className="text-right">
                     <span className="text-sm font-semibold text-gray-700 tabular-nums">
-                      {link.rebrandly ? `${(link.rebrandly.clicks / 1000).toFixed(link.rebrandly.clicks >= 1000 ? 1 : 0)}${link.rebrandly.clicks >= 1000 ? "k" : ""} clicks` : "—"}
+                      {link.rebrandly
+                        ? `${link.rebrandly.clicks >= 1000 ? (link.rebrandly.clicks / 1000).toFixed(1) + "k" : link.rebrandly.clicks} clicks`
+                        : "—"}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -862,62 +1058,37 @@ export default function LinksPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-0.5">
-                      {/* Copy long URL */}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-gray-900"
+                        className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
                         title="Copiar URL completa"
                         onClick={() => copyToClipboard(link.finalUrl, "URL completa")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-
-                      {/* Copy short URL */}
                       {link.rebrandly && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-gray-900"
+                          className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
                           title="Copiar link curto"
-                          onClick={() =>
-                            copyToClipboard(
-                              `https://${link.rebrandly!.shortUrl}`,
-                              "Link curto"
-                            )
-                          }
+                          onClick={() => copyToClipboard(`https://${link.rebrandly!.shortUrl}`, "Link curto")}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
                       )}
-
-                      {/* QR Code */}
                       <QrCodeDialog link={link} />
-
-                      {/* Edit */}
                       {!isViewer && (
-                        <LinkFormDialog
-                          mode="edit"
+                        <LinkEditDialog
                           link={link}
                           vehicles={vehicles}
                           campaigns={campaigns}
                           settings={settings}
                           hasUserRebrandly={hasUserRebrandly}
                           onSuccess={fetchLinks}
-                          trigger={
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-gray-400 hover:text-gray-900"
-                              title="Editar"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          }
                         />
                       )}
-
-                      {/* Delete */}
                       {!isViewer && (
                         <AlertDialog>
                           <AlertDialogTrigger
@@ -925,7 +1096,7 @@ export default function LinksPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-red-700"
+                                className="h-8 w-8 text-gray-400 hover:text-red-700 transition-colors duration-200"
                                 title="Deletar"
                               />
                             }

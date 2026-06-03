@@ -3,10 +3,11 @@
 import { usePathname } from "next/navigation";
 
 const titles: Record<string, string> = {
-  "/dashboard": "Dashboard",
+  "/dashboard": "Home",
   "/vehicles": "Veículos",
   "/campaigns": "Campanhas",
   "/links": "Links",
+  "/tracking": "Relatórios",
   "/templates": "Templates UTM",
   "/qrcodes": "QR Codes",
   "/import": "Importação CSV",
@@ -20,6 +21,7 @@ const subtitles: Record<string, string> = {
   "/vehicles": "Gerencie seus veículos de distribuição",
   "/campaigns": "Organize e acompanhe campanhas",
   "/links": "Crie e monitore links rastreados",
+  "/tracking": "Análise por dimensão de rastreamento",
   "/templates": "Padrões de parâmetros UTM",
   "/qrcodes": "Gere QR Codes para seus links",
   "/import": "Importe links via arquivo CSV",

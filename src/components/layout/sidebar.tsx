@@ -60,7 +60,7 @@ const trackingGroup: NavGroup = {
   icon: BarChart2,
   basePath: "/tracking",
   children: [
-    { href: "/tracking", label: "Visões", icon: BarChart2 },
+    { href: "/tracking", label: "Relatórios", icon: BarChart2 },
     { href: "/vehicles", label: "Veículos", icon: Radio },
     { href: "/campaigns", label: "Campanhas", icon: Megaphone },
   ],

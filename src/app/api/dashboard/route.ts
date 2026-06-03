@@ -103,7 +103,8 @@ export async function GET(_request: NextRequest) {
       topLinks,
       clicksOverTime,
     });
-  } catch {
+  } catch (err) {
+    console.error("[dashboard] error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
