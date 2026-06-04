@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -303,6 +304,7 @@ function CampaignDialog({ open, onOpenChange, campaign, onSaved }: CampaignDialo
 
 export default function CampaignsPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const isViewer = session?.user?.role === "VIEWER"
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -472,7 +474,12 @@ export default function CampaignsPage() {
                   campaigns.map((campaign) => (
                     <tr
                       key={campaign.id}
-                      className="hover:bg-gray-50/60 transition-colors"
+                      className="hover:bg-orange-50/40 transition-colors cursor-pointer group"
+                      onClick={(e) => {
+                        // Don't navigate when clicking action buttons
+                        if ((e.target as HTMLElement).closest("button")) return;
+                        router.push(`/links?campaignId=${campaign.id}`);
+                      }}
                     >
                       <td className="px-4 py-3 font-medium text-gray-800">
                         {campaign.name}

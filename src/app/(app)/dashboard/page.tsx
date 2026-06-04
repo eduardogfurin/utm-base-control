@@ -99,6 +99,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/dashboard")
       if (!res.ok) throw new Error("Falha ao carregar dados")
       setData(await res.json())
+      setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido")
     }
@@ -107,48 +108,36 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      try {
-        const [dashRes, vehiclesRes, campaignsRes, settingsRes, intRes] = await Promise.all([
-          fetch("/api/dashboard"),
-          fetch("/api/vehicles"),
-          fetch("/api/campaigns"),
-          fetch("/api/settings"),
-          fetch("/api/integrations"),
-        ])
-        if (!dashRes.ok) throw new Error("Falha ao carregar dados")
-        setData(await dashRes.json())
-        if (vehiclesRes.ok) setVehicles(await vehiclesRes.json())
-        if (campaignsRes.ok) setCampaigns(await campaignsRes.json())
-        if (settingsRes.ok) setSettings(await settingsRes.json())
-        if (intRes.ok) {
-          const integrations = await intRes.json()
-          setHasUserRebrandly(
-            Array.isArray(integrations) &&
-            integrations.some((i: { provider: string; isActive: boolean }) =>
-              i.provider === "REBRANDLY" && i.isActive
-            )
+      // Load support data (vehicles/campaigns/settings) independently — never block the page
+      const [vehiclesRes, campaignsRes, settingsRes, intRes] = await Promise.allSettled([
+        fetch("/api/vehicles"),
+        fetch("/api/campaigns"),
+        fetch("/api/settings"),
+        fetch("/api/integrations"),
+      ])
+      if (vehiclesRes.status === "fulfilled" && vehiclesRes.value.ok)
+        setVehicles(await vehiclesRes.value.json())
+      if (campaignsRes.status === "fulfilled" && campaignsRes.value.ok)
+        setCampaigns(await campaignsRes.value.json())
+      if (settingsRes.status === "fulfilled" && settingsRes.value.ok)
+        setSettings(await settingsRes.value.json())
+      if (intRes.status === "fulfilled" && intRes.value.ok) {
+        const integrations = await intRes.value.json()
+        setHasUserRebrandly(
+          Array.isArray(integrations) &&
+          integrations.some((i: { provider: string; isActive: boolean }) =>
+            i.provider === "REBRANDLY" && i.isActive
           )
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro desconhecido")
-      } finally {
-        setLoading(false)
+        )
       }
+      // Load dashboard data separately so its error is isolated
+      await loadDashboard()
+      setLoading(false)
     }
     load()
-  }, [])
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-red-500">{error}</p>
-      </div>
-    )
-  }
+  }, [loadDashboard])
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "usuário"
-
-  // Bar colors cycling for top lists
   const barColors = ["#f59e0b", "#3b82f6", "#10b981", "#f97316", "#6366f1"]
 
   return (
@@ -162,6 +151,19 @@ export default function DashboardPage() {
           {getGreeting()}, {firstName} 👋
         </h1>
       </div>
+
+      {/* ── Error banner (non-blocking) ──────────────────────────── */}
+      {error && (
+        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-600">{error}</p>
+          <button
+            onClick={loadDashboard}
+            className="text-xs font-medium text-red-600 hover:text-red-800 underline ml-4 shrink-0"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
       {/* ── Inline create card ────────────────────────────────────── */}
       <InlineCreateCard

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Copy,
@@ -495,8 +496,9 @@ function LinkEditDialog({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function LinksPage() {
+function LinksPageInner() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [links, setLinks] = useState<Link[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -504,8 +506,8 @@ export default function LinksPage() {
   const [hasUserRebrandly, setHasUserRebrandly] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [filterVehicleId, setFilterVehicleId] = useState("all");
-  const [filterCampaignId, setFilterCampaignId] = useState("all");
+  const [filterVehicleId, setFilterVehicleId] = useState(searchParams.get("vehicleId") ?? "all");
+  const [filterCampaignId, setFilterCampaignId] = useState(searchParams.get("campaignId") ?? "all");
   const [filterSearch, setFilterSearch] = useState("");
 
   const isViewer = session?.user?.role === "VIEWER";
@@ -785,5 +787,13 @@ export default function LinksPage() {
         </p>
       )}
     </div>
+  );
+}
+
+export default function LinksPage() {
+  return (
+    <Suspense>
+      <LinksPageInner />
+    </Suspense>
   );
 }

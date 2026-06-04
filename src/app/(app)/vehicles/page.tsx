@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -301,6 +302,7 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
 
 export default function VehiclesPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const isViewer = session?.user?.role === "VIEWER"
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -469,7 +471,11 @@ export default function VehiclesPage() {
                   vehicles.map((vehicle) => (
                     <tr
                       key={vehicle.id}
-                      className="hover:bg-gray-50/60 transition-colors"
+                      className="hover:bg-orange-50/40 transition-colors cursor-pointer group"
+                      onClick={(e) => {
+                        if ((e.target as HTMLElement).closest("button")) return;
+                        router.push(`/links?vehicleId=${vehicle.id}`);
+                      }}
                     >
                       <td className="px-4 py-3 font-medium text-gray-800">
                         {vehicle.name}
