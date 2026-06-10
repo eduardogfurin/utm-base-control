@@ -188,7 +188,7 @@ function TemplateFormDialog({
               placeholder="ex: Podcast Padrão"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              className="bg-white border-gray-100"
+              className="bg-card border-gray-100"
             />
           </div>
 
@@ -196,7 +196,7 @@ function TemplateFormDialog({
           <div className="space-y-1.5">
             <Label>Veículo (opcional)</Label>
             <Select value={form.vehicleId} onValueChange={(v) => v !== null && set("vehicleId", v)}>
-              <SelectTrigger className="bg-white border-gray-100">
+              <SelectTrigger className="bg-card border-gray-100">
                 <SelectValue placeholder="Global (sem veículo)" />
               </SelectTrigger>
               <SelectContent>
@@ -234,7 +234,7 @@ function TemplateFormDialog({
                     placeholder={field}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
-                    className="bg-white border-gray-100"
+                    className="bg-card border-gray-100"
                   />
                 </div>
               ))}
@@ -245,7 +245,7 @@ function TemplateFormDialog({
                   placeholder="term"
                   value={form.term}
                   onChange={(e) => set("term", e.target.value)}
-                  className="bg-white border-gray-100"
+                  className="bg-card border-gray-100"
                 />
               </div>
             </div>
@@ -385,7 +385,7 @@ export default function TemplatesPage() {
               </TableRow>
             ) : (
               templates.map((tpl) => (
-                <TableRow key={tpl.id} className="border-gray-100 hover:bg-white/50">
+                <TableRow key={tpl.id} className="border-gray-100 hover:bg-card/50">
                   <TableCell>
                     <span className="text-sm font-medium text-gray-800">{tpl.name}</span>
                   </TableCell>

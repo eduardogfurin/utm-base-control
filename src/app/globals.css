@@ -134,6 +134,36 @@
   }
 }
 
+/* ─── Dark mode global overrides ─────────────────────────────────────────── */
+/* Ensures text/border colors adapt in pages that don't have per-element dark: classes */
+
+.dark .text-gray-900 { color: oklch(0.93 0 0); }
+.dark .text-gray-800 { color: oklch(0.88 0 0); }
+.dark .text-gray-700 { color: oklch(0.80 0 0); }
+.dark .text-gray-600 { color: oklch(0.70 0 0); }
+.dark .text-gray-500 { color: oklch(0.60 0 0); }
+
+.dark .border-gray-100 { border-color: rgba(255,255,255,0.08); }
+.dark .border-gray-200 { border-color: rgba(255,255,255,0.10); }
+.dark .border-gray-300 { border-color: rgba(255,255,255,0.14); }
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--card);
+  color: oklch(0.88 0 0);
+  border-color: rgba(255,255,255,0.10);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: oklch(0.50 0 0);
+}
+
+.dark .bg-gray-50 { background-color: var(--secondary); }
+.dark .bg-gray-100 { background-color: var(--secondary); }
+.dark .hover\:bg-gray-50:hover { background-color: rgba(255,255,255,0.04); }
+.dark .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.06); }
+
 /* ─── iOS-style fluid animations ─────────────────────────────────────────── */
 
 @keyframes page-in {

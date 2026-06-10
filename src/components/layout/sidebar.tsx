@@ -91,7 +91,7 @@ function NavLink({ href, label, icon: Icon, pathname }: NavItem & { pathname: st
         "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
         active
           ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-500/15 dark:text-blue-300"
-          : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-white/5"
+          : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-card/5"
       )}
     >
       <Icon size={15} className={active ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} />
@@ -120,7 +120,7 @@ function NavGroupSection({
           "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150",
           isGroupActive
             ? "text-blue-700 font-medium dark:text-blue-300"
-            : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-white/5"
+            : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-card/5"
         )}
       >
         <Icon size={15} className={isGroupActive ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} />
@@ -148,7 +148,7 @@ function NavGroupSection({
                   "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-all duration-150",
                   isActive
                     ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-500/15 dark:text-blue-300"
-                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-white/5"
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-card/5"
                 )}
               >
                 <ChildIcon size={13} className={isActive ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} />
@@ -212,7 +212,7 @@ export function Sidebar() {
       {/* User — always fixed at the bottom */}
       <div className="border-t border-gray-100 dark:border-white/7 p-3 flex-shrink-0">
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer">
+          <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-card/5 transition-colors text-left cursor-pointer">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
               {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
             </div>

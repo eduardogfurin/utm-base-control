@@ -141,7 +141,7 @@ function PreviewTable({ rows, defaultVehicleId, defaultCampaignId }: PreviewTabl
         </TableHeader>
         <TableBody>
           {preview.map((row, i) => (
-            <TableRow key={i} className="border-gray-100 hover:bg-white/50">
+            <TableRow key={i} className="border-gray-100 hover:bg-card/50">
               <TableCell className="text-gray-300 text-xs">{i + 1}</TableCell>
               {PREVIEW_COLUMNS.map((col) => {
                 let value = row[col.key];
@@ -354,7 +354,7 @@ export default function ImportPage() {
               onValueChange={(v) => v !== null && setDefaultVehicleId(v)}
               disabled={loadingMeta}
             >
-              <SelectTrigger className="bg-white border-gray-100">
+              <SelectTrigger className="bg-card border-gray-100">
                 <SelectValue placeholder="Nenhum" />
               </SelectTrigger>
               <SelectContent>
@@ -374,7 +374,7 @@ export default function ImportPage() {
               onValueChange={(v) => v !== null && setDefaultCampaignId(v)}
               disabled={loadingMeta}
             >
-              <SelectTrigger className="bg-white border-gray-100">
+              <SelectTrigger className="bg-card border-gray-100">
                 <SelectValue placeholder="Nenhuma" />
               </SelectTrigger>
               <SelectContent>
@@ -410,7 +410,7 @@ export default function ImportPage() {
               "flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-16 cursor-pointer transition-colors",
               isDragging
                 ? "border-blue-500 bg-blue-50/30"
-                : "border-gray-200 hover:border-gray-300 hover:bg-white/40"
+                : "border-gray-200 hover:border-gray-300 hover:bg-card/40"
             )}
           >
             <div className={cn(
@@ -432,7 +432,7 @@ export default function ImportPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-4">
+          <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-card p-4">
             <div className="rounded-md bg-gray-100 p-2">
               <FileText className="h-5 w-5 text-gray-400" />
             </div>
@@ -554,7 +554,7 @@ export default function ImportPage() {
           )}
 
           {result.created === 0 && result.errors.length === 0 && (
-            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-card p-4">
               <AlertCircle className="h-5 w-5 text-gray-400" />
               <p className="text-sm text-gray-400">Nenhum link foi criado.</p>
             </div>
@@ -563,7 +563,7 @@ export default function ImportPage() {
       )}
 
       {/* Column guide */}
-      <div className="rounded-lg border border-gray-100 bg-white/30 p-5 space-y-3">
+      <div className="rounded-lg border border-gray-100 bg-card/30 p-5 space-y-3">
         <p className="text-sm font-medium text-gray-600">Colunas aceitas no CSV</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {CSV_HEADERS.map((col) => (

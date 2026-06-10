@@ -193,7 +193,7 @@ function QrCodeDialog({ link }: { link: Link }) {
             <Skeleton className="h-40 w-40 rounded-lg" />
           ) : svgData ? (
             <div
-              className="h-40 w-40 rounded-lg overflow-hidden bg-white p-2"
+              className="h-40 w-40 rounded-lg overflow-hidden bg-card p-2"
               dangerouslySetInnerHTML={{ __html: svgData }}
             />
           ) : (
@@ -235,7 +235,7 @@ function UtmPopover({ link }: { link: Link }) {
         {utms.length} param{utms.length > 1 ? "s" : ""}
         <ChevronDown className="h-3 w-3" />
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3 bg-white border-gray-100">
+      <PopoverContent className="w-64 p-3 bg-card border-gray-100">
         <div className="space-y-1.5">
           {utms.map((u) => (
             <div key={u.key} className="flex items-start justify-between gap-2">
@@ -377,7 +377,7 @@ function LinkEditDialog({
               placeholder="https://exemplo.com/pagina"
               value={form.baseUrl}
               onChange={(e) => set("baseUrl", e.target.value)}
-              className="bg-white border-gray-200"
+              className="bg-card border-gray-200"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -386,7 +386,7 @@ function LinkEditDialog({
               <select
                 value={form.vehicleId}
                 onChange={(e) => set("vehicleId", e.target.value)}
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
                 {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
@@ -396,7 +396,7 @@ function LinkEditDialog({
               <select
                 value={form.campaignId}
                 onChange={(e) => set("campaignId", e.target.value)}
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
                 {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -407,7 +407,7 @@ function LinkEditDialog({
             <Input
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              className="bg-white border-gray-200 font-mono text-sm"
+              className="bg-card border-gray-200 font-mono text-sm"
             />
           </div>
           <Separator className="bg-gray-100" />
@@ -428,7 +428,7 @@ function LinkEditDialog({
                     placeholder={placeholder}
                     value={form[field] as string}
                     onChange={(e) => set(field, e.target.value)}
-                    className="bg-white border-gray-200"
+                    className="bg-card border-gray-200"
                   />
                 </div>
               ))}
@@ -438,7 +438,7 @@ function LinkEditDialog({
                   placeholder="ex: palavra-chave"
                   value={form.utmTerm}
                   onChange={(e) => set("utmTerm", e.target.value)}
-                  className="bg-white border-gray-200"
+                  className="bg-card border-gray-200"
                 />
               </div>
             </div>
@@ -464,7 +464,7 @@ function LinkEditDialog({
                   <select
                     value={form.rebrandlyDomain}
                     onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                    className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
+                    className="w-full h-9 rounded-lg border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
                   >
                     {rebrandlyDomains.map((d) => (
                       <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -612,12 +612,12 @@ function LinksPageInner() {
           placeholder="Buscar por slug ou URL..."
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}
-          className="w-64 bg-white border-gray-100"
+          className="w-64 bg-card border-gray-100"
         />
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-gray-100 overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="rounded-xl border border-gray-100 overflow-hidden bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <Table>
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50/60">

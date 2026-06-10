@@ -185,10 +185,10 @@ export default function HistoryPage() {
           value={entityType}
           onValueChange={(val) => setEntityType(val ?? "all")}
         >
-          <SelectTrigger className="w-44 bg-white border-gray-200 text-gray-800">
+          <SelectTrigger className="w-44 bg-card border-gray-200 text-gray-800">
             <SelectValue placeholder="Filtrar por tipo" />
           </SelectTrigger>
-          <SelectContent className="bg-white border-gray-200">
+          <SelectContent className="bg-card border-gray-200">
             <SelectItem value="all" className="text-gray-800">
               Todos
             </SelectItem>
@@ -215,7 +215,7 @@ export default function HistoryPage() {
       )}
 
       {/* Table */}
-      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+      <div className="bg-card border border-gray-100 rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent">
@@ -232,7 +232,7 @@ export default function HistoryPage() {
             {loading ? (
               <SkeletonRows />
             ) : logs.length === 0 ? (
-              <TableRow className="border-gray-100 hover:bg-white">
+              <TableRow className="border-gray-100 hover:bg-card">
                 <TableCell colSpan={7} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2">
                     <History size={32} className="text-gray-500" />

@@ -294,7 +294,7 @@ export function InlineCreateCard({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-visible shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
+        "rounded-2xl bg-card border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-visible shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
         expanded
           ? "border-blue-200 shadow-[0_4px_24px_rgba(59,130,246,0.10)]"
           : "border-gray-100 hover:border-gray-200"
@@ -398,7 +398,7 @@ export function InlineCreateCard({
                       placeholder={placeholder}
                       value={form[field] as string}
                       onChange={(e) => set(field, e.target.value)}
-                      className="bg-white border-gray-200 text-sm focus:border-blue-400 transition-colors duration-200"
+                      className="bg-card border-gray-200 text-sm focus:border-blue-400 transition-colors duration-200"
                     />
                   </div>
                 ))}
@@ -414,7 +414,7 @@ export function InlineCreateCard({
                   value={form.slug}
                   onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle"); }}
                   className={cn(
-                    "bg-white font-mono text-xs focus:border-blue-400 transition-colors duration-200 pr-8",
+                    "bg-card font-mono text-xs focus:border-blue-400 transition-colors duration-200 pr-8",
                     slugStatus === "taken" ? "border-red-400 text-red-700" :
                     slugStatus === "free" ? "border-emerald-400" : "border-gray-200 text-gray-500"
                   )}
@@ -457,7 +457,7 @@ export function InlineCreateCard({
                     <select
                       value={form.rebrandlyDomain}
                       onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
+                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
                     >
                       {rebrandlyDomains.map((d) => (
                         <option key={d.id} value={d.fullName}>{d.fullName}</option>

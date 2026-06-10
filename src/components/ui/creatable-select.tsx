@@ -93,7 +93,7 @@ export function CreatableSelect({
         disabled={disabled}
         render={<button type="button" />}
         className={cn(
-          "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition-colors hover:border-gray-300 focus-visible:border-orange-400 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none transition-colors hover:border-gray-300 focus-visible:border-orange-400 disabled:cursor-not-allowed disabled:opacity-50",
           !selected && "text-gray-400",
           className
         )}
@@ -119,7 +119,7 @@ export function CreatableSelect({
         >
           <PopoverPrimitive.Popup
             className={cn(
-              "w-(--anchor-width) min-w-[200px] origin-(--transform-origin) rounded-xl bg-white shadow-lg ring-1 ring-black/8 outline-none",
+              "w-(--anchor-width) min-w-[200px] origin-(--transform-origin) rounded-xl bg-card shadow-lg ring-1 ring-black/8 outline-none",
               "duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
               "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
               "data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1"

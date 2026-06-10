@@ -160,7 +160,7 @@ function StepSelectProvider({
               "w-full text-left rounded-xl border-2 p-4 flex items-center gap-4 transition-all duration-150",
               selected === p.id
                 ? "border-orange-400 bg-orange-50/50"
-                : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
+                : "border-gray-100 bg-card hover:border-gray-200 hover:bg-gray-50/50"
             )}
           >
             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", p.iconBg)}>
@@ -269,7 +269,7 @@ function StepApiKey({
           placeholder="Cole sua API key aqui"
           value={apiKey}
           onChange={(e) => onApiKeyChange(e.target.value)}
-          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white font-mono text-sm"
+          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-card font-mono text-sm"
         />
       </div>
 
@@ -343,7 +343,7 @@ function StepSelectDomain({
                 "w-full text-left rounded-xl border-2 p-3.5 flex items-center gap-3 transition-all duration-150",
                 selectedDomain === d.fullName
                   ? "border-orange-400 bg-orange-50/50"
-                  : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
+                  : "border-gray-100 bg-card hover:border-gray-200 hover:bg-gray-50/50"
               )}
             >
               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
@@ -564,7 +564,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-[#f5f5f7] flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="w-full max-w-md bg-card rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
           <div

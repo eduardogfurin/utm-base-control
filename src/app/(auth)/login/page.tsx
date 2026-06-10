@@ -79,7 +79,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] border border-gray-100/80 p-8 space-y-5">
+    <div className="bg-card rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] border border-gray-100/80 p-8 space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-gray-900">Bem-vindo de volta</h1>
         <p className="text-sm text-gray-400 mt-1">
@@ -91,7 +91,7 @@ function LoginForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full flex items-center gap-3 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm"
+        className="w-full flex items-center gap-3 bg-card border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm"
         onClick={handleGoogleSignIn}
         disabled={loadingGoogle}
       >
@@ -120,7 +120,7 @@ function LoginForm() {
             id="email"
             type="email"
             placeholder="seu@email.com"
-            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white"
+            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-card"
             {...register("email")}
           />
           {errors.email && (
@@ -136,7 +136,7 @@ function LoginForm() {
             id="password"
             type="password"
             placeholder="••••••••"
-            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white"
+            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-card"
             {...register("password")}
           />
           {errors.password && (
@@ -171,7 +171,7 @@ export default function LoginPage() {
           <span className="text-xl font-semibold text-gray-900">UTM Base Control</span>
         </div>
 
-        <Suspense fallback={<div className="bg-white rounded-2xl border border-gray-100 p-8 h-64 animate-pulse" />}>
+        <Suspense fallback={<div className="bg-card rounded-2xl border border-gray-100 p-8 h-64 animate-pulse" />}>
           <LoginForm />
         </Suspense>
 

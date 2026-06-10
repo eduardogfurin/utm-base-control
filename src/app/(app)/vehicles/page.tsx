@@ -245,7 +245,7 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
             <label className="text-sm font-medium text-gray-600">Categoria</label>
             <select
               {...form.register("category")}
-              className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
+              className="h-8 w-full rounded-lg border border-gray-200 bg-card px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
             >
               {VEHICLE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -275,7 +275,7 @@ function VehicleDialog({ open, onOpenChange, vehicle, onSaved }: VehicleDialogPr
             <label className="text-sm font-medium text-gray-600">Status</label>
             <select
               {...form.register("status")}
-              className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
+              className="h-8 w-full rounded-lg border border-gray-200 bg-card px-2.5 text-sm text-gray-900 outline-none focus:border-orange-400 focus:ring-0"
             >
               <option value="ACTIVE">Ativo</option>
               <option value="INACTIVE">Inativo</option>
@@ -414,7 +414,7 @@ export default function VehiclesPage() {
       />
 
       {/* Table */}
-      <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+      <div className="rounded-xl border border-gray-100 bg-card overflow-hidden">
         {error ? (
           <div className="p-8 text-center text-sm text-red-700">{error}</div>
         ) : (

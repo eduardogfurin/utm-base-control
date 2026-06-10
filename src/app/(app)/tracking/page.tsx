@@ -72,7 +72,7 @@ const BAR_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#f97316", "#6366f1", "#ec4
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-xl bg-gray-100 dark:bg-white/8 ${className ?? ""}`} />
+  return <div className={`animate-pulse rounded-xl bg-gray-100 dark:bg-card/8 ${className ?? ""}`} />
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ export default function TrackingPage() {
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
                   active
                     ? "bg-blue-500 text-white border-blue-500 shadow-[0_2px_8px_rgba(59,130,246,0.3)]"
-                    : "bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:text-gray-800 dark:hover:text-gray-200"
+                    : "bg-card dark:bg-card/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:text-gray-800 dark:hover:text-gray-200"
                 }`}
               >
                 <Icon size={12} />
@@ -295,7 +295,7 @@ export default function TrackingPage() {
               (data?.rows ?? []).slice(0, 10).map((row, idx) => (
                 <div
                   key={idx}
-                  className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-white/5 transition-colors"
+                  className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-card/5 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600 w-3 shrink-0">{idx + 1}</span>

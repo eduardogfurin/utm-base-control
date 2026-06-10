@@ -212,13 +212,13 @@ export default function SettingsPage() {
         <TabsList className="bg-gray-100 border border-gray-200">
           <TabsTrigger
             value="integrations"
-            className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500"
+            className="data-[state=active]:bg-card data-[state=active]:text-gray-900 text-gray-500"
           >
             Integrações
           </TabsTrigger>
           <TabsTrigger
             value="general"
-            className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500"
+            className="data-[state=active]:bg-card data-[state=active]:text-gray-900 text-gray-500"
           >
             Geral
           </TabsTrigger>
@@ -227,7 +227,7 @@ export default function SettingsPage() {
         {/* ── INTEGRAÇÕES ─────────────────────────────────────────────── */}
         <TabsContent value="integrations" className="mt-6 space-y-4">
           {/* Rebrandly Card */}
-          <Card className="bg-white border-gray-200 shadow-sm">
+          <Card className="bg-card border-gray-200 shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                         placeholder="Sua API Key do Rebrandly"
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
-                        className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 pr-10 focus:border-orange-400"
+                        className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 pr-10 focus:border-orange-400"
                       />
                       <button
                         type="button"
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                       placeholder="Ex: on.g40.co"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
-                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                      className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
                     />
                     <p className="text-[11px] text-gray-400">
                       Domínio customizado configurado no Rebrandly
@@ -379,7 +379,7 @@ export default function SettingsPage() {
             { name: "Meta Ads", description: "Campanhas e audiências do Meta" },
             { name: "GA4", description: "Google Analytics 4" },
           ].map((integration) => (
-            <Card key={integration.name} className="bg-white border-gray-200 opacity-60">
+            <Card key={integration.name} className="bg-card border-gray-200 opacity-60">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -404,7 +404,7 @@ export default function SettingsPage() {
 
         {/* ── GERAL ────────────────────────────────────────────────────── */}
         <TabsContent value="general" className="mt-6 space-y-4">
-          <Card className="bg-white border-gray-200 shadow-sm">
+          <Card className="bg-card border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-gray-900 text-base">
                 Informações da Plataforma
@@ -431,7 +431,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 opacity-60">
+          <Card className="bg-card border-gray-200 opacity-60">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>

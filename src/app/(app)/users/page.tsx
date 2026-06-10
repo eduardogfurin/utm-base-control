@@ -243,7 +243,7 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-card border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50">
@@ -258,7 +258,7 @@ export default function UsersPage() {
             {loading ? (
               <SkeletonRows />
             ) : users.length === 0 ? (
-              <TableRow className="border-gray-100 hover:bg-white">
+              <TableRow className="border-gray-100 hover:bg-card">
                 <TableCell colSpan={5} className="text-center py-16">
                   <div className="flex flex-col items-center gap-2">
                     <Users size={32} className="text-gray-300" />
@@ -323,7 +323,7 @@ export default function UsersPage() {
                               <Trash2 size={13} />
                             )}
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-white border-gray-200">
+                          <AlertDialogContent className="bg-card border-gray-200">
                             <AlertDialogHeader>
                               <AlertDialogTitle className="text-gray-900">
                                 Remover usuário?
@@ -361,7 +361,7 @@ export default function UsersPage() {
 
       {/* Create Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="bg-white border-gray-200 sm:max-w-md">
+        <DialogContent className="bg-card border-gray-200 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
               <ShieldCheck size={16} className="text-orange-500" />
@@ -377,7 +377,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, name: e.target.value }))
                 }
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
@@ -389,7 +389,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, email: e.target.value }))
                 }
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
@@ -401,7 +401,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, password: e.target.value }))
                 }
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
@@ -411,7 +411,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, role: e.target.value as UserRole }))
                 }
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
                 <option value="ADMIN">Admin</option>
                 <option value="MARKETING">Marketing</option>
@@ -444,7 +444,7 @@ export default function UsersPage() {
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="bg-white border-gray-200 sm:max-w-md">
+        <DialogContent className="bg-card border-gray-200 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
               <Pencil size={15} className="text-gray-400" />
@@ -460,7 +460,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, name: e.target.value }))
                 }
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
               />
             </div>
             <div className="space-y-1.5">
@@ -481,7 +481,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, role: e.target.value as UserRole }))
                 }
-                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
+                className="w-full h-9 rounded-lg border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400"
               >
                 <option value="ADMIN">Admin</option>
                 <option value="MARKETING">Marketing</option>

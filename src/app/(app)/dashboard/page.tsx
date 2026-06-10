@@ -330,10 +330,10 @@ function HeroCreateCard({
 
           {form.baseUrl ? (
             /* ── URL Preview (WhatsApp/Slack OG style) ── */
-            <div className="rounded-2xl overflow-hidden bg-white/15 border border-white/20 text-left">
+            <div className="rounded-2xl overflow-hidden bg-card/15 border border-white/20 text-left">
               {/* OG image */}
               {ogLoading && (
-                <div className="h-32 bg-white/10 animate-pulse" />
+                <div className="h-32 bg-card/10 animate-pulse" />
               )}
               {!ogLoading && ogData?.image && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -346,7 +346,7 @@ function HeroCreateCard({
               )}
               <div className="flex items-center gap-3 px-4 py-3">
                 {!ogLoading && !ogData?.image && (
-                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-card/20 flex items-center justify-center shrink-0">
                     <Globe size={16} className="text-white" />
                   </div>
                 )}
@@ -382,9 +382,9 @@ function HeroCreateCard({
             </div>
           ) : loading ? (
             <div className="flex items-center justify-center gap-8 h-14">
-              <div className="w-20 h-9 rounded-xl bg-white/20 animate-pulse" />
-              <div className="w-px h-8 bg-white/20" />
-              <div className="w-20 h-9 rounded-xl bg-white/20 animate-pulse" />
+              <div className="w-20 h-9 rounded-xl bg-card/20 animate-pulse" />
+              <div className="w-px h-8 bg-card/20" />
+              <div className="w-20 h-9 rounded-xl bg-card/20 animate-pulse" />
             </div>
           ) : (
             <div className="flex items-center justify-center gap-6">
@@ -394,7 +394,7 @@ function HeroCreateCard({
                 </p>
                 <p className="text-xs text-white/70 mt-1.5 font-medium">links criados</p>
               </div>
-              <div className="w-px h-10 bg-white/25" />
+              <div className="w-px h-10 bg-card/25" />
               <div className="text-center">
                 <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">
                   {totalClicks.toLocaleString("pt-BR")}
@@ -409,7 +409,7 @@ function HeroCreateCard({
         <div className="px-4 pt-4 pb-3">
           <div className={cn(
             "flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200",
-            expanded ? "border-blue-200 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-500/10" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-gray-300 dark:hover:border-white/15"
+            expanded ? "border-blue-200 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-500/10" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-card/5 hover:border-gray-300 dark:hover:border-white/15"
           )}>
             <Globe size={15} className="text-gray-400 shrink-0" />
             <input
@@ -473,7 +473,7 @@ function HeroCreateCard({
                   value={form[field] as string}
                   onChange={(e) => set(field, e.target.value)}
                   placeholder={placeholder}
-                  className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-3.5 py-2.5 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
+                  className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-card dark:bg-card/5 px-3.5 py-2.5 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
                 />
               ))}
 
@@ -485,7 +485,7 @@ function HeroCreateCard({
                     onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle") }}
                     placeholder="Slug (gerado automaticamente)"
                     className={cn(
-                      "w-full rounded-xl border bg-gray-50 dark:bg-white/5 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
+                      "w-full rounded-xl border bg-gray-50 dark:bg-card/5 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
                       slugStatus === "taken" ? "border-red-400 text-red-700 focus:border-red-400" :
                       slugStatus === "free" ? "border-emerald-400 text-gray-700 focus:border-emerald-400" :
                       "border-gray-200 text-gray-500 focus:border-blue-400"
@@ -504,7 +504,7 @@ function HeroCreateCard({
 
               {/* URL Preview */}
               {form.baseUrl && (
-                <div className="rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/8 px-3.5 py-2.5">
+                <div className="rounded-xl bg-gray-50 dark:bg-card/5 border border-gray-100 dark:border-white/8 px-3.5 py-2.5">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Preview</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 break-all font-mono leading-relaxed">{previewUrl}</p>
                 </div>
@@ -512,7 +512,7 @@ function HeroCreateCard({
 
               {/* Rebrandly */}
               {hasRebrandly && (
-                <div className="rounded-xl border border-gray-100 dark:border-white/8 bg-gray-50/50 dark:bg-white/5 px-3.5 py-2.5 space-y-2">
+                <div className="rounded-xl border border-gray-100 dark:border-white/8 bg-gray-50/50 dark:bg-card/5 px-3.5 py-2.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-700 font-medium">Encurtar via Rebrandly</p>
                     <Switch checked={form.shortenWithRebrandly} onCheckedChange={(v) => set("shortenWithRebrandly", v)} />
@@ -521,7 +521,7 @@ function HeroCreateCard({
                     <select
                       value={form.rebrandlyDomain}
                       onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-blue-400"
+                      className="w-full rounded-xl border border-gray-200 bg-card px-3 py-2 text-sm text-gray-800 outline-none focus:border-blue-400"
                     >
                       {rebrandlyDomains.map((d) => (
                         <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -537,7 +537,7 @@ function HeroCreateCard({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 rounded-2xl border border-gray-200 dark:border-white/10 py-3.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                className="flex-1 rounded-2xl border border-gray-200 dark:border-white/10 py-3.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-card/5 transition-colors"
               >
                 Cancelar
               </button>
@@ -772,7 +772,7 @@ export default function DashboardPage() {
               <div className="px-5 py-8 text-center text-sm text-gray-400">Nenhum link com cliques</div>
             ) : (
               (data?.topLinks ?? []).slice(0, 7).map((link, idx) => (
-                <div key={idx} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-white/5 transition-colors">
+                <div key={idx} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-card/5 transition-colors">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600 w-3 shrink-0">{idx + 1}</span>
                     <div className="min-w-0">

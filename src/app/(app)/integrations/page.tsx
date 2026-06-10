@@ -151,7 +151,7 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Rebrandly card */}
-      <div className="rounded-2xl bg-white border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ export default function IntegrationsPage() {
                     <select
                       value={selectedDomain}
                       onChange={(e) => setSelectedDomain(e.target.value)}
-                      className="flex-1 h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                      className="flex-1 h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
                     >
                       {domains.map((d) => (
                         <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -241,7 +241,7 @@ export default function IntegrationsPage() {
                   placeholder="Cole sua API Key aqui"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  className="bg-white border-gray-200 focus:border-orange-400 transition-colors duration-200"
+                  className="bg-card border-gray-200 focus:border-orange-400 transition-colors duration-200"
                 />
                 <p className="text-xs text-gray-400">
                   Encontre sua API Key em{" "}
@@ -265,7 +265,7 @@ export default function IntegrationsPage() {
       </div>
 
       {/* More providers coming soon */}
-      <div className="rounded-2xl bg-white border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] px-6 py-5">
+      <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] px-6 py-5">
         <p className="text-sm font-semibold text-gray-700 mb-1">Mais integrações em breve</p>
         <p className="text-xs text-gray-400">Bitly, TinyURL, e outros encurtadores serão adicionados em versões futuras.</p>
       </div>
