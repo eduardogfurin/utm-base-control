@@ -91,13 +91,20 @@ export async function POST(request: NextRequest) {
       utmTerm,
     });
 
-    // Generate unique slug if not provided
+    // Generate slug or validate the provided one
+    const userProvidedSlug = !!rawSlug;
     let slug = rawSlug
       ? slugify(rawSlug)
       : slugify(`${utmCampaign || "link"}-${Date.now()}`);
 
     const existing = await prisma.link.findUnique({ where: { slug } });
     if (existing) {
+      if (userProvidedSlug) {
+        return NextResponse.json(
+          { error: `O slug "${slug}" já está em uso. Escolha outro.` },
+          { status: 409 }
+        );
+      }
       slug = `${slug}-${Date.now()}`;
     }
 
@@ -194,8 +201,10 @@ export async function POST(request: NextRequest) {
       "code" in err &&
       (err as { code: string }).code === "P2002"
     ) {
-      return NextResponse.json({ error: "Slug already in use" }, { status: 409 });
+      return NextResponse.json({ error: "Slug já está em uso" }, { status: 409 });
     }
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[links POST] error:", msg, err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

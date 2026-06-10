@@ -152,8 +152,10 @@ function HeroCreateCard({
   const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([])
   const [ogData, setOgData] = useState<{ title: string | null; description: string | null; image: string | null } | null>(null)
   const [ogLoading, setOgLoading] = useState(false)
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "taken" | "free">("idle")
   const urlInputRef = useRef<HTMLInputElement>(null)
   const ogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { setVehicles(initialVehicles) }, [initialVehicles])
   useEffect(() => { setCampaigns(initialCampaigns) }, [initialCampaigns])
@@ -173,6 +175,20 @@ function HeroCreateCard({
     }, 600)
     return () => { if (ogTimerRef.current) clearTimeout(ogTimerRef.current) }
   }, [form.baseUrl])
+
+  // Check slug availability with debounce
+  useEffect(() => {
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current)
+    if (!form.slug) { setSlugStatus("idle"); return }
+    setSlugStatus("checking")
+    slugTimerRef.current = setTimeout(() => {
+      fetch(`/api/links/check-slug?slug=${encodeURIComponent(form.slug)}`)
+        .then((r) => r.json())
+        .then((d) => setSlugStatus(d.available ? "free" : "taken"))
+        .catch(() => setSlugStatus("idle"))
+    }, 500)
+    return () => { if (slugTimerRef.current) clearTimeout(slugTimerRef.current) }
+  }, [form.slug])
 
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus)
 
@@ -230,7 +246,9 @@ function HeroCreateCard({
     setForm({ ...emptyForm })
     setRebrandlyDomains([])
     setOgData(null)
+    setSlugStatus("idle")
     if (ogTimerRef.current) clearTimeout(ogTimerRef.current)
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current)
   }
 
   const handleCreateVehicle = useCallback(async (name: string): Promise<SelectOption> => {
@@ -263,6 +281,9 @@ function HeroCreateCard({
     e.preventDefault()
     if (!form.baseUrl || !form.vehicleId || !form.campaignId) {
       toast.error("URL Base, Veículo e Campanha são obrigatórios"); return
+    }
+    if (slugStatus === "taken") {
+      toast.error("O slug escolhido já está em uso. Escolha outro."); return
     }
     setSaving(true)
     try {
@@ -453,12 +474,29 @@ function HeroCreateCard({
               ))}
 
               {/* Slug — last */}
-              <input
-                value={form.slug}
-                onChange={(e) => set("slug", e.target.value)}
-                placeholder="Slug (gerado automaticamente)"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 font-mono placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
-              />
+              <div>
+                <div className="relative">
+                  <input
+                    value={form.slug}
+                    onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle") }}
+                    placeholder="Slug (gerado automaticamente)"
+                    className={cn(
+                      "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
+                      slugStatus === "taken" ? "border-red-400 text-red-700 focus:border-red-400" :
+                      slugStatus === "free" ? "border-emerald-400 text-gray-700 focus:border-emerald-400" :
+                      "border-gray-200 text-gray-500 focus:border-blue-400"
+                    )}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {slugStatus === "checking" && <span className="w-3 h-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin block" />}
+                    {slugStatus === "free" && <span className="text-emerald-500 text-xs font-bold">✓</span>}
+                    {slugStatus === "taken" && <span className="text-red-500 text-xs font-bold">✕</span>}
+                  </div>
+                </div>
+                {slugStatus === "taken" && (
+                  <p className="mt-1 text-xs text-red-600">Este slug já está em uso. Escolha outro.</p>
+                )}
+              </div>
 
               {/* URL Preview */}
               {form.baseUrl && (

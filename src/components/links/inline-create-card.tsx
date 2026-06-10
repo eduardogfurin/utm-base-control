@@ -104,10 +104,26 @@ export function InlineCreateCard({
   const [form, setForm] = useState<LinkFormState>({ ...emptyForm });
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
   const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "taken" | "free">("idle");
   const urlInputRef = useRef<HTMLInputElement>(null);
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { setVehicles(initialVehicles); }, [initialVehicles]);
   useEffect(() => { setCampaigns(initialCampaigns); }, [initialCampaigns]);
+
+  // Check slug availability
+  useEffect(() => {
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
+    if (!form.slug) { setSlugStatus("idle"); return; }
+    setSlugStatus("checking");
+    slugTimerRef.current = setTimeout(() => {
+      fetch(`/api/links/check-slug?slug=${encodeURIComponent(form.slug)}`)
+        .then((r) => r.json())
+        .then((d) => setSlugStatus(d.available ? "free" : "taken"))
+        .catch(() => setSlugStatus("idle"));
+    }, 500);
+    return () => { if (slugTimerRef.current) clearTimeout(slugTimerRef.current); };
+  }, [form.slug]);
 
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
@@ -187,6 +203,8 @@ export function InlineCreateCard({
     setExpanded(false);
     setForm({ ...emptyForm });
     setRebrandlyDomains([]);
+    setSlugStatus("idle");
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
   };
 
   // ── Inline creation ───────────────────────────────────────────────────────
@@ -225,6 +243,10 @@ export function InlineCreateCard({
     e.preventDefault();
     if (!form.baseUrl || !form.vehicleId || !form.campaignId) {
       toast.error("URL Base, Veículo e Campanha são obrigatórios");
+      return;
+    }
+    if (slugStatus === "taken") {
+      toast.error("O slug escolhido já está em uso. Escolha outro.");
       return;
     }
     setSaving(true);
@@ -382,12 +404,26 @@ export function InlineCreateCard({
             {/* Slug — last */}
             <div className="space-y-1.5">
               <Label className="text-xs text-gray-500">Slug</Label>
-              <Input
-                placeholder="gerado-automaticamente"
-                value={form.slug}
-                onChange={(e) => set("slug", e.target.value)}
-                className="bg-white border-gray-200 font-mono text-xs text-gray-500 focus:border-orange-400 transition-colors duration-200"
-              />
+              <div className="relative">
+                <Input
+                  placeholder="gerado-automaticamente"
+                  value={form.slug}
+                  onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle"); }}
+                  className={cn(
+                    "bg-white font-mono text-xs focus:border-orange-400 transition-colors duration-200 pr-8",
+                    slugStatus === "taken" ? "border-red-400 text-red-700" :
+                    slugStatus === "free" ? "border-emerald-400" : "border-gray-200 text-gray-500"
+                  )}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {slugStatus === "checking" && <span className="w-3 h-3 rounded-full border-2 border-orange-400 border-t-transparent animate-spin block" />}
+                  {slugStatus === "free" && <span className="text-emerald-500 text-xs font-bold">✓</span>}
+                  {slugStatus === "taken" && <span className="text-red-500 text-xs font-bold">✕</span>}
+                </div>
+              </div>
+              {slugStatus === "taken" && (
+                <p className="text-xs text-red-600">Este slug já está em uso. Escolha outro.</p>
+              )}
             </div>
 
             {/* Preview URL */}
