@@ -241,6 +241,10 @@ function HeroCreateCard({
     utmCampaign: form.utmCampaign || null, utmContent: form.utmContent || null, utmTerm: form.utmTerm || null,
   })
 
+  const handleCollapse = () => {
+    setExpanded(false)
+  }
+
   const handleCancel = () => {
     setExpanded(false)
     setForm({ ...emptyForm })
@@ -420,7 +424,7 @@ function HeroCreateCard({
               className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 outline-none"
             />
             {expanded && (
-              <button type="button" onClick={handleCancel} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+              <button type="button" onClick={handleCollapse} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={14} />
               </button>
             )}

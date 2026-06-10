@@ -199,6 +199,10 @@ export function InlineCreateCard({
     utmTerm: form.utmTerm || null,
   });
 
+  const handleCollapse = () => {
+    setExpanded(false);
+  };
+
   const handleCancel = () => {
     setExpanded(false);
     setForm({ ...emptyForm });
@@ -292,7 +296,7 @@ export function InlineCreateCard({
       className={cn(
         "rounded-2xl bg-white border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-visible shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
         expanded
-          ? "border-orange-200 shadow-[0_4px_24px_rgba(249,115,22,0.10)]"
+          ? "border-blue-200 shadow-[0_4px_24px_rgba(59,130,246,0.10)]"
           : "border-gray-100 hover:border-gray-200"
       )}
     >
@@ -305,8 +309,8 @@ export function InlineCreateCard({
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all duration-300",
               expanded
-                ? "bg-orange-500 text-white shadow-[0_2px_8px_rgba(249,115,22,0.35)] scale-105"
-                : "bg-[#1C1B21] hover:bg-orange-500 text-white shadow-[0_2px_8px_rgba(28,27,33,0.2)] hover:shadow-[0_2px_12px_rgba(249,115,22,0.35)]"
+                ? "bg-blue-500 text-white shadow-[0_2px_8px_rgba(59,130,246,0.4)] scale-105"
+                : "bg-blue-500 hover:bg-blue-400 text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)] hover:shadow-[0_2px_12px_rgba(59,130,246,0.45)]"
             )}
           >
             <Plus size={15} />
@@ -328,7 +332,7 @@ export function InlineCreateCard({
           {expanded ? (
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={handleCollapse}
               className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
             >
               <X size={14} />
@@ -394,7 +398,7 @@ export function InlineCreateCard({
                       placeholder={placeholder}
                       value={form[field] as string}
                       onChange={(e) => set(field, e.target.value)}
-                      className="bg-white border-gray-200 text-sm focus:border-orange-400 transition-colors duration-200"
+                      className="bg-white border-gray-200 text-sm focus:border-blue-400 transition-colors duration-200"
                     />
                   </div>
                 ))}
@@ -410,7 +414,7 @@ export function InlineCreateCard({
                   value={form.slug}
                   onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle"); }}
                   className={cn(
-                    "bg-white font-mono text-xs focus:border-orange-400 transition-colors duration-200 pr-8",
+                    "bg-white font-mono text-xs focus:border-blue-400 transition-colors duration-200 pr-8",
                     slugStatus === "taken" ? "border-red-400 text-red-700" :
                     slugStatus === "free" ? "border-emerald-400" : "border-gray-200 text-gray-500"
                   )}
@@ -453,7 +457,7 @@ export function InlineCreateCard({
                     <select
                       value={form.rebrandlyDomain}
                       onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
                     >
                       {rebrandlyDomains.map((d) => (
                         <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -472,7 +476,7 @@ export function InlineCreateCard({
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300 px-6"
+                className="bg-blue-500 hover:bg-blue-400 text-white transition-colors duration-300 px-6 shadow-[0_2px_8px_rgba(59,130,246,0.3)]"
               >
                 {saving ? "Criando..." : "Criar Link"}
               </Button>
