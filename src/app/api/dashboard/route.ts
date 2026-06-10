@@ -11,12 +11,12 @@ export async function GET(_request: NextRequest) {
     }
 
     const [
-      totalLinks,
-      activeCampaigns,
-      activeVehicles,
-      allRebrandlyLinks,
-      linksRaw,
-    ] = await Promise.all([
+      totalLinksResult,
+      activeCampaignsResult,
+      activeVehiclesResult,
+      allRebrandlyLinksResult,
+      linksRawResult,
+    ] = await Promise.allSettled([
       prisma.link.count(),
       prisma.campaign.count({ where: { status: "ACTIVE" } }),
       prisma.vehicle.count({ where: { status: "ACTIVE" } }),
@@ -36,6 +36,19 @@ export async function GET(_request: NextRequest) {
         },
       }),
     ]);
+
+    // Log individual failures for debugging without breaking the response
+    if (totalLinksResult.status === "rejected") console.error("[dashboard] totalLinks:", totalLinksResult.reason);
+    if (activeCampaignsResult.status === "rejected") console.error("[dashboard] activeCampaigns:", activeCampaignsResult.reason);
+    if (activeVehiclesResult.status === "rejected") console.error("[dashboard] activeVehicles:", activeVehiclesResult.reason);
+    if (allRebrandlyLinksResult.status === "rejected") console.error("[dashboard] rebrandlyLinks:", allRebrandlyLinksResult.reason);
+    if (linksRawResult.status === "rejected") console.error("[dashboard] linksRaw:", linksRawResult.reason);
+
+    const totalLinks = totalLinksResult.status === "fulfilled" ? totalLinksResult.value : 0;
+    const activeCampaigns = activeCampaignsResult.status === "fulfilled" ? activeCampaignsResult.value : 0;
+    const activeVehicles = activeVehiclesResult.status === "fulfilled" ? activeVehiclesResult.value : 0;
+    const allRebrandlyLinks = allRebrandlyLinksResult.status === "fulfilled" ? allRebrandlyLinksResult.value : [];
+    const linksRaw = linksRawResult.status === "fulfilled" ? linksRawResult.value : [];
 
     const totalClicks = allRebrandlyLinks.reduce((sum, r) => sum + r.clicks, 0);
 
@@ -106,7 +119,7 @@ export async function GET(_request: NextRequest) {
       clicksOverTime,
     });
   } catch (err) {
-    console.error("[dashboard] error:", err);
+    console.error("[dashboard] unexpected error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
