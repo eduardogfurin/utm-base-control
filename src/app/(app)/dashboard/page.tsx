@@ -81,7 +81,7 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-[oklch(0.255_0.004_260)] px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-card px-3 py-2 text-xs shadow-lg">
       <p className="text-gray-400 mb-1">{label ? formatDate(label) : ""}</p>
       <p className="text-gray-900 dark:text-gray-100 font-semibold">
         {payload[0].value.toLocaleString("pt-BR")} cliques
@@ -318,7 +318,7 @@ function HeroCreateCard({
       <div
         className={cn(
           "w-full max-w-lg rounded-3xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          "bg-white dark:bg-[oklch(0.235_0.004_260)] shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)]",
+          "bg-card shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)]",
           expanded ? "scale-100" : "scale-[0.985] hover:scale-100"
         )}
       >
@@ -666,7 +666,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-12 gap-4">
 
         {/* KPI: Cliques */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliques</span>
             <span className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center">
@@ -685,7 +685,7 @@ export default function DashboardPage() {
         </div>
 
         {/* KPI: Campanhas */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campanhas</span>
             <span className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
@@ -704,7 +704,7 @@ export default function DashboardPage() {
         </div>
 
         {/* KPI: Veículos */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Veículos</span>
             <span className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center">
@@ -723,7 +723,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Area chart: cliques over time — col 8 */}
-        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Cliques nos últimos 30 dias</h3>
@@ -756,7 +756,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Links — col 4 */}
-        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-50 dark:border-white/6 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Links</h3>
             <span className="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center">
@@ -790,7 +790,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Veículos bar chart — col 6 */}
-        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Veículos</h3>
             <span className="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
@@ -805,7 +805,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v: string) => v.length > 10 ? v.slice(0, 10) + "…" : v} />
                 <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip formatter={(val: unknown) => [(val as number).toLocaleString("pt-BR"), "cliques"]} contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#2d2e31", color: "#e5e7eb", fontSize: 12 }} />
+                <Tooltip formatter={(val: unknown) => [(val as number).toLocaleString("pt-BR"), "cliques"]} contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#404349", color: "#e5e7eb", fontSize: 12 }} />
                 <Bar dataKey="clicks" radius={[6, 6, 0, 0]}>
                   {(data?.topVehicles ?? []).slice(0, 5).map((_, idx) => <Cell key={idx} fill={barColors[idx % barColors.length]} />)}
                 </Bar>
@@ -815,7 +815,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Campanhas bar chart — col 6 */}
-        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Campanhas</h3>
             <span className="w-6 h-6 rounded-lg bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center">
@@ -830,7 +830,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v: string) => v.length > 10 ? v.slice(0, 10) + "…" : v} />
                 <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip formatter={(val: unknown) => [(val as number).toLocaleString("pt-BR"), "cliques"]} contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#2d2e31", color: "#e5e7eb", fontSize: 12 }} />
+                <Tooltip formatter={(val: unknown) => [(val as number).toLocaleString("pt-BR"), "cliques"]} contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#404349", color: "#e5e7eb", fontSize: 12 }} />
                 <Bar dataKey="clicks" radius={[6, 6, 0, 0]}>
                   {(data?.topCampaigns ?? []).slice(0, 5).map((_, idx) => <Cell key={idx} fill={barColors[(idx + 2) % barColors.length]} />)}
                 </Bar>

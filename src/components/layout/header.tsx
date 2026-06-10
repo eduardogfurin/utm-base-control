@@ -39,7 +39,7 @@ export function Header() {
   const subtitle = subtitles[base];
 
   return (
-    <header className="h-16 border-b border-gray-100 dark:border-white/8 flex items-center px-6 bg-white/80 dark:bg-[oklch(0.18_0_0/0.9)] backdrop-blur sticky top-0 z-10">
+    <header className="h-16 border-b border-gray-100 dark:border-white/8 flex items-center px-6 bg-white/80 dark:bg-card/90 backdrop-blur sticky top-0 z-10">
       <div>
         <h1 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</h1>
         {subtitle && (
