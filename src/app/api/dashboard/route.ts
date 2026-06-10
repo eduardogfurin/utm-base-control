@@ -22,6 +22,8 @@ export async function GET(_request: NextRequest) {
       prisma.vehicle.count({ where: { status: "ACTIVE" } }),
       prisma.rebrandlyLink.findMany({ select: { clicks: true } }),
       prisma.link.findMany({
+        take: 2000,
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           slug: true,

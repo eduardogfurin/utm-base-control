@@ -125,14 +125,21 @@ export function InlineCreateCard({
       .then((r) => r.json())
       .then((data: RebrandlyDomain[]) => {
         setRebrandlyDomains(data ?? []);
-        setForm((prev) => ({
-          ...prev,
-          shortenWithRebrandly: true,
-          rebrandlyDomain: prev.rebrandlyDomain || (data?.[0]?.fullName ?? ""),
-        }));
+        setForm((prev) => {
+          // Prefer the domain saved in settings, then first from list
+          const defaultDomain =
+            settings?.rebrandlyDomain ||
+            data?.[0]?.fullName ||
+            "";
+          return {
+            ...prev,
+            shortenWithRebrandly: true,
+            rebrandlyDomain: prev.rebrandlyDomain || defaultDomain,
+          };
+        });
       })
       .catch(() => {});
-  }, [expanded, hasRebrandly]);
+  }, [expanded, hasRebrandly, settings?.rebrandlyDomain]);
 
   useEffect(() => {
     if (!expanded) return;

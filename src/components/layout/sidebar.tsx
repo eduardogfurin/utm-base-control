@@ -19,6 +19,7 @@ import {
   UserCircle,
   BarChart2,
   ChevronRight,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -163,23 +164,36 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const [navOpen, setNavOpen] = useState(true);
 
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <aside className="w-60 min-h-screen bg-white border-r border-gray-100 flex flex-col shadow-sm">
-      {/* Logo */}
-      <div className="h-14 flex items-center px-4 border-b border-gray-100">
+    <aside className="w-60 h-screen sticky top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm">
+      {/* Logo + hamburger */}
+      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
             <Link2 size={13} className="text-white" />
           </div>
           <span className="font-semibold text-sm text-gray-800 tracking-tight">UTM Base Control</span>
         </div>
+        <button
+          onClick={() => setNavOpen((o) => !o)}
+          className="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          title={navOpen ? "Recolher menu" : "Expandir menu"}
+        >
+          <Menu size={15} />
+        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+      {/* Nav — scrollable area between header and footer */}
+      <nav
+        className={cn(
+          "flex-1 py-4 px-3 space-y-0.5 overflow-y-auto min-h-0 transition-all duration-300",
+          !navOpen && "opacity-0 pointer-events-none"
+        )}
+      >
         {topNav.map((item) => (
           <NavLink key={item.href} {...item} pathname={pathname} />
         ))}
@@ -205,8 +219,8 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* User */}
-      <div className="border-t border-gray-100 p-3">
+      {/* User — always fixed at the bottom */}
+      <div className="border-t border-gray-100 p-3 flex-shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left cursor-pointer">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
