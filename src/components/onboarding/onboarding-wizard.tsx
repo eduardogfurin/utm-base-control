@@ -89,10 +89,10 @@ interface RebrandlyDomain {
 
 // ─── Step components ──────────────────────────────────────────────────────────
 
-function StepWelcome({ onNext }: { onNext: () => void }) {
+function StepWelcome({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   return (
     <div className="text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center mx-auto shadow-lg">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto shadow-lg">
         <Link2 size={28} className="text-white" />
       </div>
       <div>
@@ -107,19 +107,24 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           { icon: <Link2 size={16} />, label: "Crie links UTM" },
           { icon: <CheckCircle2 size={16} />, label: "Monitore cliques" },
         ].map((item, i) => (
-          <div key={i} className="bg-orange-50 rounded-xl p-3 text-center">
-            <div className="text-orange-500 flex justify-center mb-1">{item.icon}</div>
+          <div key={i} className="bg-blue-50 rounded-xl p-3 text-center">
+            <div className="text-blue-500 flex justify-center mb-1">{item.icon}</div>
             <p className="text-xs text-gray-600 font-medium leading-tight">{item.label}</p>
           </div>
         ))}
       </div>
-      <Button
-        onClick={onNext}
-        className="bg-[#1C1B21] hover:bg-orange-500 text-white px-8 transition-colors duration-300"
-      >
-        Começar configuração
-        <ArrowRight size={16} className="ml-2" />
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          onClick={onNext}
+          className="bg-blue-500 hover:bg-blue-400 text-white px-8 transition-colors duration-300 shadow-[0_4px_14px_rgba(59,130,246,0.4)]"
+        >
+          Começar configuração
+          <ArrowRight size={16} className="ml-2" />
+        </Button>
+        <Button variant="ghost" onClick={onSkip} className="text-gray-400 hover:text-gray-600 text-sm">
+          Pular por agora
+        </Button>
+      </div>
     </div>
   );
 }
@@ -129,11 +134,13 @@ function StepSelectProvider({
   onSelect,
   onNext,
   onBack,
+  onSkip,
 }: {
   selected: string | null;
   onSelect: (id: string) => void;
   onNext: () => void;
   onBack: () => void;
+  onSkip: () => void;
 }) {
   return (
     <div className="space-y-5">
@@ -170,18 +177,23 @@ function StepSelectProvider({
         ))}
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
-          <ArrowLeft size={16} className="mr-2" />
-          Voltar
-        </Button>
-        <Button
-          onClick={onNext}
-          disabled={!selected}
-          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
-        >
-          Continuar
-          <ArrowRight size={16} className="ml-2" />
+      <div className="space-y-2 pt-2">
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
+            <ArrowLeft size={16} className="mr-2" />
+            Voltar
+          </Button>
+          <Button
+            onClick={onNext}
+            disabled={!selected}
+            className="flex-1 bg-blue-500 hover:bg-blue-400 text-white transition-colors duration-300"
+          >
+            Continuar
+            <ArrowRight size={16} className="ml-2" />
+          </Button>
+        </div>
+        <Button variant="ghost" onClick={onSkip} className="w-full text-gray-400 hover:text-gray-600 text-sm">
+          Pular configuração
         </Button>
       </div>
     </div>
@@ -194,6 +206,7 @@ function StepApiKey({
   onApiKeyChange,
   onNext,
   onBack,
+  onSkip,
   loading,
 }: {
   provider: (typeof providers)[0];
@@ -201,6 +214,7 @@ function StepApiKey({
   onApiKeyChange: (v: string) => void;
   onNext: () => void;
   onBack: () => void;
+  onSkip: () => void;
   loading: boolean;
 }) {
   return (
@@ -259,19 +273,24 @@ function StepApiKey({
         />
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700" disabled={loading}>
-          <ArrowLeft size={16} className="mr-2" />
-          Voltar
-        </Button>
-        <Button
-          onClick={onNext}
-          disabled={!apiKey.trim() || loading}
-          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
-        >
-          {loading && <Loader2 size={16} className="animate-spin mr-2" />}
-          Conectar conta
-          {!loading && <ArrowRight size={16} className="ml-2" />}
+      <div className="space-y-2 pt-2">
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700" disabled={loading}>
+            <ArrowLeft size={16} className="mr-2" />
+            Voltar
+          </Button>
+          <Button
+            onClick={onNext}
+            disabled={!apiKey.trim() || loading}
+            className="flex-1 bg-blue-500 hover:bg-blue-400 text-white transition-colors duration-300"
+          >
+            {loading && <Loader2 size={16} className="animate-spin mr-2" />}
+            Conectar conta
+            {!loading && <ArrowRight size={16} className="ml-2" />}
+          </Button>
+        </div>
+        <Button variant="ghost" onClick={onSkip} disabled={loading} className="w-full text-gray-400 hover:text-gray-600 text-sm">
+          Pular configuração
         </Button>
       </div>
     </div>
@@ -285,6 +304,7 @@ function StepSelectDomain({
   onSelect,
   onNext,
   onBack,
+  onSkip,
   loading,
 }: {
   providerName: string;
@@ -293,6 +313,7 @@ function StepSelectDomain({
   onSelect: (d: string) => void;
   onNext: () => void;
   onBack: () => void;
+  onSkip: () => void;
   loading: boolean;
 }) {
   return (
@@ -337,17 +358,22 @@ function StepSelectDomain({
         </div>
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
-          <ArrowLeft size={16} className="mr-2" />
-          Voltar
-        </Button>
-        <Button
-          onClick={onNext}
-          className="flex-1 bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
-        >
-          Continuar
-          <ArrowRight size={16} className="ml-2" />
+      <div className="space-y-2 pt-2">
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={onBack} className="flex-1 border-gray-200 text-gray-700">
+            <ArrowLeft size={16} className="mr-2" />
+            Voltar
+          </Button>
+          <Button
+            onClick={onNext}
+            className="flex-1 bg-blue-500 hover:bg-blue-400 text-white transition-colors duration-300"
+          >
+            Continuar
+            <ArrowRight size={16} className="ml-2" />
+          </Button>
+        </div>
+        <Button variant="ghost" onClick={onSkip} className="w-full text-gray-400 hover:text-gray-600 text-sm">
+          Pular configuração
         </Button>
       </div>
     </div>
@@ -457,8 +483,9 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     setLoadingDomains(true);
     fetch("/api/integrations/rebrandly/domains")
       .then((r) => r.json())
-      .then((data: RebrandlyDomain[]) => {
-        setDomains(data ?? []);
+      .then((res: { domains: RebrandlyDomain[]; defaultDomain: string | null } | RebrandlyDomain[]) => {
+        const data = Array.isArray(res) ? res : (res?.domains ?? []);
+        setDomains(data);
         if (data?.length && !selectedDomain) {
           setSelectedDomain(data[0].fullName);
         }
@@ -530,6 +557,11 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     router.refresh();
   }
 
+  async function handleSkipAll() {
+    await fetch("/api/onboarding/complete", { method: "POST" }).catch(() => {});
+    onComplete?.();
+  }
+
   return (
     <div className="fixed inset-0 bg-[#f5f5f7] flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
@@ -571,13 +603,14 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
 
         {/* Content */}
         <div className="p-6 pt-4">
-          {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
+          {step === 0 && <StepWelcome onNext={() => setStep(1)} onSkip={handleSkipAll} />}
           {step === 1 && (
             <StepSelectProvider
               selected={selectedProvider}
               onSelect={setSelectedProvider}
               onNext={() => setStep(2)}
               onBack={() => setStep(0)}
+              onSkip={handleSkipAll}
             />
           )}
           {step === 2 && (
@@ -587,6 +620,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
               onApiKeyChange={setApiKey}
               onNext={handleConnect}
               onBack={() => setStep(1)}
+              onSkip={handleSkipAll}
               loading={connecting}
             />
           )}
@@ -598,6 +632,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
               onSelect={setSelectedDomain}
               onNext={handleSaveDomain}
               onBack={() => setStep(2)}
+              onSkip={handleSkipAll}
               loading={loadingDomains}
             />
           )}
