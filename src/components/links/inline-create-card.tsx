@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { Globe, X, ArrowRight, Plus } from "lucide-react";
+import { Globe, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { CreatableSelect, type SelectOption } from "@/components/ui/creatable-select";
 import { cn, slugify, buildUtmUrl } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -84,20 +85,30 @@ interface InlineCreateCardProps {
   settings: AppSettings | null;
   hasUserRebrandly: boolean;
   onSuccess: () => void;
+  onVehicleCreated?: (v: Vehicle) => void;
+  onCampaignCreated?: (c: Campaign) => void;
 }
 
 export function InlineCreateCard({
-  vehicles,
-  campaigns,
+  vehicles: initialVehicles,
+  campaigns: initialCampaigns,
   settings,
   hasUserRebrandly,
   onSuccess,
+  onVehicleCreated,
+  onCampaignCreated,
 }: InlineCreateCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([]);
   const [form, setForm] = useState<LinkFormState>({ ...emptyForm });
+  const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
   const urlInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync external vehicle/campaign lists into local state
+  useEffect(() => { setVehicles(initialVehicles); }, [initialVehicles]);
+  useEffect(() => { setCampaigns(initialCampaigns); }, [initialCampaigns]);
 
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
@@ -172,6 +183,46 @@ export function InlineCreateCard({
     setRebrandlyDomains([]);
   };
 
+  // ── Inline creation handlers ──────────────────────────────────────────────
+
+  const handleCreateVehicle = useCallback(async (name: string): Promise<SelectOption> => {
+    const slug = slugify(name);
+    const res = await fetch("/api/vehicles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, slug, category: "OTHER", status: "ACTIVE" }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ?? "Erro ao criar veículo");
+    }
+    const created: Vehicle = await res.json();
+    setVehicles((prev) => [created, ...prev]);
+    onVehicleCreated?.(created);
+    toast.success(`Veículo "${name}" criado`);
+    return { id: created.id, name: created.name };
+  }, [onVehicleCreated]);
+
+  const handleCreateCampaign = useCallback(async (name: string): Promise<SelectOption> => {
+    const slug = slugify(name);
+    const res = await fetch("/api/campaigns", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, slug, status: "ACTIVE" }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ?? "Erro ao criar campanha");
+    }
+    const created: Campaign = await res.json();
+    setCampaigns((prev) => [created, ...prev]);
+    onCampaignCreated?.(created);
+    toast.success(`Campanha "${name}" criada`);
+    return { id: created.id, name: created.name };
+  }, [onCampaignCreated]);
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.baseUrl || !form.vehicleId || !form.campaignId) {
@@ -211,10 +262,23 @@ export function InlineCreateCard({
     }
   };
 
+  // ── Vehicle / Campaign select options ────────────────────────────────────
+
+  const vehicleOptions: SelectOption[] = vehicles.map((v) => ({
+    id: v.id,
+    name: v.name,
+    meta: v.category === "OTHER" ? undefined : v.category.toLowerCase().replace("_", " "),
+  }));
+
+  const campaignOptions: SelectOption[] = campaigns.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
+
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
+        "rounded-2xl bg-white border transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-visible shadow-[0_1px_3px_rgba(0,0,0,0.05)]",
         expanded
           ? "border-orange-200 shadow-[0_4px_24px_rgba(249,115,22,0.10)]"
           : "border-gray-100 hover:border-gray-200"
@@ -223,9 +287,8 @@ export function InlineCreateCard({
       <form onSubmit={handleSubmit}>
         {/* Always-visible row */}
         <div className="flex items-center gap-3 p-4">
-          {/* CTA button — left-aligned, prominent */}
           <button
-            type={expanded ? "button" : "button"}
+            type="button"
             onClick={() => {
               if (!expanded) {
                 setExpanded(true);
@@ -280,25 +343,25 @@ export function InlineCreateCard({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-500">Veículo *</Label>
-                <select
+                <CreatableSelect
                   value={form.vehicleId}
-                  onChange={(e) => set("vehicleId", e.target.value)}
-                  className="w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
-                >
-                  <option value="" disabled>Selecionar</option>
-                  {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-                </select>
+                  onChange={(id) => set("vehicleId", id)}
+                  options={vehicleOptions}
+                  placeholder="Selecionar veículo"
+                  createLabel="Criar veículo"
+                  onCreate={handleCreateVehicle}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-500">Campanha *</Label>
-                <select
+                <CreatableSelect
                   value={form.campaignId}
-                  onChange={(e) => set("campaignId", e.target.value)}
-                  className="w-full h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
-                >
-                  <option value="" disabled>Selecionar</option>
-                  {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                  onChange={(id) => set("campaignId", id)}
+                  options={campaignOptions}
+                  placeholder="Selecionar campanha"
+                  createLabel="Criar campanha"
+                  onCreate={handleCreateCampaign}
+                />
               </div>
             </div>
 

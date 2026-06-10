@@ -34,13 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CreatableSelect } from "@/components/ui/creatable-select";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -592,29 +586,27 @@ function LinksPageInner() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <Select value={filterVehicleId} onValueChange={(v) => v !== null && setFilterVehicleId(v)}>
-          <SelectTrigger className="w-48 bg-white border-gray-100">
-            <SelectValue placeholder="Todos os veículos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os veículos</SelectItem>
-            {vehicles.map((v) => (
-              <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CreatableSelect
+          value={filterVehicleId === "all" ? "" : filterVehicleId}
+          onChange={(id) => setFilterVehicleId(id || "all")}
+          options={[
+            { id: "all", name: "Todos os veículos" },
+            ...vehicles.map((v) => ({ id: v.id, name: v.name })),
+          ]}
+          placeholder="Todos os veículos"
+          className="w-48"
+        />
 
-        <Select value={filterCampaignId} onValueChange={(v) => v !== null && setFilterCampaignId(v)}>
-          <SelectTrigger className="w-48 bg-white border-gray-100">
-            <SelectValue placeholder="Todas as campanhas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as campanhas</SelectItem>
-            {campaigns.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CreatableSelect
+          value={filterCampaignId === "all" ? "" : filterCampaignId}
+          onChange={(id) => setFilterCampaignId(id || "all")}
+          options={[
+            { id: "all", name: "Todas as campanhas" },
+            ...campaigns.map((c) => ({ id: c.id, name: c.name })),
+          ]}
+          placeholder="Todas as campanhas"
+          className="w-48"
+        />
 
         <Input
           placeholder="Buscar por slug ou URL..."
