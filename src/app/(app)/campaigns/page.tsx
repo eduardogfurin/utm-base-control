@@ -534,11 +534,11 @@ export default function CampaignsPage() {
                                     title="Excluir"
                                     onClick={() => setDeletingId(campaign.id)}
                                     className="text-gray-400 hover:text-red-700"
-                                  />
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </Button>
                                 }
-                              >
-                                <Trash2 className="size-3.5" />
-                              </AlertDialogTrigger>
+                              />
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Excluir campanha</AlertDialogTitle>

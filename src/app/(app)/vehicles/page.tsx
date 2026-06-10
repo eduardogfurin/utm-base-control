@@ -525,11 +525,11 @@ export default function VehiclesPage() {
                                     title="Excluir"
                                     onClick={() => setDeletingId(vehicle.id)}
                                     className="text-gray-400 hover:text-red-700"
-                                  />
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </Button>
                                 }
-                              >
-                                <Trash2 className="size-3.5" />
-                              </AlertDialogTrigger>
+                              />
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Excluir veículo</AlertDialogTitle>

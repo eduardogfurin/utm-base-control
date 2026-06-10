@@ -103,6 +103,7 @@ function getGreeting() {
 
 interface HeroCreateCardProps {
   totalLinks: number
+  totalClicks: number
   loading: boolean
   vehicles: Vehicle[]
   campaigns: Campaign[]
@@ -140,7 +141,7 @@ interface UtmTemplate {
 }
 
 function HeroCreateCard({
-  totalLinks, loading, vehicles: initialVehicles, campaigns: initialCampaigns,
+  totalLinks, totalClicks, loading, vehicles: initialVehicles, campaigns: initialCampaigns,
   settings, hasUserRebrandly, onSuccess, onVehicleCreated, onCampaignCreated,
 }: HeroCreateCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -267,138 +268,141 @@ function HeroCreateCard({
       <div
         className={cn(
           "w-full max-w-lg rounded-3xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          "bg-gradient-to-b from-[#1a1a2e] to-[#16213e] shadow-[0_24px_60px_rgba(0,0,0,0.35)]",
-          expanded ? "scale-100" : "scale-[0.98] hover:scale-100"
+          "bg-white shadow-[0_8px_40px_rgba(0,0,0,0.12)]",
+          expanded ? "scale-100" : "scale-[0.985] hover:scale-100"
         )}
       >
-        {/* Top section: balance-style total links */}
-        <div className="px-6 pt-6 pb-4 text-center">
-          <p className="text-xs text-blue-300/70 uppercase tracking-widest font-medium mb-1">LINKS CRIADOS</p>
+        {/* ── Top: blue gradient with stats ── */}
+        <div className="bg-gradient-to-b from-blue-400 to-blue-500 px-6 pt-6 pb-8 text-center relative">
+          <p className="text-[11px] text-white/70 uppercase tracking-widest font-semibold mb-3">VISÃO GERAL</p>
           {loading ? (
-            <div className="h-12 flex items-center justify-center">
-              <div className="w-28 h-9 rounded-xl bg-white/10 animate-pulse" />
+            <div className="flex items-center justify-center gap-8 h-14">
+              <div className="w-20 h-9 rounded-xl bg-white/20 animate-pulse" />
+              <div className="w-px h-8 bg-white/20" />
+              <div className="w-20 h-9 rounded-xl bg-white/20 animate-pulse" />
             </div>
           ) : (
-            <p className="text-5xl font-bold text-white tabular-nums tracking-tight">
-              {(totalLinks).toLocaleString("pt-BR")}
-            </p>
+            <div className="flex items-center justify-center gap-6">
+              <div className="text-center">
+                <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">
+                  {totalLinks.toLocaleString("pt-BR")}
+                </p>
+                <p className="text-xs text-white/70 mt-1.5 font-medium">links criados</p>
+              </div>
+              <div className="w-px h-10 bg-white/25" />
+              <div className="text-center">
+                <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">
+                  {totalClicks.toLocaleString("pt-BR")}
+                </p>
+                <p className="text-xs text-white/70 mt-1.5 font-medium">cliques totais</p>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* URL input area (always visible) */}
-        <div className="mx-4 mb-3">
-          <div
-            className={cn(
-              "rounded-2xl transition-all duration-300",
-              expanded
-                ? "bg-white/5 border border-white/10"
-                : "bg-white/10 hover:bg-white/15 border border-white/0"
+        {/* ── URL input row (always visible, white section) ── */}
+        <div className="px-4 pt-4 pb-3">
+          <div className={cn(
+            "flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200",
+            expanded ? "border-blue-200 bg-blue-50/40" : "border-gray-200 bg-gray-50 hover:border-gray-300"
+          )}>
+            <Globe size={15} className="text-gray-400 shrink-0" />
+            <input
+              ref={urlInputRef}
+              value={form.baseUrl}
+              onChange={(e) => {
+                set("baseUrl", e.target.value)
+                if (e.target.value && !expanded) setExpanded(true)
+                if (!e.target.value && !form.vehicleId) setExpanded(false)
+              }}
+              placeholder="Cole o link a encurtar..."
+              className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 outline-none"
+            />
+            {expanded && (
+              <button type="button" onClick={handleCancel} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <X size={14} />
+              </button>
             )}
-          >
-            <div className="flex items-center gap-3 px-4 py-3">
-              <Globe size={15} className="text-blue-300/70 shrink-0" />
-              <input
-                ref={urlInputRef}
-                value={form.baseUrl}
-                onChange={(e) => {
-                  set("baseUrl", e.target.value)
-                  if (e.target.value && !expanded) setExpanded(true)
-                  if (!e.target.value && !form.vehicleId) setExpanded(false)
-                }}
-                onFocus={() => { if (!expanded) setExpanded(true) }}
-                placeholder="Cole o link a encurtar..."
-                className="flex-1 bg-transparent text-sm text-white placeholder:text-blue-200/40 outline-none"
-              />
-              {expanded && (
-                <button type="button" onClick={handleCancel} className="shrink-0 text-blue-200/40 hover:text-white transition-colors">
-                  <X size={14} />
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
-        {/* Expandable UTM form */}
+        {/* ── Expandable form ── */}
         <div className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
           expanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
         )}>
           <form onSubmit={handleSubmit}>
-            <div className="px-4 pb-4 space-y-3">
-              {/* Vehicle + Campaign */}
-              <div className="space-y-2">
-                <CreatableSelect
-                  value={form.vehicleId}
-                  onChange={(id) => set("vehicleId", id)}
-                  options={vehicleOptions}
-                  placeholder="Selecionar veículo *"
-                  createLabel="Criar veículo"
-                  onCreate={handleCreateVehicle}
-                  className="bg-white/10 border-white/10 text-white hover:border-white/20 focus-visible:border-blue-400 [&_span]:text-white [&_svg]:text-blue-300"
-                />
-                <CreatableSelect
-                  value={form.campaignId}
-                  onChange={(id) => set("campaignId", id)}
-                  options={campaignOptions}
-                  placeholder="Selecionar campanha *"
-                  createLabel="Criar campanha"
-                  onCreate={handleCreateCampaign}
-                  className="bg-white/10 border-white/10 text-white hover:border-white/20 focus-visible:border-blue-400 [&_span]:text-white [&_svg]:text-blue-300"
-                />
-              </div>
+            <div className="px-4 pb-4 space-y-2.5">
+              <div className="h-px bg-gray-100 mb-1" />
 
-              <div className="h-px bg-white/10" />
+              {/* Vehicle + Campaign */}
+              <CreatableSelect
+                value={form.vehicleId}
+                onChange={(id) => set("vehicleId", id)}
+                options={vehicleOptions}
+                placeholder="Selecionar veículo *"
+                createLabel="Criar veículo"
+                onCreate={handleCreateVehicle}
+              />
+              <CreatableSelect
+                value={form.campaignId}
+                onChange={(id) => set("campaignId", id)}
+                options={campaignOptions}
+                placeholder="Selecionar campanha *"
+                createLabel="Criar campanha"
+                onCreate={handleCreateCampaign}
+              />
+
+              <div className="h-px bg-gray-100 my-1" />
 
               {/* UTM params — vertical */}
-              <div className="space-y-2">
-                {([
-                  { field: "utmSource" as keyof LinkFormState, placeholder: "UTM Source (ex: google)" },
-                  { field: "utmMedium" as keyof LinkFormState, placeholder: "UTM Medium (ex: cpc)" },
-                  { field: "utmCampaign" as keyof LinkFormState, placeholder: "UTM Campaign (ex: lancamento)" },
-                  { field: "utmContent" as keyof LinkFormState, placeholder: "UTM Content (ex: banner-topo)" },
-                  { field: "utmTerm" as keyof LinkFormState, placeholder: "UTM Term (ex: palavra-chave)" },
-                ]).map(({ field, placeholder }) => (
-                  <input
-                    key={field}
-                    value={form[field] as string}
-                    onChange={(e) => set(field, e.target.value)}
-                    placeholder={placeholder}
-                    className="w-full rounded-xl bg-white/10 border border-white/10 px-3.5 py-2.5 text-sm text-white placeholder:text-blue-200/40 outline-none focus:border-blue-400/60 transition-colors"
-                  />
-                ))}
-              </div>
+              {([
+                { field: "utmSource" as keyof LinkFormState, placeholder: "UTM Source (ex: google)" },
+                { field: "utmMedium" as keyof LinkFormState, placeholder: "UTM Medium (ex: cpc)" },
+                { field: "utmCampaign" as keyof LinkFormState, placeholder: "UTM Campaign (ex: lancamento)" },
+                { field: "utmContent" as keyof LinkFormState, placeholder: "UTM Content (ex: banner-topo)" },
+                { field: "utmTerm" as keyof LinkFormState, placeholder: "UTM Term (ex: palavra-chave)" },
+              ]).map(({ field, placeholder }) => (
+                <input
+                  key={field}
+                  value={form[field] as string}
+                  onChange={(e) => set(field, e.target.value)}
+                  placeholder={placeholder}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
+                />
+              ))}
 
               {/* Slug — last */}
               <input
                 value={form.slug}
                 onChange={(e) => set("slug", e.target.value)}
                 placeholder="Slug (gerado automaticamente)"
-                className="w-full rounded-xl bg-white/10 border border-white/10 px-3.5 py-2.5 text-sm text-white/70 font-mono placeholder:text-blue-200/30 outline-none focus:border-blue-400/60 transition-colors"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 font-mono placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
               />
 
               {/* URL Preview */}
               {form.baseUrl && (
-                <div className="rounded-xl bg-white/5 border border-white/10 px-3.5 py-2.5">
-                  <p className="text-[10px] text-blue-200/50 uppercase tracking-wider mb-1">Preview</p>
-                  <p className="text-xs text-blue-100/70 break-all font-mono leading-relaxed">{previewUrl}</p>
+                <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-2.5">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Preview</p>
+                  <p className="text-xs text-gray-500 break-all font-mono leading-relaxed">{previewUrl}</p>
                 </div>
               )}
 
               {/* Rebrandly */}
               {hasRebrandly && (
-                <div className="rounded-xl bg-white/5 border border-white/10 px-3.5 py-2.5 space-y-2">
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-3.5 py-2.5 space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-white/80">Encurtar via Rebrandly</p>
+                    <p className="text-sm text-gray-700 font-medium">Encurtar via Rebrandly</p>
                     <Switch checked={form.shortenWithRebrandly} onCheckedChange={(v) => set("shortenWithRebrandly", v)} />
                   </div>
                   {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
                     <select
                       value={form.rebrandlyDomain}
                       onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                      className="w-full rounded-xl bg-white/10 border border-white/10 px-3 py-2 text-sm text-white outline-none focus:border-blue-400/60"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-blue-400"
                     >
                       {rebrandlyDomains.map((d) => (
-                        <option key={d.id} value={d.fullName} className="bg-[#16213e]">{d.fullName}</option>
+                        <option key={d.id} value={d.fullName}>{d.fullName}</option>
                       ))}
                     </select>
                   )}
@@ -406,19 +410,19 @@ function HeroCreateCard({
               )}
             </div>
 
-            {/* Bottom action buttons */}
+            {/* Action buttons */}
             <div className="flex gap-3 px-4 pb-5">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 rounded-2xl bg-white/10 py-3.5 text-sm font-medium text-white/70 hover:bg-white/15 transition-colors"
+                className="flex-1 rounded-2xl border border-gray-200 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 rounded-2xl bg-blue-500 hover:bg-blue-400 py-3.5 text-sm font-semibold text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+                className="flex-1 rounded-2xl bg-blue-500 hover:bg-blue-400 py-3.5 text-sm font-semibold text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(59,130,246,0.4)]"
               >
                 <Plus size={15} />
                 {saving ? "Criando..." : "Criar Link"}
@@ -525,6 +529,7 @@ export default function DashboardPage() {
       {/* ── Hero create card ──────────────────────────────────────── */}
       <HeroCreateCard
         totalLinks={data?.totalLinks ?? 0}
+        totalClicks={data?.totalClicks ?? 0}
         loading={loading}
         vehicles={vehicles}
         campaigns={campaigns}
