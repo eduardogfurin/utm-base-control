@@ -53,9 +53,12 @@ export default function IntegrationsPage() {
     setLoadingDomains(true);
     fetch("/api/integrations/rebrandly/domains")
       .then((r) => r.json())
-      .then((data: RebrandlyDomain[]) => {
-        setDomains(data ?? []);
-        if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
+      .then((res: { domains: RebrandlyDomain[]; defaultDomain: string | null } | RebrandlyDomain[]) => {
+        const data = Array.isArray(res) ? res : (res?.domains ?? []);
+        const defaultDomain = Array.isArray(res) ? null : res?.defaultDomain;
+        setDomains(data);
+        if (defaultDomain) setSelectedDomain(defaultDomain);
+        else if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
       })
       .catch(() => {})
       .finally(() => setLoadingDomains(false));
@@ -80,9 +83,12 @@ export default function IntegrationsPage() {
       setLoadingDomains(true);
       const domainsRes = await fetch("/api/integrations/rebrandly/domains");
       if (domainsRes.ok) {
-        const data: RebrandlyDomain[] = await domainsRes.json();
-        setDomains(data ?? []);
-        if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
+        const res = await domainsRes.json();
+        const data: RebrandlyDomain[] = Array.isArray(res) ? res : (res?.domains ?? []);
+        const defaultDomain = Array.isArray(res) ? null : res?.defaultDomain;
+        setDomains(data);
+        if (defaultDomain) setSelectedDomain(defaultDomain);
+        else if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
       }
 
       // Reload integrations
