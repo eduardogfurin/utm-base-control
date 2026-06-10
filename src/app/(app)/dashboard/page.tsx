@@ -150,10 +150,29 @@ function HeroCreateCard({
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles)
   const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns)
   const [rebrandlyDomains, setRebrandlyDomains] = useState<RebrandlyDomain[]>([])
+  const [ogData, setOgData] = useState<{ title: string | null; description: string | null; image: string | null } | null>(null)
+  const [ogLoading, setOgLoading] = useState(false)
   const urlInputRef = useRef<HTMLInputElement>(null)
+  const ogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { setVehicles(initialVehicles) }, [initialVehicles])
   useEffect(() => { setCampaigns(initialCampaigns) }, [initialCampaigns])
+
+  // Fetch OG preview with debounce
+  useEffect(() => {
+    if (ogTimerRef.current) clearTimeout(ogTimerRef.current)
+    if (!form.baseUrl) { setOgData(null); return }
+    try { new URL(form.baseUrl) } catch { setOgData(null); return }
+    ogTimerRef.current = setTimeout(() => {
+      setOgLoading(true)
+      fetch(`/api/og-preview?url=${encodeURIComponent(form.baseUrl)}`)
+        .then((r) => r.json())
+        .then((d) => setOgData(d))
+        .catch(() => setOgData(null))
+        .finally(() => setOgLoading(false))
+    }, 600)
+    return () => { if (ogTimerRef.current) clearTimeout(ogTimerRef.current) }
+  }, [form.baseUrl])
 
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus)
 
@@ -206,7 +225,13 @@ function HeroCreateCard({
     utmCampaign: form.utmCampaign || null, utmContent: form.utmContent || null, utmTerm: form.utmTerm || null,
   })
 
-  const handleCancel = () => { setExpanded(false); setForm({ ...emptyForm }); setRebrandlyDomains([]) }
+  const handleCancel = () => {
+    setExpanded(false)
+    setForm({ ...emptyForm })
+    setRebrandlyDomains([])
+    setOgData(null)
+    if (ogTimerRef.current) clearTimeout(ogTimerRef.current)
+  }
 
   const handleCreateVehicle = useCallback(async (name: string): Promise<SelectOption> => {
     const res = await fetch("/api/vehicles", {
@@ -279,27 +304,56 @@ function HeroCreateCard({
           </p>
 
           {form.baseUrl ? (
-            /* ── URL Preview (Slack/WhatsApp style) ── */
-            <div className="flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 text-left border border-white/20">
-              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                <Globe size={16} className="text-white" />
+            /* ── URL Preview (WhatsApp/Slack OG style) ── */
+            <div className="rounded-2xl overflow-hidden bg-white/15 border border-white/20 text-left">
+              {/* OG image */}
+              {ogLoading && (
+                <div className="h-32 bg-white/10 animate-pulse" />
+              )}
+              {!ogLoading && ogData?.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={ogData.image}
+                  alt=""
+                  className="w-full h-32 object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                />
+              )}
+              <div className="flex items-center gap-3 px-4 py-3">
+                {!ogLoading && !ogData?.image && (
+                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <Globe size={16} className="text-white" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  {ogData?.title ? (
+                    <>
+                      <p className="text-xs font-semibold text-white truncate leading-snug">{ogData.title}</p>
+                      {ogData.description && (
+                        <p className="text-[11px] text-white/60 truncate mt-0.5">{ogData.description}</p>
+                      )}
+                      <p className="text-[10px] text-white/40 mt-1 truncate">
+                        {(() => { try { return new URL(form.baseUrl).hostname } catch { return form.baseUrl } })()}
+                      </p>
+                    </>
+                  ) : (
+                    (() => {
+                      try {
+                        const u = new URL(form.baseUrl)
+                        return (
+                          <>
+                            <p className="text-xs font-semibold text-white truncate">{u.hostname}</p>
+                            <p className="text-[11px] text-white/60 truncate">{u.pathname || "/"}</p>
+                          </>
+                        )
+                      } catch {
+                        return <p className="text-xs text-white/70 truncate">{form.baseUrl}</p>
+                      }
+                    })()
+                  )}
+                </div>
+                <div className="shrink-0 w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_6px_rgba(110,231,183,0.8)]" />
               </div>
-              <div className="min-w-0 flex-1">
-                {(() => {
-                  try {
-                    const u = new URL(form.baseUrl)
-                    return (
-                      <>
-                        <p className="text-xs font-semibold text-white truncate">{u.hostname}</p>
-                        <p className="text-[11px] text-white/60 truncate">{u.pathname + u.search || "/"}</p>
-                      </>
-                    )
-                  } catch {
-                    return <p className="text-xs text-white/70 truncate">{form.baseUrl}</p>
-                  }
-                })()}
-              </div>
-              <div className="shrink-0 w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_6px_rgba(110,231,183,0.8)]" />
             </div>
           ) : loading ? (
             <div className="flex items-center justify-center gap-8 h-14">
