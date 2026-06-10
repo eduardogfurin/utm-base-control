@@ -171,7 +171,7 @@ export function Sidebar() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <aside className="w-60 h-screen sticky top-0 bg-white dark:bg-[oklch(0.11_0_0)] border-r border-gray-100 dark:border-white/7 flex flex-col shadow-sm" data-sidebar>
+    <aside className="w-60 h-screen sticky top-0 bg-white dark:bg-[oklch(0.18_0_0)] border-r border-gray-100 dark:border-white/8 flex flex-col shadow-sm" data-sidebar>
       {/* Logo */}
       <div className="h-14 flex items-center px-4 border-b border-gray-100 dark:border-white/7 flex-shrink-0">
         <div className="flex items-center gap-2.5">
