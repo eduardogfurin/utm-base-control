@@ -144,7 +144,7 @@ export default function TrackingPage() {
       <div className="grid grid-cols-12 gap-4">
 
         {/* KPI: total clicks */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliques</span>
             <span className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center">
@@ -162,7 +162,7 @@ export default function TrackingPage() {
         </div>
 
         {/* KPI: total links */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Links</span>
             <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center">
@@ -180,7 +180,7 @@ export default function TrackingPage() {
         </div>
 
         {/* KPI: top value */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Líder</span>
             <span className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
@@ -202,7 +202,7 @@ export default function TrackingPage() {
         </div>
 
         {/* KPI: dimension */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dimensão</span>
             <span className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center">
@@ -218,7 +218,7 @@ export default function TrackingPage() {
         </div>
 
         {/* Bar chart — col 8 */}
-        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -259,7 +259,7 @@ export default function TrackingPage() {
                 />
                 <Tooltip
                   formatter={(val: unknown) => [(val as number).toLocaleString("pt-BR"), "cliques"]}
-                  contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "oklch(0.22 0 0)", color: "#e5e7eb", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#2d2e31", color: "#e5e7eb", fontSize: 12 }}
                 />
                 <Bar dataKey="clicks" radius={[6, 6, 0, 0]}>
                   {chartData.map((_, idx) => (
@@ -272,7 +272,7 @@ export default function TrackingPage() {
         </div>
 
         {/* Ranked table — col 4 */}
-        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.20_0_0)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-white dark:bg-[oklch(0.235_0.004_260)] border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-50 dark:border-white/6 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking</h3>
             <span className="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center">
