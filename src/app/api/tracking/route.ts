@@ -25,6 +25,8 @@ export async function GET(req: NextRequest) {
     const dimension = (searchParams.get("dimension") ?? "campaign") as Dimension;
 
     const links = await prisma.link.findMany({
+      take: 5000,
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         slug: true,
@@ -101,7 +103,9 @@ export async function GET(req: NextRequest) {
     const totalLinks = rows.reduce((sum, r) => sum + r.links, 0);
 
     return NextResponse.json({ rows, totalClicks, totalLinks });
-  } catch {
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error("[tracking] error:", msg, err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

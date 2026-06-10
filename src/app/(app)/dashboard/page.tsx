@@ -272,10 +272,36 @@ function HeroCreateCard({
           expanded ? "scale-100" : "scale-[0.985] hover:scale-100"
         )}
       >
-        {/* ── Top: blue gradient with stats ── */}
-        <div className="bg-gradient-to-b from-blue-400 to-blue-500 px-6 pt-6 pb-8 text-center relative">
-          <p className="text-[11px] text-white/70 uppercase tracking-widest font-semibold mb-3">VISÃO GERAL</p>
-          {loading ? (
+        {/* ── Top: blue gradient — stats or URL preview ── */}
+        <div className="bg-gradient-to-b from-blue-400 to-blue-500 px-6 pt-6 pb-8 text-center relative overflow-hidden">
+          <p className="text-[11px] text-white/70 uppercase tracking-widest font-semibold mb-3">
+            {form.baseUrl ? "LINK PARA ENCURTAR" : "VISÃO GERAL"}
+          </p>
+
+          {form.baseUrl ? (
+            /* ── URL Preview (Slack/WhatsApp style) ── */
+            <div className="flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 text-left border border-white/20">
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <Globe size={16} className="text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                {(() => {
+                  try {
+                    const u = new URL(form.baseUrl)
+                    return (
+                      <>
+                        <p className="text-xs font-semibold text-white truncate">{u.hostname}</p>
+                        <p className="text-[11px] text-white/60 truncate">{u.pathname + u.search || "/"}</p>
+                      </>
+                    )
+                  } catch {
+                    return <p className="text-xs text-white/70 truncate">{form.baseUrl}</p>
+                  }
+                })()}
+              </div>
+              <div className="shrink-0 w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_6px_rgba(110,231,183,0.8)]" />
+            </div>
+          ) : loading ? (
             <div className="flex items-center justify-center gap-8 h-14">
               <div className="w-20 h-9 rounded-xl bg-white/20 animate-pulse" />
               <div className="w-px h-8 bg-white/20" />
@@ -357,11 +383,11 @@ function HeroCreateCard({
 
               {/* UTM params — vertical */}
               {([
-                { field: "utmSource" as keyof LinkFormState, placeholder: "UTM Source (ex: google)" },
-                { field: "utmMedium" as keyof LinkFormState, placeholder: "UTM Medium (ex: cpc)" },
-                { field: "utmCampaign" as keyof LinkFormState, placeholder: "UTM Campaign (ex: lancamento)" },
-                { field: "utmContent" as keyof LinkFormState, placeholder: "UTM Content (ex: banner-topo)" },
-                { field: "utmTerm" as keyof LinkFormState, placeholder: "UTM Term (ex: palavra-chave)" },
+                { field: "utmSource" as keyof LinkFormState, placeholder: "Source (ex: google)" },
+                { field: "utmMedium" as keyof LinkFormState, placeholder: "Medium (ex: cpc)" },
+                { field: "utmCampaign" as keyof LinkFormState, placeholder: "Campaign (ex: lancamento)" },
+                { field: "utmContent" as keyof LinkFormState, placeholder: "Content (ex: banner-topo)" },
+                { field: "utmTerm" as keyof LinkFormState, placeholder: "Term (ex: palavra-chave)" },
               ]).map(({ field, placeholder }) => (
                 <input
                   key={field}

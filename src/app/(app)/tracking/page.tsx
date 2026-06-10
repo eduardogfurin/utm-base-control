@@ -87,8 +87,11 @@ export default function TrackingPage() {
     setLoading(true)
     setError(null)
     fetch(`/api/tracking?dimension=${dimension}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Falha ao carregar dados")
+      .then(async (r) => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}))
+          throw new Error(body?.error ?? `Erro ${r.status}`)
+        }
         return r.json()
       })
       .then(setData)
