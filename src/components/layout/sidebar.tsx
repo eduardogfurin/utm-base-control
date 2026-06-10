@@ -15,7 +15,6 @@ import {
   Settings,
   Users,
   LogOut,
-  ChevronDown,
   UserCircle,
   BarChart2,
   ChevronRight,
@@ -164,36 +163,23 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const [navOpen, setNavOpen] = useState(true);
 
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <aside className="w-60 h-screen sticky top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm">
-      {/* Logo + hamburger */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100 flex-shrink-0">
+    <aside className="w-60 h-screen sticky top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm" data-sidebar>
+      {/* Logo */}
+      <div className="h-14 flex items-center px-4 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
             <Link2 size={13} className="text-white" />
           </div>
           <span className="font-semibold text-sm text-gray-800 tracking-tight">UTM Base Control</span>
         </div>
-        <button
-          onClick={() => setNavOpen((o) => !o)}
-          className="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          title={navOpen ? "Recolher menu" : "Expandir menu"}
-        >
-          <Menu size={15} />
-        </button>
       </div>
 
       {/* Nav — scrollable area between header and footer */}
-      <nav
-        className={cn(
-          "flex-1 py-4 px-3 space-y-0.5 overflow-y-auto min-h-0 transition-all duration-300",
-          !navOpen && "opacity-0 pointer-events-none"
-        )}
-      >
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto min-h-0">
         {topNav.map((item) => (
           <NavLink key={item.href} {...item} pathname={pathname} />
         ))}
@@ -234,7 +220,7 @@ export function Sidebar() {
                 {session?.user?.email}
               </p>
             </div>
-            <ChevronDown size={12} className="text-gray-400 flex-shrink-0" />
+            <Menu size={14} className="text-gray-400 flex-shrink-0" />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-52">
             {isAdmin && (

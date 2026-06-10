@@ -25,14 +25,15 @@ export async function GET() {
     if (!res.ok) return NextResponse.json([]);
 
     const domains = await res.json();
-    return NextResponse.json(
+    return NextResponse.json({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (domains ?? []).map((d: any) => ({
+      domains: (domains ?? []).map((d: any) => ({
         id: d.id,
         fullName: d.fullName,
         active: d.active ?? true,
-      }))
-    );
+      })),
+      defaultDomain: integration.domain ?? null,
+    });
   } catch {
     return NextResponse.json([]);
   }

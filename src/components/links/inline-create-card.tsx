@@ -53,12 +53,12 @@ interface LinkFormState {
   baseUrl: string;
   vehicleId: string;
   campaignId: string;
-  slug: string;
   utmSource: string;
   utmMedium: string;
   utmCampaign: string;
   utmContent: string;
   utmTerm: string;
+  slug: string;
   shortenWithRebrandly: boolean;
   rebrandlyDomain: string;
 }
@@ -67,12 +67,12 @@ const emptyForm: LinkFormState = {
   baseUrl: "",
   vehicleId: "",
   campaignId: "",
-  slug: "",
   utmSource: "",
   utmMedium: "",
   utmCampaign: "",
   utmContent: "",
   utmTerm: "",
+  slug: "",
   shortenWithRebrandly: false,
   rebrandlyDomain: "",
 };
@@ -106,7 +106,6 @@ export function InlineCreateCard({
   const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync external vehicle/campaign lists into local state
   useEffect(() => { setVehicles(initialVehicles); }, [initialVehicles]);
   useEffect(() => { setCampaigns(initialCampaigns); }, [initialCampaigns]);
 
@@ -123,14 +122,12 @@ export function InlineCreateCard({
     if (!expanded || !hasRebrandly) return;
     fetch("/api/integrations/rebrandly/domains")
       .then((r) => r.json())
-      .then((data: RebrandlyDomain[]) => {
-        setRebrandlyDomains(data ?? []);
+      .then((res: { domains: RebrandlyDomain[]; defaultDomain: string | null }) => {
+        const domains = res?.domains ?? [];
+        setRebrandlyDomains(domains);
         setForm((prev) => {
-          // Prefer the domain saved in settings, then first from list
-          const defaultDomain =
-            settings?.rebrandlyDomain ||
-            data?.[0]?.fullName ||
-            "";
+          // Priority: user-selected domain from integration > first domain in list
+          const defaultDomain = res?.defaultDomain || domains?.[0]?.fullName || "";
           return {
             ...prev,
             shortenWithRebrandly: true,
@@ -139,8 +136,9 @@ export function InlineCreateCard({
         });
       })
       .catch(() => {});
-  }, [expanded, hasRebrandly, settings?.rebrandlyDomain]);
+  }, [expanded, hasRebrandly]);
 
+  // Auto-generate slug from vehicle + campaign slugs
   useEffect(() => {
     if (!expanded) return;
     const veh = vehicles.find((v) => v.id === form.vehicleId);
@@ -150,6 +148,7 @@ export function InlineCreateCard({
     }
   }, [form.vehicleId, form.campaignId, expanded, vehicles, campaigns]);
 
+  // Load UTM template when vehicle changes
   useEffect(() => {
     if (!form.vehicleId || !expanded) return;
     fetch("/api/templates")
@@ -190,19 +189,15 @@ export function InlineCreateCard({
     setRebrandlyDomains([]);
   };
 
-  // ── Inline creation handlers ──────────────────────────────────────────────
+  // ── Inline creation ───────────────────────────────────────────────────────
 
   const handleCreateVehicle = useCallback(async (name: string): Promise<SelectOption> => {
-    const slug = slugify(name);
     const res = await fetch("/api/vehicles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, slug, category: "OTHER", status: "ACTIVE" }),
+      body: JSON.stringify({ name, slug: slugify(name), category: "OTHER", status: "ACTIVE" }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error ?? "Erro ao criar veículo");
-    }
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? "Erro ao criar veículo"); }
     const created: Vehicle = await res.json();
     setVehicles((prev) => [created, ...prev]);
     onVehicleCreated?.(created);
@@ -211,16 +206,12 @@ export function InlineCreateCard({
   }, [onVehicleCreated]);
 
   const handleCreateCampaign = useCallback(async (name: string): Promise<SelectOption> => {
-    const slug = slugify(name);
     const res = await fetch("/api/campaigns", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, slug, status: "ACTIVE" }),
+      body: JSON.stringify({ name, slug: slugify(name), status: "ACTIVE" }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error ?? "Erro ao criar campanha");
-    }
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? "Erro ao criar campanha"); }
     const created: Campaign = await res.json();
     setCampaigns((prev) => [created, ...prev]);
     onCampaignCreated?.(created);
@@ -255,10 +246,7 @@ export function InlineCreateCard({
           rebrandlyDomain: form.rebrandlyDomain || undefined,
         }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Erro ao criar link");
-      }
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? "Erro ao criar link"); }
       toast.success("Link criado com sucesso!");
       handleCancel();
       onSuccess();
@@ -269,18 +257,13 @@ export function InlineCreateCard({
     }
   };
 
-  // ── Vehicle / Campaign select options ────────────────────────────────────
-
   const vehicleOptions: SelectOption[] = vehicles.map((v) => ({
     id: v.id,
     name: v.name,
     meta: v.category === "OTHER" ? undefined : v.category.toLowerCase().replace("_", " "),
   }));
 
-  const campaignOptions: SelectOption[] = campaigns.map((c) => ({
-    id: c.id,
-    name: c.name,
-  }));
+  const campaignOptions: SelectOption[] = campaigns.map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <div
@@ -296,12 +279,7 @@ export function InlineCreateCard({
         <div className="flex items-center gap-3 p-4">
           <button
             type="button"
-            onClick={() => {
-              if (!expanded) {
-                setExpanded(true);
-                setTimeout(() => urlInputRef.current?.focus(), 50);
-              }
-            }}
+            onClick={() => { if (!expanded) { setExpanded(true); setTimeout(() => urlInputRef.current?.focus(), 50); } }}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all duration-300",
               expanded
@@ -342,59 +320,50 @@ export function InlineCreateCard({
         <div
           className={cn(
             "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-            expanded ? "max-h-[900px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+            expanded ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
           )}
         >
-          <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-4">
-            {/* Vehicle + Campaign */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Veículo *</Label>
-                <CreatableSelect
-                  value={form.vehicleId}
-                  onChange={(id) => set("vehicleId", id)}
-                  options={vehicleOptions}
-                  placeholder="Selecionar veículo"
-                  createLabel="Criar veículo"
-                  onCreate={handleCreateVehicle}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Campanha *</Label>
-                <CreatableSelect
-                  value={form.campaignId}
-                  onChange={(id) => set("campaignId", id)}
-                  options={campaignOptions}
-                  placeholder="Selecionar campanha"
-                  createLabel="Criar campanha"
-                  onCreate={handleCreateCampaign}
-                />
-              </div>
+          <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-3">
+
+            {/* Vehicle */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-500">Veículo *</Label>
+              <CreatableSelect
+                value={form.vehicleId}
+                onChange={(id) => set("vehicleId", id)}
+                options={vehicleOptions}
+                placeholder="Selecionar veículo"
+                createLabel="Criar veículo"
+                onCreate={handleCreateVehicle}
+              />
             </div>
 
-            {/* Slug */}
+            {/* Campaign */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">Slug</Label>
-              <Input
-                placeholder="gerado-automaticamente"
-                value={form.slug}
-                onChange={(e) => set("slug", e.target.value)}
-                className="bg-white border-gray-200 font-mono text-xs text-gray-500 focus:border-orange-400 transition-colors duration-200"
+              <Label className="text-xs text-gray-500">Campanha *</Label>
+              <CreatableSelect
+                value={form.campaignId}
+                onChange={(id) => set("campaignId", id)}
+                options={campaignOptions}
+                placeholder="Selecionar campanha"
+                createLabel="Criar campanha"
+                onCreate={handleCreateCampaign}
               />
             </div>
 
             <Separator className="bg-gray-100" />
 
-            {/* UTM Fields */}
+            {/* UTM Fields — vertical */}
             <div>
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Parâmetros UTM</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 {(
                   [
                     { field: "utmSource", label: "Source", placeholder: "ex: google" },
                     { field: "utmMedium", label: "Medium", placeholder: "ex: cpc" },
                     { field: "utmCampaign", label: "Campaign", placeholder: "ex: lancamento-2026" },
                     { field: "utmContent", label: "Content", placeholder: "ex: banner-topo" },
+                    { field: "utmTerm", label: "Term", placeholder: "ex: palavra-chave" },
                   ] as { field: keyof LinkFormState; label: string; placeholder: string }[]
                 ).map(({ field, label, placeholder }) => (
                   <div key={field} className="space-y-1.5">
@@ -407,16 +376,18 @@ export function InlineCreateCard({
                     />
                   </div>
                 ))}
-                <div className="col-span-2 space-y-1.5">
-                  <Label className="text-xs text-gray-500">Term</Label>
-                  <Input
-                    placeholder="ex: palavra-chave"
-                    value={form.utmTerm}
-                    onChange={(e) => set("utmTerm", e.target.value)}
-                    className="bg-white border-gray-200 text-sm focus:border-orange-400 transition-colors duration-200"
-                  />
-                </div>
               </div>
+            </div>
+
+            {/* Slug — last */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-500">Slug</Label>
+              <Input
+                placeholder="gerado-automaticamente"
+                value={form.slug}
+                onChange={(e) => set("slug", e.target.value)}
+                className="bg-white border-gray-200 font-mono text-xs text-gray-500 focus:border-orange-400 transition-colors duration-200"
+              />
             </div>
 
             {/* Preview URL */}
@@ -441,10 +412,7 @@ export function InlineCreateCard({
                   />
                 </div>
                 {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
-                  <div className={cn(
-                    "transition-all duration-300",
-                    form.shortenWithRebrandly ? "opacity-100" : "opacity-0"
-                  )}>
+                  <div>
                     <Label className="text-xs text-gray-500">Domínio</Label>
                     <select
                       value={form.rebrandlyDomain}
@@ -462,12 +430,7 @@ export function InlineCreateCard({
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleCancel}
-                className="text-gray-500 hover:text-gray-800"
-              >
+              <Button type="button" variant="ghost" onClick={handleCancel} className="text-gray-500 hover:text-gray-800">
                 Cancelar
               </Button>
               <Button
