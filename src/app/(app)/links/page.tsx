@@ -12,7 +12,6 @@ import {
   Trash2,
   Link2,
   ChevronDown,
-  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -661,10 +660,13 @@ function LinksPageInner() {
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50/60">
               <TableHead className="text-gray-400">Link</TableHead>
-              <TableHead className="text-gray-400">UTMs</TableHead>
+              <TableHead className="text-gray-400 w-10"></TableHead>
+              <TableHead className="text-gray-400">Campanha</TableHead>
+              <TableHead className="text-gray-400">Veículo</TableHead>
               <TableHead className="text-gray-400 text-right">Cliques</TableHead>
               <TableHead className="text-gray-400">Status</TableHead>
               <TableHead className="text-gray-400">Criado</TableHead>
+              <TableHead className="text-gray-400 w-10"></TableHead>
               <TableHead className="text-gray-400 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -672,14 +674,14 @@ function LinksPageInner() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-gray-100">
-                  {Array.from({ length: 6 }).map((__, j) => (
+                  {Array.from({ length: 9 }).map((__, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : links.length === 0 ? (
               <TableRow className="border-gray-100">
-                <TableCell colSpan={6} className="h-32 text-center">
+                <TableCell colSpan={9} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2 text-gray-400">
                     <Link2 className="h-8 w-8" />
                     <p className="text-sm">Nenhum link encontrado</p>
@@ -695,7 +697,8 @@ function LinksPageInner() {
                   key={link.id}
                   className="border-gray-100 hover:bg-gray-50/50 transition-colors duration-150"
                 >
-                  <TableCell className="min-w-[240px]">
+                  {/* Link — thumbnail + URL */}
+                  <TableCell className="min-w-[200px]">
                     <div className="flex items-start gap-2.5">
                       <OgThumbnail url={link.baseUrl} />
                       <div className="min-w-0">
@@ -704,7 +707,7 @@ function LinksPageInner() {
                             href={`https://${link.rebrandly.shortUrl}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-gray-800 hover:text-orange-500 flex items-center gap-1 transition-colors duration-200"
+                            className="text-sm font-medium text-gray-800 hover:text-blue-500 flex items-center gap-1 transition-colors duration-200"
                           >
                             {link.rebrandly.shortUrl}
                             <ExternalLink className="h-3 w-3 shrink-0" />
@@ -712,51 +715,83 @@ function LinksPageInner() {
                         ) : (
                           <span className="text-sm font-medium text-gray-800 font-mono">/{link.slug}</span>
                         )}
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {link.vehicle.name} · {link.campaign.name}
+                        <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[200px]" title={link.baseUrl}>
+                          {link.baseUrl}
                         </p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell><UtmPopover link={link} /></TableCell>
+
+                  {/* Copy — icon button */}
+                  <TableCell className="w-10 px-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
+                      title={link.rebrandly ? "Copiar link curto" : "Copiar URL completa"}
+                      onClick={() =>
+                        link.rebrandly
+                          ? copyToClipboard(`https://${link.rebrandly.shortUrl}`, "Link curto")
+                          : copyToClipboard(link.finalUrl, "URL completa")
+                      }
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+
+                  {/* Campanha — clickable filter */}
+                  <TableCell>
+                    <button
+                      onClick={() => setFilterCampaignId(link.campaign.id)}
+                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150 text-left"
+                      title={`Filtrar por campanha: ${link.campaign.name}`}
+                    >
+                      {link.campaign.name}
+                    </button>
+                  </TableCell>
+
+                  {/* Veículo — clickable filter */}
+                  <TableCell>
+                    <button
+                      onClick={() => setFilterVehicleId(link.vehicle.id)}
+                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150 text-left"
+                      title={`Filtrar por veículo: ${link.vehicle.name}`}
+                    >
+                      {link.vehicle.name}
+                    </button>
+                  </TableCell>
+
+                  {/* Cliques */}
                   <TableCell className="text-right">
                     <span className="text-sm font-semibold text-gray-700 tabular-nums">
                       {link.rebrandly
-                        ? `${link.rebrandly.clicks >= 1000 ? (link.rebrandly.clicks / 1000).toFixed(1) + "k" : link.rebrandly.clicks} clicks`
+                        ? (link.rebrandly.clicks >= 1000
+                            ? (link.rebrandly.clicks / 1000).toFixed(1) + "k"
+                            : String(link.rebrandly.clicks))
                         : "—"}
                     </span>
                   </TableCell>
+
+                  {/* Status */}
                   <TableCell>
                     <Badge variant={statusVariant(link.status)} className="text-xs">
                       {statusLabel(link.status)}
                     </Badge>
                   </TableCell>
+
+                  {/* Criado */}
                   <TableCell>
                     <span className="text-xs text-gray-400">{formatDateTime(link.createdAt)}</span>
                   </TableCell>
+
+                  {/* QR Code — own column */}
+                  <TableCell className="w-10 px-2">
+                    <QrCodeDialog link={link} />
+                  </TableCell>
+
+                  {/* Ações — edit + delete */}
                   <TableCell>
                     <div className="flex items-center justify-end gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
-                        title="Copiar URL completa"
-                        onClick={() => copyToClipboard(link.finalUrl, "URL completa")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      {link.rebrandly && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
-                          title="Copiar link curto"
-                          onClick={() => copyToClipboard(`https://${link.rebrandly!.shortUrl}`, "Link curto")}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <QrCodeDialog link={link} />
                       {!isViewer && (
                         <LinkEditDialog
                           link={link}
