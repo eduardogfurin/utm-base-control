@@ -33,7 +33,9 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const settings = await prisma.appSettings.findFirst();
+    const settings = await prisma.appSettings.findFirst({
+      select: { id: true, rebrandlyApiKey: true, rebrandlyDomain: true },
+    });
     if (!settings?.rebrandlyApiKey || !settings?.rebrandlyDomain) {
       return NextResponse.json(
         { error: "Rebrandly not configured" },

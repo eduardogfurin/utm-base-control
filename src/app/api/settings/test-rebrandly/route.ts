@@ -11,31 +11,42 @@ export async function POST(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const settings = await prisma.appSettings.findFirst();
+    // Fetch settings with raw SQL fallback (qrConfig column may not exist yet)
+    let settings: { id: string; rebrandlyApiKey: string | null; rebrandlyDomain: string | null } | null = null;
+    try {
+      settings = await prisma.appSettings.findFirst({
+        select: { id: true, rebrandlyApiKey: true, rebrandlyDomain: true },
+      });
+    } catch {
+      const rows = await prisma.$queryRaw<{ id: string; rebrandlyApiKey: string | null; rebrandlyDomain: string | null }[]>`
+        SELECT id, "rebrandlyApiKey", "rebrandlyDomain" FROM "AppSettings" LIMIT 1
+      `;
+      settings = rows[0] ?? null;
+    }
 
-    if (!settings?.rebrandlyApiKey || !settings?.rebrandlyDomain) {
+    if (!settings?.rebrandlyApiKey) {
       return NextResponse.json(
-        { ok: false, error: "Rebrandly API key and domain are not configured" },
+        { ok: false, error: "Rebrandly API key not configured" },
         { status: 400 }
       );
     }
 
     const ok = await rebrandlyTestConnection({
       apiKey: settings.rebrandlyApiKey,
-      domain: settings.rebrandlyDomain,
+      domain: settings.rebrandlyDomain ?? "",
     });
 
-    // Persist connection status
-    await prisma.appSettings.update({
-      where: { id: settings.id },
-      data: {
-        rebrandlyStatus: ok,
-        ...(ok && { rebrandlyLastSync: new Date() }),
-      },
-    });
+    // Persist status via raw SQL to avoid RETURNING * with missing qrConfig column
+    await prisma.$executeRawUnsafe(
+      ok
+        ? `UPDATE "AppSettings" SET "rebrandlyStatus" = true, "rebrandlyLastSync" = NOW(), "updatedAt" = NOW() WHERE id = $1`
+        : `UPDATE "AppSettings" SET "rebrandlyStatus" = false, "updatedAt" = NOW() WHERE id = $1`,
+      settings.id
+    );
 
     return NextResponse.json({ ok });
-  } catch {
+  } catch (err) {
+    console.error("[test-rebrandly POST]", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

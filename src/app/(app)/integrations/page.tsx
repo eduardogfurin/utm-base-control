@@ -19,8 +19,6 @@ interface Integration {
   id: string;
   provider: string;
   domain: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  qrConfig: any | null;
   isActive: boolean;
   lastSyncAt: string | null;
   createdAt: string;
@@ -319,15 +317,17 @@ export default function IntegrationsPage() {
   const domainHasChanges = selectedDomain !== savedDomain;
 
   useEffect(() => {
-    fetch("/api/integrations")
-      .then((r) => r.json())
-      .then((data) => {
+    Promise.all([
+      fetch("/api/integrations").then((r) => r.json()),
+      fetch("/api/integrations/qr-config").then((r) => r.json()).catch(() => ({ qrConfig: null })),
+    ])
+      .then(([data, qrData]) => {
         setIntegrations(data ?? []);
         const rb = (data ?? []).find((i: Integration) => i.provider === "REBRANDLY");
         if (rb?.domain) { setSelectedDomain(rb.domain); setSavedDomain(rb.domain); }
-        // Restore saved qrConfig — stored as a single config applied to all domains
-        if (rb?.qrConfig && typeof rb.qrConfig === "object") {
-          setQrConfigs({ __global__: { ...DEFAULT_QR, ...rb.qrConfig } });
+        // Restore saved qrConfig from the dedicated endpoint
+        if (qrData?.qrConfig && typeof qrData.qrConfig === "object") {
+          setQrConfigs({ __global__: { ...DEFAULT_QR, ...qrData.qrConfig } });
         }
       })
       .catch(() => toast.error("Erro ao carregar integrações"))
@@ -359,7 +359,10 @@ export default function IntegrationsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: "REBRANDLY", apiKey: apiKey.trim(), domain: selectedDomain || null }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody?.error ?? `HTTP ${res.status}`);
+      }
       setLoadingDomains(true);
       const dr = await fetch("/api/integrations/rebrandly/domains");
       if (dr.ok) {
@@ -374,8 +377,10 @@ export default function IntegrationsPage() {
       toast.success("Integração conectada!");
       setApiKey("");
       setShowConnectNew(false);
-    } catch {
-      toast.error("Falha ao conectar. Verifique a API Key.");
+      window.dispatchEvent(new Event("integration-updated"));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      toast.error(`Falha ao conectar: ${msg}`);
     } finally {
       setTesting(false);
       setLoadingDomains(false);

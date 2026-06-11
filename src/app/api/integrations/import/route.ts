@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
 
   const integration = await prisma.userIntegration.findUnique({
     where: { userId_provider: { userId: session.user.id, provider } },
+    select: { id: true, apiKey: true, domain: true },
   });
 
   if (!integration) {
@@ -39,10 +40,9 @@ export async function POST(req: NextRequest) {
       const links: Array<{ id: string; shortUrl: string; clicks: number; title?: string }> = await res.json();
       imported = links.length;
 
-      await prisma.userIntegration.update({
-        where: { id: integration.id },
-        data: { lastSyncAt: new Date() },
-      });
+      await prisma.$executeRaw`
+        UPDATE "UserIntegration" SET "lastSyncAt" = NOW(), "updatedAt" = NOW() WHERE id = ${integration.id}
+      `;
     } catch {
       return NextResponse.json({ error: "Erro ao comunicar com o Rebrandly" }, { status: 502 });
     }

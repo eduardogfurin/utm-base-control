@@ -11,6 +11,7 @@ export async function GET() {
 
   const integration = await prisma.userIntegration.findUnique({
     where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
+    select: { apiKey: true, domain: true },
   });
 
   if (!integration?.apiKey) {

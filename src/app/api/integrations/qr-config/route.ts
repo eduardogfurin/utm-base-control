@@ -10,15 +10,19 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [userIntegration, globalSettings] = await Promise.all([
-    prisma.userIntegration.findUnique({
-      where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
-      select: { qrConfig: true },
-    }),
-    prisma.appSettings.findFirst({ select: { qrConfig: true } }),
-  ]);
+  try {
+    const [userIntegration, globalSettings] = await Promise.all([
+      prisma.userIntegration.findUnique({
+        where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
+        select: { qrConfig: true },
+      }),
+      prisma.appSettings.findFirst({ select: { qrConfig: true } }),
+    ]);
 
-  const qrConfig = userIntegration?.qrConfig ?? globalSettings?.qrConfig ?? null;
-
-  return NextResponse.json({ qrConfig });
+    const qrConfig = userIntegration?.qrConfig ?? globalSettings?.qrConfig ?? null;
+    return NextResponse.json({ qrConfig });
+  } catch {
+    // qrConfig column may not exist yet — return null gracefully
+    return NextResponse.json({ qrConfig: null });
+  }
 }

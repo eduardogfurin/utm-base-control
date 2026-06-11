@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const settings = await prisma.appSettings.findFirst();
+    const settings = await prisma.appSettings.findFirst({
+      select: { rebrandlyApiKey: true, rebrandlyDomain: true },
+    });
     const hasRebrandly = !!(settings?.rebrandlyApiKey && settings?.rebrandlyDomain);
 
     let created = 0;

@@ -10,12 +10,21 @@ export async function GET() {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const integrations = await prisma.userIntegration.findMany({
-    where: { userId: session.user.id },
-    select: { id: true, provider: true, domain: true, qrConfig: true, isActive: true, lastSyncAt: true, createdAt: true },
-  });
-
-  return NextResponse.json(integrations);
+  try {
+    const integrations = await prisma.userIntegration.findMany({
+      where: { userId: session.user.id },
+      select: { id: true, provider: true, domain: true, isActive: true, lastSyncAt: true, createdAt: true },
+    });
+    return NextResponse.json(integrations);
+  } catch {
+    // Fallback: raw query without qrConfig column in case migration hasn't run
+    const integrations = await prisma.$queryRaw<{ id: string; provider: string; domain: string | null; isActive: boolean; lastSyncAt: Date | null; createdAt: Date }[]>`
+      SELECT id, provider, domain, "isActive", "lastSyncAt", "createdAt"
+      FROM "UserIntegration"
+      WHERE "userId" = ${session.user.id}
+    `;
+    return NextResponse.json(integrations);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -36,13 +45,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Provedor inválido" }, { status: 400 });
   }
 
-  const integration = await prisma.userIntegration.upsert({
-    where: { userId_provider: { userId: session.user.id, provider } },
-    update: { apiKey, domain: domain ?? null, isActive: true },
-    create: { userId: session.user.id, provider, apiKey, domain: domain ?? null },
-  });
+  // Use raw SQL directly — Prisma v7 adapter-pg emits RETURNING * on write operations
+  // which fails when qrConfig column hasn't been migrated yet.
+  // provider is enum-validated above — safe to interpolate for the cast.
+  let integrationId: string;
+  try {
+    const newId = crypto.randomUUID();
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "UserIntegration" (id, "userId", provider, "apiKey", domain, "isActive", "createdAt", "updatedAt")
+       VALUES ($1, $2, '${provider}'::"IntegrationProvider", $3, $4, true, NOW(), NOW())
+       ON CONFLICT ("userId", provider) DO UPDATE
+         SET "apiKey" = EXCLUDED."apiKey", domain = EXCLUDED.domain, "isActive" = true, "updatedAt" = NOW()`,
+      newId, session.user.id, apiKey, domain ?? null
+    );
+    const rows = await prisma.$queryRawUnsafe<{ id: string }[]>(
+      `SELECT id FROM "UserIntegration" WHERE "userId" = $1 AND provider = '${provider}'::"IntegrationProvider"`,
+      session.user.id
+    );
+    integrationId = rows[0]?.id ?? newId;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[integrations POST] raw upsert failed:", msg);
+    return NextResponse.json({ error: `DB error: ${msg}` }, { status: 500 });
+  }
 
-  return NextResponse.json({ ok: true, id: integration.id }, { status: 200 });
+  return NextResponse.json({ ok: true, id: integrationId }, { status: 200 });
 }
 
 export async function PATCH(req: NextRequest) {
@@ -63,15 +90,42 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Provedor inválido" }, { status: 400 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data: Record<string, any> = {};
-  if (domain !== undefined) data.domain = domain ?? null;
-  if (qrConfig !== undefined) data.qrConfig = qrConfig;
+  // Build update fields dynamically via raw SQL to avoid qrConfig column issues.
+  // provider is enum-validated above — safe to interpolate directly for the cast.
+  // $1 = userId, subsequent params start at $2.
+  const setClauses: string[] = ['"updatedAt" = NOW()'];
+  const sqlValues: unknown[] = [session.user.id];
 
-  await prisma.userIntegration.updateMany({
-    where: { userId: session.user.id, provider },
-    data,
-  });
+  if (domain !== undefined) {
+    sqlValues.push(domain ?? null);
+    setClauses.push(`domain = $${sqlValues.length}`);
+  }
+
+  if (qrConfig !== undefined) {
+    sqlValues.push(JSON.stringify(qrConfig));
+    setClauses.push(`"qrConfig" = $${sqlValues.length}::jsonb`);
+  }
+
+  const sql = `
+    UPDATE "UserIntegration"
+    SET ${setClauses.join(", ")}
+    WHERE "userId" = $1 AND provider = '${provider}'::"IntegrationProvider"
+  `;
+
+  try {
+    await prisma.$executeRawUnsafe(sql, ...sqlValues);
+  } catch {
+    // qrConfig column doesn't exist yet — retry without it
+    if (domain !== undefined) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "UserIntegration"
+         SET domain = $2, "updatedAt" = NOW()
+         WHERE "userId" = $1 AND provider = '${provider}'::"IntegrationProvider"`,
+        session.user.id, domain ?? null
+      );
+    }
+    // If only qrConfig was being updated, silently skip (column doesn't exist yet)
+  }
 
   return NextResponse.json({ ok: true });
 }

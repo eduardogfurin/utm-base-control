@@ -130,9 +130,12 @@ export async function POST(request: NextRequest) {
 
     const userIntegration = await prisma.userIntegration.findUnique({
       where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
+      select: { apiKey: true, domain: true },
     });
 
-    const globalSettings = await prisma.appSettings.findFirst();
+    const globalSettings = await prisma.appSettings.findFirst({
+      select: { rebrandlyApiKey: true, rebrandlyDomain: true },
+    });
 
     const rebrandlyApiKey = userIntegration?.apiKey ?? globalSettings?.rebrandlyApiKey ?? null;
     // Priority: domain chosen in form > saved on integration > global settings > default

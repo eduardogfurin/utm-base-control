@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Home,
   Radio,
@@ -165,6 +165,29 @@ export function Sidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
+  const [rebrandlyConnected, setRebrandlyConnected] = useState<boolean | null>(null);
+
+  const checkIntegration = useCallback(() => {
+    fetch("/api/integrations")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: { provider: string; isActive: boolean }[]) => {
+        setRebrandlyConnected(
+          Array.isArray(data) && data.some((i) => i.provider === "REBRANDLY" && i.isActive)
+        );
+      })
+      .catch(() => setRebrandlyConnected(false));
+  }, []);
+
+  useEffect(() => {
+    checkIntegration();
+  }, [pathname, checkIntegration]);
+
+  // Re-check when integration is saved from any page
+  useEffect(() => {
+    const handler = () => checkIntegration();
+    window.addEventListener("integration-updated", handler);
+    return () => window.removeEventListener("integration-updated", handler);
+  }, [checkIntegration]);
 
   return (
     <aside className="w-60 h-screen sticky top-0 bg-sidebar border-r border-gray-100 flex flex-col shadow-sm" data-sidebar>
@@ -209,8 +232,16 @@ export function Sidebar() {
       <div className="border-t border-gray-100 p-3 flex-shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left cursor-pointer">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-[10px] font-bold text-white uppercase flex-shrink-0 shadow-sm">
-              {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
+            <div className="relative shrink-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-sm">
+                {session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? "U"}
+              </div>
+              {rebrandlyConnected !== null && (
+                <span className={cn(
+                  "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-sidebar",
+                  rebrandlyConnected ? "bg-emerald-400" : "bg-red-400"
+                )} />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-gray-700 truncate">
@@ -222,14 +253,30 @@ export function Sidebar() {
             </div>
             <Menu size={14} className="text-gray-400 flex-shrink-0" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-44">
+          <DropdownMenuContent side="top" align="start" className="w-52">
             <DropdownMenuItem onClick={() => router.push("/integrations")}>
               <UserCircle size={14} className="text-gray-400" />
               Perfil
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/integrations")}>
               <Plug size={14} className="text-gray-400" />
-              Integrações
+              <span className="flex-1">Integrações</span>
+              {rebrandlyConnected !== null && (
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                    rebrandlyConnected
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-red-50 text-red-500"
+                  )}
+                >
+                  <span className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    rebrandlyConnected ? "bg-emerald-400" : "bg-red-400"
+                  )} />
+                  {rebrandlyConnected ? "API OK" : "Desconectada"}
+                </span>
+              )}
             </DropdownMenuItem>
             {isAdmin && (
               <>

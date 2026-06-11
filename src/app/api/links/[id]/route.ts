@@ -22,8 +22,9 @@ async function getRebrandlyConfig(userId: string): Promise<{ apiKey: string; dom
   const [userIntegration, globalSettings] = await Promise.all([
     prisma.userIntegration.findUnique({
       where: { userId_provider: { userId, provider: "REBRANDLY" } },
+      select: { apiKey: true, domain: true },
     }),
-    prisma.appSettings.findFirst(),
+    prisma.appSettings.findFirst({ select: { rebrandlyApiKey: true, rebrandlyDomain: true } }),
   ]);
 
   const apiKey = userIntegration?.apiKey ?? globalSettings?.rebrandlyApiKey ?? null;
