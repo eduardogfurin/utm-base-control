@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -53,7 +53,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn, buildUtmUrl, formatDate } from "@/lib/utils";
+import { cn, buildUtmUrl, formatDateTime } from "@/lib/utils";
 import { InlineCreateCard, type Vehicle, type Campaign } from "@/components/links/inline-create-card";
 
 interface UtmTemplate {
@@ -146,6 +146,45 @@ function statusLabel(status: string) {
   if (status === "ACTIVE") return "Ativo";
   if (status === "INACTIVE") return "Inativo";
   return "Arquivado";
+}
+
+// ─── OG Thumbnail ─────────────────────────────────────────────────────────────
+
+const ogCache: Record<string, string | null> = {};
+
+function OgThumbnail({ url }: { url: string }) {
+  const [imgSrc, setImgSrc] = useState<string | null>(ogCache[url] ?? null);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (fetchedRef.current || imgSrc !== null || url in ogCache) return;
+    fetchedRef.current = true;
+    try { new URL(url); } catch { ogCache[url] = null; return; }
+    fetch(`/api/og-preview?url=${encodeURIComponent(url)}`)
+      .then((r) => r.json())
+      .then((d: { image?: string | null }) => {
+        ogCache[url] = d.image ?? null;
+        setImgSrc(d.image ?? null);
+      })
+      .catch(() => { ogCache[url] = null; });
+  }, [url, imgSrc]);
+
+  if (imgSrc) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imgSrc}
+        alt=""
+        className="mt-0.5 w-8 h-8 rounded-lg object-cover shrink-0 border border-gray-100"
+        onError={() => setImgSrc(null)}
+      />
+    );
+  }
+  return (
+    <div className="mt-0.5 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+      <Link2 className="h-3.5 w-3.5 text-gray-400" />
+    </div>
+  );
 }
 
 // ─── QR Code Dialog ───────────────────────────────────────────────────────────
@@ -656,11 +695,9 @@ function LinksPageInner() {
                   key={link.id}
                   className="border-gray-100 hover:bg-gray-50/50 transition-colors duration-150"
                 >
-                  <TableCell className="min-w-[220px]">
+                  <TableCell className="min-w-[240px]">
                     <div className="flex items-start gap-2.5">
-                      <div className="mt-0.5 w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                        <Link2 className="h-3.5 w-3.5 text-gray-400" />
-                      </div>
+                      <OgThumbnail url={link.baseUrl} />
                       <div className="min-w-0">
                         {link.rebrandly ? (
                           <a
@@ -695,7 +732,7 @@ function LinksPageInner() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-gray-400">{formatDate(link.createdAt)}</span>
+                    <span className="text-xs text-gray-400">{formatDateTime(link.createdAt)}</span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-0.5">

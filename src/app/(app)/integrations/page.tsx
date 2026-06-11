@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { HexColorPicker, HexColorInput } from "react-colorful";
 import { toast } from "sonner";
 import {
   Plug, RefreshCw, CheckCircle2, XCircle, Globe, Key,
@@ -187,7 +188,7 @@ function QrPreview({ domain, config }: { domain: string; config: QrConfig }) {
   );
 }
 
-// ─── Color field (native picker + hex display, circular swatch) ──────────────
+// ─── Color field with react-colorful popover ─────────────────────────────────
 
 function ColorField({
   label,
@@ -198,24 +199,51 @@ function ColorField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const id = `color-field-${label.replace(/\s+/g, "-").toLowerCase()}`;
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
   return (
-    <div className="space-y-1.5">
-      <label className="text-xs text-gray-500 font-medium">{label}</label>
-      <label className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-card cursor-pointer hover:border-gray-300 transition-colors">
-        {/* circular swatch — clicking it opens native color picker */}
+    <div className="space-y-1.5" ref={containerRef}>
+      <label htmlFor={id} className="text-xs text-gray-500 font-medium">{label}</label>
+      <button
+        id={id}
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-card w-full hover:border-gray-300 transition-colors"
+      >
         <div
           className="w-5 h-5 rounded-full border border-gray-200 shrink-0 shadow-sm"
           style={{ background: value }}
         />
-        <span className="text-xs font-mono text-gray-600 flex-1 select-none">{value}</span>
-        {/* visually hidden native color input — positioned over the whole label */}
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="sr-only"
-        />
-      </label>
+        <span className="text-xs font-mono text-gray-600 flex-1 text-left">{value}</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 shadow-xl rounded-xl border border-gray-100 bg-card p-3 space-y-2">
+          <HexColorPicker color={value} onChange={onChange} style={{ width: "100%", height: 160 }} />
+          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50">
+            <span className="text-xs text-gray-400">#</span>
+            <HexColorInput
+              color={value}
+              onChange={onChange}
+              prefixed={false}
+              className="flex-1 text-xs font-mono text-gray-700 bg-transparent outline-none uppercase"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -239,6 +267,7 @@ function RangeSlider({
   step: number;
   onChange: (v: number) => void;
 }) {
+  const pct = ((value - min) / (max - min)) * 100;
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -253,11 +282,14 @@ function RangeSlider({
         max={max}
         step={step}
         value={value}
-        onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 rounded-full accent-blue-500 cursor-pointer appearance-none bg-gray-200"
+        onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
+        className="w-full h-2 rounded-full cursor-pointer appearance-none"
         style={{
-          backgroundImage: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((value - min) / (max - min)) * 100}%, #e5e7eb ${((value - min) / (max - min)) * 100}%, #e5e7eb 100%)`,
+          touchAction: "none",
+          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
+          // Custom thumb via accent-color
+          accentColor: "#3b82f6",
         }}
       />
     </div>

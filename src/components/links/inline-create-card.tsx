@@ -351,30 +351,30 @@ export function InlineCreateCard({
         >
           <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-3">
 
-            {/* Vehicle */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">Veículo *</Label>
-              <CreatableSelect
-                value={form.vehicleId}
-                onChange={(id) => set("vehicleId", id)}
-                options={vehicleOptions}
-                placeholder="Selecionar veículo"
-                createLabel="Criar veículo"
-                onCreate={handleCreateVehicle}
-              />
-            </div>
-
-            {/* Campaign */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">Campanha *</Label>
-              <CreatableSelect
-                value={form.campaignId}
-                onChange={(id) => set("campaignId", id)}
-                options={campaignOptions}
-                placeholder="Selecionar campanha"
-                createLabel="Criar campanha"
-                onCreate={handleCreateCampaign}
-              />
+            {/* Vehicle + Campaign — side by side */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-500">Veículo *</Label>
+                <CreatableSelect
+                  value={form.vehicleId}
+                  onChange={(id) => set("vehicleId", id)}
+                  options={vehicleOptions}
+                  placeholder="Veículo *"
+                  createLabel="Criar veículo"
+                  onCreate={handleCreateVehicle}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-500">Campanha *</Label>
+                <CreatableSelect
+                  value={form.campaignId}
+                  onChange={(id) => set("campaignId", id)}
+                  options={campaignOptions}
+                  placeholder="Campanha *"
+                  createLabel="Criar campanha"
+                  onCreate={handleCreateCampaign}
+                />
+              </div>
             </div>
 
             <Separator className="bg-gray-100" />

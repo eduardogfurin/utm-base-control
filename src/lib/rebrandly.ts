@@ -47,10 +47,13 @@ export async function rebrandlyCreateLink(
   config: RebrandlyConfig,
   payload: CreateLinkPayload
 ): Promise<RebrandlyLinkResponse> {
+  // Rebrandly API uses "slashtag" for the slug field
+  const { slug, ...rest } = payload;
   return rebrandlyFetch("/links", config, {
     method: "POST",
     body: JSON.stringify({
-      ...payload,
+      ...rest,
+      ...(slug ? { slashtag: slug } : {}),
       domain: { fullName: config.domain },
     }),
   });
