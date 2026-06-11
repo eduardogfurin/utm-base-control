@@ -94,9 +94,10 @@ export default function SettingsPage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const savingNewKey = !!apiKey && !apiKey.startsWith("*");
       const body: Record<string, string> = {};
-      if (apiKey && !apiKey.startsWith("*")) body.rebrandlyApiKey = apiKey;
-      if (domain) body.rebrandlyDomain = domain;
+      if (savingNewKey) body.rebrandlyApiKey = apiKey;
+      if (domain && settings?.rebrandlyStatus) body.rebrandlyDomain = domain;
 
       const res = await fetch("/api/settings", {
         method: "PATCH",
@@ -106,7 +107,30 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erro ao salvar");
       setSettings(data);
-      toast.success("Configurações salvas com sucesso");
+      toast.success("API Key salva! Testando conexão...");
+
+      // Auto-test connection right after saving a new key
+      if (savingNewKey) {
+        setSaving(false);
+        setTesting(true);
+        try {
+          const testRes = await fetch("/api/settings/test-rebrandly", { method: "POST" });
+          const testData = await testRes.json();
+          if (!testRes.ok) throw new Error(testData.error ?? "Erro ao testar");
+          if (testData.ok) {
+            toast.success("Rebrandly conectado com sucesso!");
+            const refreshed = await fetch("/api/settings").then((r) => r.json());
+            if (refreshed) setSettings(refreshed);
+          } else {
+            toast.error("API Key salva, mas a conexão falhou. Verifique a chave.");
+          }
+        } catch (testErr) {
+          toast.error(testErr instanceof Error ? testErr.message : "Erro ao testar conexão");
+        } finally {
+          setTesting(false);
+        }
+        return;
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Erro ao salvar configurações");
     } finally {
@@ -308,19 +332,22 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-gray-700">Domínio Curto</Label>
-                    <Input
-                      type="text"
-                      placeholder="Ex: on.g40.co"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
-                    />
-                    <p className="text-[11px] text-gray-400">
-                      Domínio customizado configurado no Rebrandly
-                    </p>
-                  </div>
+                  {/* Domínio Curto — only shown after connection is established */}
+                  {settings?.rebrandlyStatus && (
+                    <div className="space-y-1.5">
+                      <Label className="text-gray-700">Domínio Curto</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: on.g40.co"
+                        value={domain}
+                        onChange={(e) => setDomain(e.target.value)}
+                        className="bg-card border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-400"
+                      />
+                      <p className="text-[11px] text-gray-400">
+                        Domínio customizado configurado no Rebrandly
+                      </p>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -333,39 +360,44 @@ export default function SettingsPage() {
                       {saving && <Loader2 size={13} className="animate-spin mr-1.5" />}
                       Salvar
                     </Button>
-                    <Button
-                      onClick={handleTestConnection}
-                      disabled={testing || !settings}
-                      variant="outline"
-                      size="sm"
-                      className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                    >
-                      {testing ? (
-                        <Loader2 size={13} className="animate-spin mr-1.5" />
-                      ) : (
-                        <Zap size={13} className="mr-1.5" />
-                      )}
-                      Testar Conexão
-                    </Button>
-                    <Button
-                      onClick={handleSyncMetrics}
-                      disabled={syncing || !settings?.rebrandlyStatus}
-                      variant="outline"
-                      size="sm"
-                      className="border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                    >
-                      {syncing ? (
-                        <Loader2 size={13} className="animate-spin mr-1.5" />
-                      ) : (
-                        <RefreshCw size={13} className="mr-1.5" />
-                      )}
-                      Sincronizar Métricas
-                    </Button>
+                    {/* Test connection — only available after saving (settings row must exist) */}
+                    {settings && (
+                      <Button
+                        onClick={handleTestConnection}
+                        disabled={testing}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                      >
+                        {testing ? (
+                          <Loader2 size={13} className="animate-spin mr-1.5" />
+                        ) : (
+                          <Zap size={13} className="mr-1.5" />
+                        )}
+                        Testar Conexão
+                      </Button>
+                    )}
+                    {settings?.rebrandlyStatus && (
+                      <Button
+                        onClick={handleSyncMetrics}
+                        disabled={syncing}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                      >
+                        {syncing ? (
+                          <Loader2 size={13} className="animate-spin mr-1.5" />
+                        ) : (
+                          <RefreshCw size={13} className="mr-1.5" />
+                        )}
+                        Sincronizar Métricas
+                      </Button>
+                    )}
                   </div>
 
-                  {!settings?.rebrandlyStatus && settings && (
+                  {!settings?.rebrandlyStatus && (
                     <p className="text-[11px] text-gray-400">
-                      Salve e teste a conexão antes de sincronizar métricas.
+                      {settings ? "Salve e teste a conexão para liberar as demais opções." : "Cole sua API Key e clique em Salvar."}
                     </p>
                   )}
                 </>

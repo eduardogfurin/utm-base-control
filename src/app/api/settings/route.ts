@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
       );
     } else {
       // No row yet — create via raw INSERT to avoid RETURNING * issue
-      const newId = (crypto as Crypto & { randomUUID: () => string }).randomUUID();
+      const newId = crypto.randomUUID();
       await prisma.$executeRawUnsafe(
         `INSERT INTO "AppSettings" (id, "rebrandlyApiKey", "rebrandlyDomain", "rebrandlyStatus", "createdAt", "updatedAt")
          VALUES ($1, $2, $3, false, NOW(), NOW())`,
