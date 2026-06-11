@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plug, RefreshCw, CheckCircle2, XCircle, Globe, Key } from "lucide-react";
+import { Plug, RefreshCw, CheckCircle2, XCircle, Globe, Key, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,7 @@ export default function IntegrationsPage() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [loadingDomains, setLoadingDomains] = useState(false);
+  const [savedDomain, setSavedDomain] = useState("");
 
   const rebrandly = integrations.find((i) => i.provider === "REBRANDLY");
 
@@ -41,7 +42,7 @@ export default function IntegrationsPage() {
       .then((data) => {
         setIntegrations(data ?? []);
         const rb = (data ?? []).find((i: Integration) => i.provider === "REBRANDLY");
-        if (rb?.domain) setSelectedDomain(rb.domain);
+        if (rb?.domain) { setSelectedDomain(rb.domain); setSavedDomain(rb.domain); }
       })
       .catch(() => toast.error("Erro ao carregar integrações"))
       .finally(() => setLoading(false));
@@ -115,6 +116,7 @@ export default function IntegrationsPage() {
         body: JSON.stringify({ provider: "REBRANDLY", domain: selectedDomain }),
       });
       if (!res.ok) throw new Error();
+      setSavedDomain(selectedDomain);
       toast.success("Domínio padrão atualizado");
     } catch {
       toast.error("Erro ao salvar domínio");
@@ -199,7 +201,7 @@ export default function IntegrationsPage() {
                     <select
                       value={selectedDomain}
                       onChange={(e) => setSelectedDomain(e.target.value)}
-                      className="flex-1 h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-orange-400 transition-colors duration-200"
+                      className="flex-1 h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
                     >
                       {domains.map((d) => (
                         <option key={d.id} value={d.fullName}>{d.fullName}</option>
@@ -207,25 +209,43 @@ export default function IntegrationsPage() {
                     </select>
                     <Button
                       onClick={handleSaveDomain}
-                      disabled={saving}
-                      className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
+                      disabled={saving || selectedDomain === savedDomain}
+                      className={
+                        selectedDomain !== savedDomain
+                          ? "bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shadow-[0_2px_8px_rgba(239,68,68,0.35)]"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }
                     >
                       {saving ? <RefreshCw size={14} className="animate-spin" /> : "Salvar"}
                     </Button>
                   </div>
+                  {selectedDomain !== savedDomain && (
+                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                      <AlertTriangle size={11} />
+                      Alteração pendente — clique em Salvar para aplicar
+                    </p>
+                  )}
                 ) : (
                   <p className="text-sm text-gray-400">Nenhum domínio encontrado</p>
                 )}
               </div>
 
-              <div className="pt-1">
+              {/* Danger zone */}
+              <div className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-3.5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <AlertTriangle size={15} className="text-red-500 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-red-700">Zona perigosa</p>
+                    <p className="text-xs text-red-500 mt-0.5">Desconectar remove a integração e todos os links deixarão de ser encurtados via Rebrandly.</p>
+                  </div>
+                </div>
                 <Button
                   variant="ghost"
                   onClick={handleDisconnect}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm"
+                  className="shrink-0 border border-red-300 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-400 text-sm"
                 >
                   <XCircle size={14} className="mr-1.5" />
-                  Desconectar integração
+                  Desconectar
                 </Button>
               </div>
             </>
