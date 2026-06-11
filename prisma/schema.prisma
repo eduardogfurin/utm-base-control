@@ -209,6 +209,7 @@ model UserIntegration {
   provider   IntegrationProvider
   apiKey     String
   domain     String?
+  qrConfig   Json?
   isActive   Boolean             @default(true)
   lastSyncAt DateTime?
   createdAt  DateTime            @default(now())
@@ -227,6 +228,7 @@ model AppSettings {
   rebrandlyDomain   String?
   rebrandlyStatus   Boolean   @default(false)
   rebrandlyLastSync DateTime?
+  qrConfig          Json?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }

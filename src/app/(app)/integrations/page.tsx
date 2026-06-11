@@ -19,6 +19,8 @@ interface Integration {
   id: string;
   provider: string;
   domain: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  qrConfig: any | null;
   isActive: boolean;
   lastSyncAt: string | null;
   createdAt: string;
@@ -323,6 +325,10 @@ export default function IntegrationsPage() {
         setIntegrations(data ?? []);
         const rb = (data ?? []).find((i: Integration) => i.provider === "REBRANDLY");
         if (rb?.domain) { setSelectedDomain(rb.domain); setSavedDomain(rb.domain); }
+        // Restore saved qrConfig — stored as a single config applied to all domains
+        if (rb?.qrConfig && typeof rb.qrConfig === "object") {
+          setQrConfigs({ __global__: { ...DEFAULT_QR, ...rb.qrConfig } });
+        }
       })
       .catch(() => toast.error("Erro ao carregar integrações"))
       .finally(() => setLoading(false));
@@ -418,24 +424,44 @@ export default function IntegrationsPage() {
     }
   };
 
+  const saveQrConfigRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persistQrConfig = useCallback((cfg: QrConfig) => {
+    if (saveQrConfigRef.current) clearTimeout(saveQrConfigRef.current);
+    saveQrConfigRef.current = setTimeout(() => {
+      fetch("/api/integrations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "REBRANDLY", qrConfig: cfg }),
+      }).catch(() => {});
+    }, 800);
+  }, []);
+
   const getQrConfig = useCallback(
-    (domain: string): QrConfig => qrConfigs[domain] ?? DEFAULT_QR,
+    (domain: string): QrConfig => qrConfigs[domain] ?? qrConfigs["__global__"] ?? DEFAULT_QR,
     [qrConfigs]
   );
 
-  const patchQrConfig = useCallback((domain: string, patch: Partial<QrConfig>) =>
-    setQrConfigs((prev) => ({ ...prev, [domain]: { ...((prev[domain]) ?? DEFAULT_QR), ...patch } })),
-    []
-  );
+  const patchQrConfig = useCallback((domain: string, patch: Partial<QrConfig>) => {
+    setQrConfigs((prev) => {
+      const current = prev[domain] ?? prev["__global__"] ?? DEFAULT_QR;
+      const updated = { ...current, ...patch };
+      // Also update __global__ so it persists across domain switches
+      const next = { ...prev, [domain]: updated, "__global__": updated };
+      persistQrConfig(updated);
+      return next;
+    });
+  }, [persistQrConfig]);
 
   const applyToAll = useCallback((sourceDomain: string) => {
-    const cfg = qrConfigs[sourceDomain] ?? DEFAULT_QR;
+    const cfg = qrConfigs[sourceDomain] ?? qrConfigs["__global__"] ?? DEFAULT_QR;
     setQrConfigs((prev) => {
-      const next = { ...prev };
+      const next: Record<string, QrConfig> = { ...prev, "__global__": { ...cfg } };
       domains.forEach((d) => { next[d.fullName] = { ...cfg }; });
       return next;
     });
-  }, [qrConfigs, domains]);
+    persistQrConfig(cfg);
+  }, [qrConfigs, domains, persistQrConfig]);
 
   const handleLogoUpload = useCallback((domain: string, file: File) => {
     if (file.size > 2 * 1024 * 1024) { toast.error("Logo máximo 2 MB"); return; }

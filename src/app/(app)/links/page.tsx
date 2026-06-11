@@ -186,29 +186,106 @@ function OgThumbnail({ url }: { url: string }) {
   );
 }
 
-// ─── QR Code Dialog ───────────────────────────────────────────────────────────
+// ─── QR Code Dialog — renders with qr-code-styling using saved config ─────────
+
+type DotStyle = "square" | "rounded" | "dots" | "classy" | "classy-rounded" | "extra-rounded";
+interface QrConfig {
+  fgColor: string;
+  bgColor: string;
+  logoDataUrl: string;
+  logoSize: number;
+  margin: number;
+  dotStyle: DotStyle;
+  exportSize: number;
+  exportFormat: string;
+}
+const DEFAULT_QR: QrConfig = {
+  fgColor: "#272727", bgColor: "#ffffff", logoDataUrl: "",
+  logoSize: 0.2, margin: 2, dotStyle: "classy-rounded", exportSize: 256, exportFormat: "png",
+};
+
+function cornerStyleFor(dot: DotStyle) {
+  if (dot === "square" || dot === "classy") return { squareType: "square" as const, dotType: "square" as const };
+  return { squareType: "extra-rounded" as const, dotType: "dot" as const };
+}
+
+function QrPreviewCanvas({ url, config }: { url: string; config: QrConfig }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const instanceRef = useRef<InstanceType<typeof import("qr-code-styling").default> | null>(null);
+  const initializedRef = useRef(false);
+  const corners = cornerStyleFor(config.dotStyle);
+  const opts = {
+    width: 200, height: 200, type: "svg" as const, data: url,
+    dotsOptions: { color: config.fgColor, type: config.dotStyle },
+    backgroundOptions: { color: config.bgColor },
+    cornersSquareOptions: { color: config.fgColor, type: corners.squareType },
+    cornersDotOptions: { color: config.fgColor, type: corners.dotType },
+    margin: config.margin,
+    ...(config.logoDataUrl ? { image: config.logoDataUrl, imageOptions: { crossOrigin: "anonymous" as const, margin: 2, imageSize: Math.min(config.logoSize, 0.4) } } : {}),
+  };
+  const optsKey = JSON.stringify(opts);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    let cancelled = false;
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      if (cancelled || !containerRef.current) return;
+      if (!initializedRef.current) {
+        instanceRef.current = new QRCodeStyling(opts);
+        instanceRef.current.append(containerRef.current);
+        initializedRef.current = true;
+      } else {
+        instanceRef.current?.update(opts);
+      }
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optsKey]);
+  return <div ref={containerRef} className="w-[200px] h-[200px] [&>canvas]:rounded-xl [&>svg]:rounded-xl" />;
+}
 
 function QrCodeDialog({ link }: { link: Link }) {
-  const [svgData, setSvgData] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [qrConfig, setQrConfig] = useState<QrConfig>(DEFAULT_QR);
+  const [loadingConfig, setLoadingConfig] = useState(false);
+  const configLoadedRef = useRef(false);
 
-  const loadQr = useCallback(async () => {
-    if (!link.qrCode?.id || svgData) return;
-    setLoading(true);
+  const qrUrl = link.rebrandly ? `https://${link.rebrandly.shortUrl}` : link.finalUrl;
+
+  const loadConfig = useCallback(async () => {
+    if (configLoadedRef.current) return;
+    configLoadedRef.current = true;
+    setLoadingConfig(true);
     try {
-      const res = await fetch(`/api/links/${link.id}`);
+      const res = await fetch("/api/integrations/qr-config");
       const data = await res.json();
-      if (data?.qrCode?.svgData) setSvgData(data.qrCode.svgData);
-    } catch {
-      toast.error("Erro ao carregar QR Code");
-    } finally {
-      setLoading(false);
+      if (data?.qrConfig && typeof data.qrConfig === "object") {
+        setQrConfig({ ...DEFAULT_QR, ...data.qrConfig });
+      }
+    } catch { /* use default */ } finally {
+      setLoadingConfig(false);
     }
-  }, [link.id, link.qrCode?.id, svgData]);
+  }, []);
+
+  const handleDownload = async () => {
+    const { default: QRCodeStyling } = await import("qr-code-styling");
+    const corners = cornerStyleFor(qrConfig.dotStyle);
+    const qr = new QRCodeStyling({
+      width: qrConfig.exportSize, height: qrConfig.exportSize,
+      type: qrConfig.exportFormat === "svg" ? "svg" : "canvas",
+      data: qrUrl,
+      dotsOptions: { color: qrConfig.fgColor, type: qrConfig.dotStyle },
+      backgroundOptions: { color: qrConfig.bgColor },
+      cornersSquareOptions: { color: qrConfig.fgColor, type: corners.squareType },
+      cornersDotOptions: { color: qrConfig.fgColor, type: corners.dotType },
+      margin: qrConfig.margin,
+      ...(qrConfig.logoDataUrl ? { image: qrConfig.logoDataUrl, imageOptions: { crossOrigin: "anonymous" as const, margin: 2, imageSize: Math.min(qrConfig.logoSize, 0.4) } } : {}),
+    });
+    await qr.download({ name: `qr-${link.slug}`, extension: qrConfig.exportFormat as "png" | "svg" | "jpeg" | "webp" });
+    toast.success("Download iniciado!");
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) loadQr(); }}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) loadConfig(); }}>
       <DialogTrigger
         render={
           <Button
@@ -227,25 +304,15 @@ function QrCodeDialog({ link }: { link: Link }) {
           <DialogTitle>QR Code — {link.slug}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-2">
-          {loading ? (
-            <Skeleton className="h-40 w-40 rounded-lg" />
-          ) : svgData ? (
-            <div
-              className="h-40 w-40 rounded-lg overflow-hidden bg-card p-2"
-              dangerouslySetInnerHTML={{ __html: svgData }}
-            />
+          {loadingConfig ? (
+            <Skeleton className="h-[200px] w-[200px] rounded-xl" />
           ) : (
-            <p className="text-gray-400 text-sm">QR Code não disponível</p>
+            <QrPreviewCanvas url={qrUrl} config={qrConfig} />
           )}
-          <p className="text-xs text-gray-400 text-center break-all">{link.finalUrl}</p>
-          <div className="flex gap-2 w-full">
-            <Button variant="outline" className="flex-1" onClick={() => { if (svgData) { navigator.clipboard.writeText(svgData); toast.success("SVG copiado!"); } }} disabled={!svgData}>
-              <Copy className="h-4 w-4 mr-2" /> Copiar SVG
-            </Button>
-            <Button className="flex-1" onClick={() => { if (svgData) { const blob = new Blob([svgData], { type: "image/svg+xml" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `qr-${link.slug}.svg`; a.click(); URL.revokeObjectURL(url); toast.success("Download iniciado!"); } }} disabled={!svgData}>
-              Baixar SVG
-            </Button>
-          </div>
+          <p className="text-xs text-gray-400 text-center break-all">{qrUrl}</p>
+          <Button className="w-full" onClick={handleDownload}>
+            Baixar QR Code
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -661,15 +728,15 @@ function LinksPageInner() {
         <Table>
           <TableHeader>
             <TableRow className="border-gray-100 hover:bg-transparent bg-gray-50/60">
-              <TableHead className="text-gray-400">Link</TableHead>
-              <TableHead className="text-gray-400 w-10"></TableHead>
-              <TableHead className="text-gray-400">Campanha</TableHead>
-              <TableHead className="text-gray-400">Veículo</TableHead>
-              <TableHead className="text-gray-400 text-right">Cliques</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400">Criado</TableHead>
-              <TableHead className="text-gray-400 w-10"></TableHead>
-              <TableHead className="text-gray-400 text-right">Ações</TableHead>
+              <TableHead className="text-gray-400 text-center">Link</TableHead>
+              <TableHead className="text-gray-400 w-10 text-center"></TableHead>
+              <TableHead className="text-gray-400 text-center">Campanha</TableHead>
+              <TableHead className="text-gray-400 text-center">Veículo</TableHead>
+              <TableHead className="text-gray-400 text-center">Cliques</TableHead>
+              <TableHead className="text-gray-400 text-center">Status</TableHead>
+              <TableHead className="text-gray-400 text-center">Criado</TableHead>
+              <TableHead className="text-gray-400 w-10 text-center">QR</TableHead>
+              <TableHead className="text-gray-400 text-center">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -724,12 +791,12 @@ function LinksPageInner() {
                     </div>
                   </TableCell>
 
-                  {/* Copy — icon button */}
-                  <TableCell className="w-10 px-2">
+                  {/* Copy — icon button, centered */}
+                  <TableCell className="w-10 px-2 text-center">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200"
+                      className="h-8 w-8 text-gray-400 hover:text-gray-900 transition-colors duration-200 mx-auto"
                       title={link.rebrandly ? "Copiar link curto" : "Copiar URL completa"}
                       onClick={() =>
                         link.rebrandly
@@ -741,30 +808,30 @@ function LinksPageInner() {
                     </Button>
                   </TableCell>
 
-                  {/* Campanha — clickable filter */}
-                  <TableCell>
+                  {/* Campanha — clickable filter, centered */}
+                  <TableCell className="text-center">
                     <button
                       onClick={() => setFilterCampaignId(link.campaign.id)}
-                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150 text-left"
+                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150"
                       title={`Filtrar por campanha: ${link.campaign.name}`}
                     >
                       {link.campaign.name}
                     </button>
                   </TableCell>
 
-                  {/* Veículo — clickable filter */}
-                  <TableCell>
+                  {/* Veículo — clickable filter, centered */}
+                  <TableCell className="text-center">
                     <button
                       onClick={() => setFilterVehicleId(link.vehicle.id)}
-                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150 text-left"
+                      className="text-sm text-gray-700 hover:text-blue-500 hover:underline transition-colors duration-150"
                       title={`Filtrar por veículo: ${link.vehicle.name}`}
                     >
                       {link.vehicle.name}
                     </button>
                   </TableCell>
 
-                  {/* Cliques */}
-                  <TableCell className="text-right">
+                  {/* Cliques — centered */}
+                  <TableCell className="text-center">
                     <span className="text-sm font-semibold text-gray-700 tabular-nums">
                       {link.rebrandly
                         ? (link.rebrandly.clicks >= 1000
@@ -775,25 +842,25 @@ function LinksPageInner() {
                   </TableCell>
 
                   {/* Status */}
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Badge variant={statusVariant(link.status)} className="text-xs">
                       {statusLabel(link.status)}
                     </Badge>
                   </TableCell>
 
                   {/* Criado */}
-                  <TableCell>
+                  <TableCell className="text-center">
                     <span className="text-xs text-gray-400">{formatDateTime(link.createdAt)}</span>
                   </TableCell>
 
-                  {/* QR Code — own column */}
-                  <TableCell className="w-10 px-2">
+                  {/* QR Code — own column, centered */}
+                  <TableCell className="w-10 px-2 text-center">
                     <QrCodeDialog link={link} />
                   </TableCell>
 
-                  {/* Ações — edit + delete */}
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-0.5">
+                  {/* Ações — edit + delete, centered */}
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-0.5">
                       {!isViewer && (
                         <LinkEditDialog
                           link={link}

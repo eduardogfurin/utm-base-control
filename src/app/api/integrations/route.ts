@@ -12,7 +12,7 @@ export async function GET() {
 
   const integrations = await prisma.userIntegration.findMany({
     where: { userId: session.user.id },
-    select: { id: true, provider: true, domain: true, isActive: true, lastSyncAt: true, createdAt: true },
+    select: { id: true, provider: true, domain: true, qrConfig: true, isActive: true, lastSyncAt: true, createdAt: true },
   });
 
   return NextResponse.json(integrations);
@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { provider, domain } = body;
+  const { provider, domain, qrConfig } = body;
 
   if (!provider) {
     return NextResponse.json({ error: "provider é obrigatório" }, { status: 400 });
@@ -63,9 +63,14 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Provedor inválido" }, { status: 400 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: Record<string, any> = {};
+  if (domain !== undefined) data.domain = domain ?? null;
+  if (qrConfig !== undefined) data.qrConfig = qrConfig;
+
   await prisma.userIntegration.updateMany({
     where: { userId: session.user.id, provider },
-    data: { domain: domain ?? null },
+    data,
   });
 
   return NextResponse.json({ ok: true });
