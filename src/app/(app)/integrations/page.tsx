@@ -119,6 +119,25 @@ function DotStyleThumb({ style, active }: { style: DotStyle; active: boolean }) 
   );
 }
 
+// ─── Corner style derived from dot style ─────────────────────────────────────
+
+function cornerStyleFor(dot: DotStyle): {
+  squareType: "square" | "extra-rounded" | "dot";
+  dotType: "square" | "dot";
+} {
+  switch (dot) {
+    case "square":
+    case "classy":
+      return { squareType: "square", dotType: "square" };
+    case "rounded":
+    case "extra-rounded":
+    case "dots":
+    case "classy-rounded":
+    default:
+      return { squareType: "extra-rounded", dotType: "dot" };
+  }
+}
+
 // ─── Live QR preview (canvas-based via qr-code-styling) ──────────────────────
 
 function QrPreview({ domain, config }: { domain: string; config: QrConfig }) {
@@ -132,8 +151,8 @@ function QrPreview({ domain, config }: { domain: string; config: QrConfig }) {
     data: `https://${domain}`,
     dotsOptions: { color: config.fgColor, type: config.dotStyle },
     backgroundOptions: { color: config.bgColor },
-    cornersSquareOptions: { color: config.fgColor, type: "extra-rounded" as const },
-    cornersDotOptions: { color: config.fgColor, type: "dot" as const },
+    cornersSquareOptions: { color: config.fgColor, type: cornerStyleFor(config.dotStyle).squareType },
+    cornersDotOptions: { color: config.fgColor, type: cornerStyleFor(config.dotStyle).dotType },
     margin: config.margin,
     ...(config.logoDataUrl
       ? {
@@ -312,8 +331,8 @@ export default function IntegrationsPage() {
       data: `https://${domain}`,
       dotsOptions: { color: cfg.fgColor, type: cfg.dotStyle },
       backgroundOptions: { color: cfg.bgColor },
-      cornersSquareOptions: { color: cfg.fgColor, type: "extra-rounded" },
-      cornersDotOptions: { color: cfg.fgColor, type: "dot" },
+      cornersSquareOptions: { color: cfg.fgColor, type: cornerStyleFor(cfg.dotStyle).squareType },
+      cornersDotOptions: { color: cfg.fgColor, type: cornerStyleFor(cfg.dotStyle).dotType },
       margin: cfg.margin,
       ...(cfg.logoDataUrl
         ? { image: cfg.logoDataUrl, imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: cfg.logoSize } }
