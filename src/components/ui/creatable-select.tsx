@@ -94,7 +94,7 @@ export function CreatableSelect({
         render={<button type="button" />}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none transition-colors hover:border-gray-300 focus-visible:border-orange-400 disabled:cursor-not-allowed disabled:opacity-50",
-          !selected && "text-gray-400",
+          !selected && "text-gray-300",
           className
         )}
       >

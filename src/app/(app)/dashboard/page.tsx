@@ -420,8 +420,8 @@ function HeroCreateCard({
                 if (e.target.value && !expanded) setExpanded(true)
                 if (!e.target.value && !form.vehicleId) setExpanded(false)
               }}
-              placeholder="Cole o link a encurtar..."
-              className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 outline-none"
+              placeholder="Cole seu link aqui..."
+              className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 outline-none"
             />
             {expanded && (
               <button type="button" onClick={handleCollapse} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
@@ -440,23 +440,25 @@ function HeroCreateCard({
             <div className="px-4 pb-4 space-y-2.5">
               <div className="h-px bg-gray-100 mb-1" />
 
-              {/* Vehicle + Campaign */}
-              <CreatableSelect
-                value={form.vehicleId}
-                onChange={(id) => set("vehicleId", id)}
-                options={vehicleOptions}
-                placeholder="Selecionar veículo *"
-                createLabel="Criar veículo"
-                onCreate={handleCreateVehicle}
-              />
-              <CreatableSelect
-                value={form.campaignId}
-                onChange={(id) => set("campaignId", id)}
-                options={campaignOptions}
-                placeholder="Selecionar campanha *"
-                createLabel="Criar campanha"
-                onCreate={handleCreateCampaign}
-              />
+              {/* Vehicle + Campaign — side by side */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <CreatableSelect
+                  value={form.vehicleId}
+                  onChange={(id) => set("vehicleId", id)}
+                  options={vehicleOptions}
+                  placeholder="Veículo *"
+                  createLabel="Criar veículo"
+                  onCreate={handleCreateVehicle}
+                />
+                <CreatableSelect
+                  value={form.campaignId}
+                  onChange={(id) => set("campaignId", id)}
+                  options={campaignOptions}
+                  placeholder="Campanha *"
+                  createLabel="Criar campanha"
+                  onCreate={handleCreateCampaign}
+                />
+              </div>
 
               <div className="h-px bg-gray-100 my-1" />
 
@@ -473,7 +475,7 @@ function HeroCreateCard({
                   value={form[field] as string}
                   onChange={(e) => set(field, e.target.value)}
                   placeholder={placeholder}
-                  className="w-full rounded-xl border border-gray-200 bg-card px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
+                  className="w-full rounded-xl border border-gray-200 bg-card px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-300 outline-none focus:border-blue-400 transition-colors"
                 />
               ))}
 
@@ -483,9 +485,9 @@ function HeroCreateCard({
                   <input
                     value={form.slug}
                     onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle") }}
-                    placeholder="Slug (gerado automaticamente)"
+                    placeholder="Slug"
                     className={cn(
-                      "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
+                      "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-300 outline-none transition-colors pr-8",
                       slugStatus === "taken" ? "border-red-400 text-red-700 focus:border-red-400" :
                       slugStatus === "free" ? "border-emerald-400 text-gray-700 focus:border-emerald-400" :
                       "border-gray-200 text-gray-500 focus:border-blue-400"
