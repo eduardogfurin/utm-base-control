@@ -12,6 +12,7 @@ import {
   Trash2,
   Link2,
   ChevronDown,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -608,6 +609,7 @@ function LinksPageInner() {
   const [filterVehicleId, setFilterVehicleId] = useState(searchParams.get("vehicleId") ?? "all");
   const [filterCampaignId, setFilterCampaignId] = useState(searchParams.get("campaignId") ?? "all");
   const [filterSearch, setFilterSearch] = useState("");
+  const [syncingClicks, setSyncingClicks] = useState(false);
 
   const isViewer = session?.user?.role === "VIEWER";
 
@@ -672,6 +674,24 @@ function LinksPageInner() {
     toast.success(`${label} copiado!`);
   };
 
+  const handleSyncClicks = async () => {
+    setSyncingClicks(true);
+    try {
+      const res = await fetch("/api/links/sync-clicks", { method: "POST" });
+      const data = await res.json();
+      if (data.synced > 0) {
+        toast.success(`${data.synced} link${data.synced !== 1 ? "s" : ""} sincronizado${data.synced !== 1 ? "s" : ""}!`);
+        await fetchLinks();
+      } else {
+        toast.success("Cliques já estão atualizados");
+      }
+    } catch {
+      toast.error("Erro ao sincronizar cliques");
+    } finally {
+      setSyncingClicks(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -721,6 +741,18 @@ function LinksPageInner() {
           onChange={(e) => setFilterSearch(e.target.value)}
           className="w-48 bg-card border-gray-100 text-xs placeholder:text-xs"
         />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncClicks}
+          disabled={syncingClicks}
+          className="gap-2 text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-colors duration-200"
+          title="Sincronizar cliques com o Rebrandly"
+        >
+          <RefreshCw className={cn("h-3.5 w-3.5", syncingClicks && "animate-spin")} />
+          {syncingClicks ? "Sincronizando..." : "Atualizar cliques"}
+        </Button>
       </div>
 
       {/* Table */}

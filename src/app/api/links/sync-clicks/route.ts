@@ -36,7 +36,6 @@ export async function POST() {
         ],
       },
       select: { linkId: true, rebrandlyId: true },
-      take: 50, // cap per call to avoid timeout
     });
 
     if (staleLinks.length === 0) {
