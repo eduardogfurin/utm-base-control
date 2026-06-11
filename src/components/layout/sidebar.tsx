@@ -9,6 +9,7 @@ import {
   Radio,
   Megaphone,
   Link2,
+  Plug,
   Puzzle,
   UploadCloud,
   History,
@@ -67,7 +68,7 @@ const trackingGroup: NavGroup = {
 };
 
 const settingsGroup: NavGroup = {
-  label: "Configurações",
+  label: "Plataforma",
   icon: Settings,
   basePath: "/settings",
   children: [
@@ -221,30 +222,34 @@ export function Sidebar() {
             </div>
             <Menu size={14} className="text-gray-400 flex-shrink-0" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-52">
+          <DropdownMenuContent side="top" align="start" className="w-44">
+            <DropdownMenuItem onClick={() => router.push("/integrations")}>
+              <UserCircle size={14} className="text-gray-400" />
+              Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/integrations")}>
+              <Plug size={14} className="text-gray-400" />
+              Integrações
+            </DropdownMenuItem>
             {isAdmin && (
               <>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push("/users")}>
                   <Users size={14} className="text-gray-400" />
                   Usuários
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/settings")}>
                   <Settings size={14} className="text-gray-400" />
-                  Configurações
+                  Plataforma
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem onClick={() => router.push("/integrations")}>
-              <UserCircle size={14} className="text-gray-400" />
-              Meu Perfil / Integrações
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="text-red-500 focus:text-red-500 focus:bg-red-50"
             >
-              <LogOut size={14} className="mr-2" />
+              <LogOut size={14} />
               Sair
             </DropdownMenuItem>
           </DropdownMenuContent>

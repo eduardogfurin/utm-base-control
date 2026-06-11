@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plug, RefreshCw, CheckCircle2, XCircle, Globe, Key, AlertTriangle } from "lucide-react";
+import { Plug, RefreshCw, CheckCircle2, XCircle, Globe, Key, AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ export default function IntegrationsPage() {
   const [testing, setTesting] = useState(false);
   const [loadingDomains, setLoadingDomains] = useState(false);
   const [savedDomain, setSavedDomain] = useState("");
+  const [showConnectNew, setShowConnectNew] = useState(false);
 
   const rebrandly = integrations.find((i) => i.provider === "REBRANDLY");
 
@@ -48,7 +49,6 @@ export default function IntegrationsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Load domains if already connected
   useEffect(() => {
     if (!rebrandly?.isActive) return;
     setLoadingDomains(true);
@@ -58,21 +58,17 @@ export default function IntegrationsPage() {
         const data = Array.isArray(res) ? res : (res?.domains ?? []);
         const defaultDomain = Array.isArray(res) ? null : res?.defaultDomain;
         setDomains(data);
-        if (defaultDomain) setSelectedDomain(defaultDomain);
-        else if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
+        if (defaultDomain) { setSelectedDomain(defaultDomain); setSavedDomain(defaultDomain); }
+        else if (!selectedDomain && data?.[0]?.fullName) { setSelectedDomain(data[0].fullName); setSavedDomain(data[0].fullName); }
       })
       .catch(() => {})
       .finally(() => setLoadingDomains(false));
   }, [rebrandly?.isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTestAndSave = async () => {
-    if (!apiKey.trim()) {
-      toast.error("Insira a API Key");
-      return;
-    }
+    if (!apiKey.trim()) { toast.error("Insira a API Key"); return; }
     setTesting(true);
     try {
-      // Save integration first
       const res = await fetch("/api/integrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,7 +76,6 @@ export default function IntegrationsPage() {
       });
       if (!res.ok) throw new Error("Erro ao salvar");
 
-      // Load domains after saving
       setLoadingDomains(true);
       const domainsRes = await fetch("/api/integrations/rebrandly/domains");
       if (domainsRes.ok) {
@@ -88,16 +83,16 @@ export default function IntegrationsPage() {
         const data: RebrandlyDomain[] = Array.isArray(res) ? res : (res?.domains ?? []);
         const defaultDomain = Array.isArray(res) ? null : res?.defaultDomain;
         setDomains(data);
-        if (defaultDomain) setSelectedDomain(defaultDomain);
-        else if (!selectedDomain && data?.[0]?.fullName) setSelectedDomain(data[0].fullName);
+        if (defaultDomain) { setSelectedDomain(defaultDomain); setSavedDomain(defaultDomain); }
+        else if (data?.[0]?.fullName) { setSelectedDomain(data[0].fullName); setSavedDomain(data[0].fullName); }
       }
 
-      // Reload integrations
       const intRes = await fetch("/api/integrations");
       if (intRes.ok) setIntegrations(await intRes.json());
 
       toast.success("Integração conectada com sucesso!");
       setApiKey("");
+      setShowConnectNew(false);
     } catch {
       toast.error("Falha ao conectar. Verifique a API Key.");
     } finally {
@@ -139,155 +134,226 @@ export default function IntegrationsPage() {
       );
       setDomains([]);
       setSelectedDomain("");
+      setSavedDomain("");
+      setShowConnectNew(false);
       toast.success("Integração desconectada");
     } catch {
       toast.error("Erro ao desconectar");
     }
   };
 
+  const domainHasChanges = selectedDomain !== savedDomain;
+
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-4 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Meu Perfil / Integrações</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Gerencie suas integrações pessoais de encurtamento</p>
+        <h1 className="text-2xl font-bold text-gray-900">Integrações</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Gerencie suas integrações de encurtamento de links</p>
       </div>
 
-      {/* Rebrandly card */}
-      <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-              <Plug size={18} className="text-orange-500" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-800">Rebrandly</p>
-              <p className="text-xs text-gray-400">Encurtamento de links com domínio personalizado</p>
-            </div>
-          </div>
-          {loading ? (
-            <Skeleton className="h-6 w-20" />
-          ) : rebrandly?.isActive ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
-              <CheckCircle2 size={12} />
-              Conectado
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-1">
-              <XCircle size={12} />
-              Desconectado
-            </span>
-          )}
+      {loading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
         </div>
-
-        <div className="px-6 py-5 space-y-5">
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-9 w-full" />
-              <Skeleton className="h-9 w-full" />
+      ) : rebrandly?.isActive ? (
+        <>
+          {/* ── Connected box ── */}
+          <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
+                  <Plug size={16} className="text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Rebrandly</p>
+                  <p className="text-xs text-gray-400">Encurtamento com domínio personalizado</p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+                <CheckCircle2 size={12} />
+                Conectado
+              </span>
             </div>
-          ) : rebrandly?.isActive ? (
-            <>
+
+            <div className="px-5 py-4 space-y-4">
               {/* Domain selector */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <Globe size={14} className="text-gray-400" />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
+                  <Globe size={13} className="text-gray-400" />
                   Domínio padrão
                 </Label>
                 {loadingDomains ? (
                   <Skeleton className="h-9 w-full" />
                 ) : domains.length > 0 ? (
-                  <div className="flex gap-2">
-                    <select
-                      value={selectedDomain}
-                      onChange={(e) => setSelectedDomain(e.target.value)}
-                      className="flex-1 h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
-                    >
-                      {domains.map((d) => (
-                        <option key={d.id} value={d.fullName}>{d.fullName}</option>
-                      ))}
-                    </select>
-                    <Button
-                      onClick={handleSaveDomain}
-                      disabled={saving || selectedDomain === savedDomain}
-                      className={
-                        selectedDomain !== savedDomain
-                          ? "bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shadow-[0_2px_8px_rgba(239,68,68,0.35)]"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }
-                    >
-                      {saving ? <RefreshCw size={14} className="animate-spin" /> : "Salvar"}
-                    </Button>
-                  </div>
-                  {selectedDomain !== savedDomain && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                      <AlertTriangle size={11} />
-                      Alteração pendente — clique em Salvar para aplicar
-                    </p>
-                  )}
+                  <>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedDomain}
+                        onChange={(e) => setSelectedDomain(e.target.value)}
+                        className="flex-1 h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors"
+                      >
+                        {domains.map((d) => (
+                          <option key={d.id} value={d.fullName}>{d.fullName}</option>
+                        ))}
+                      </select>
+                      <Button
+                        onClick={handleSaveDomain}
+                        disabled={saving || !domainHasChanges}
+                        className={
+                          domainHasChanges
+                            ? "bg-red-500 hover:bg-red-600 text-white shadow-[0_2px_8px_rgba(239,68,68,0.3)]"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        }
+                      >
+                        {saving ? <RefreshCw size={14} className="animate-spin" /> : "Salvar"}
+                      </Button>
+                    </div>
+                    {domainHasChanges && (
+                      <p className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertTriangle size={11} />
+                        Alteração pendente — clique em Salvar para aplicar
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-gray-400">Nenhum domínio encontrado</p>
                 )}
               </div>
 
               {/* Danger zone */}
-              <div className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-3.5 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <AlertTriangle size={15} className="text-red-500 shrink-0" />
+                  <AlertTriangle size={14} className="text-red-500 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-red-700">Zona perigosa</p>
-                    <p className="text-xs text-red-500 mt-0.5">Desconectar remove a integração e todos os links deixarão de ser encurtados via Rebrandly.</p>
+                    <p className="text-xs font-semibold text-red-700">Zona perigosa</p>
+                    <p className="text-[11px] text-red-500 mt-0.5 leading-snug">Desconectar remove a integração permanentemente.</p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   onClick={handleDisconnect}
-                  className="shrink-0 border border-red-300 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-400 text-sm"
+                  className="shrink-0 border border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 text-xs px-3 h-8"
                 >
-                  <XCircle size={14} className="mr-1.5" />
+                  <XCircle size={13} className="mr-1.5" />
                   Desconectar
                 </Button>
               </div>
-            </>
+            </div>
+          </div>
+
+          {/* ── Connect new integration box ── */}
+          {!showConnectNew ? (
+            <button
+              onClick={() => setShowConnectNew(true)}
+              className="w-full rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 hover:bg-gray-50 hover:border-gray-300 transition-colors py-4 flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-600"
+            >
+              <Plus size={15} />
+              Conectar nova integração
+            </button>
           ) : (
-            <>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <Key size={14} className="text-gray-400" />
-                  API Key do Rebrandly
-                </Label>
-                <Input
-                  type="password"
-                  placeholder="Cole sua API Key aqui"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="bg-card border-gray-200 focus:border-orange-400 transition-colors duration-200"
-                />
-                <p className="text-xs text-gray-400">
-                  Encontre sua API Key em{" "}
-                  <span className="font-mono text-gray-500">rebrandly.com → Account → API Keys</span>
-                </p>
+            <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <Plus size={15} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Conectar nova integração</p>
+                    <p className="text-xs text-gray-400">Adicione um novo encurtador de links</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowConnectNew(false)} className="text-gray-400 hover:text-gray-600 text-xs">
+                  <XCircle size={16} />
+                </button>
               </div>
-              <Button
-                onClick={handleTestAndSave}
-                disabled={testing}
-                className="bg-[#1C1B21] hover:bg-orange-500 text-white transition-colors duration-300"
-              >
-                {testing ? (
-                  <><RefreshCw size={14} className="animate-spin mr-2" /> Conectando...</>
-                ) : (
-                  <><Plug size={14} className="mr-2" /> Conectar Rebrandly</>
-                )}
-              </Button>
-            </>
+              <div className="px-5 py-4 space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
+                    <Key size={13} className="text-gray-400" />
+                    API Key do Rebrandly
+                  </Label>
+                  <Input
+                    type="password"
+                    placeholder="Cole sua API Key aqui"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="bg-card border-gray-200 focus:border-blue-400"
+                  />
+                  <p className="text-[11px] text-gray-400">
+                    Encontre em <span className="font-mono text-gray-500">rebrandly.com → Account → API Keys</span>
+                  </p>
+                </div>
+                <Button
+                  onClick={handleTestAndSave}
+                  disabled={testing}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  {testing ? (
+                    <><RefreshCw size={14} className="animate-spin mr-2" /> Conectando...</>
+                  ) : (
+                    <><Plug size={14} className="mr-2" /> Conectar</>
+                  )}
+                </Button>
+              </div>
+            </div>
           )}
+        </>
+      ) : (
+        /* ── Disconnected — single connect box ── */
+        <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
+                <Plug size={16} className="text-orange-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Rebrandly</p>
+                <p className="text-xs text-gray-400">Encurtamento com domínio personalizado</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-1">
+              <XCircle size={12} />
+              Desconectado
+            </span>
+          </div>
+          <div className="px-5 py-4 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
+                <Key size={13} className="text-gray-400" />
+                API Key do Rebrandly
+              </Label>
+              <Input
+                type="password"
+                placeholder="Cole sua API Key aqui"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="bg-card border-gray-200 focus:border-blue-400"
+              />
+              <p className="text-[11px] text-gray-400">
+                Encontre em <span className="font-mono text-gray-500">rebrandly.com → Account → API Keys</span>
+              </p>
+            </div>
+            <Button
+              onClick={handleTestAndSave}
+              disabled={testing}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              {testing ? (
+                <><RefreshCw size={14} className="animate-spin mr-2" /> Conectando...</>
+              ) : (
+                <><Plug size={14} className="mr-2" /> Conectar Rebrandly</>
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* More providers coming soon */}
-      <div className="rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] px-6 py-5">
-        <p className="text-sm font-semibold text-gray-700 mb-1">Mais integrações em breve</p>
-        <p className="text-xs text-gray-400">Bitly, TinyURL, e outros encurtadores serão adicionados em versões futuras.</p>
+      <div className="rounded-2xl bg-card border border-dashed border-gray-200 px-5 py-4">
+        <p className="text-xs font-semibold text-gray-500 mb-0.5">Mais integrações em breve</p>
+        <p className="text-xs text-gray-400">Bitly, TinyURL e outros encurtadores serão adicionados em versões futuras.</p>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ const titles: Record<string, string> = {
   "/qrcodes": "QR Codes",
   "/import": "Importação CSV",
   "/history": "Histórico de Alterações",
-  "/settings": "Configurações",
+  "/settings": "Plataforma",
   "/users": "Usuários",
 };
 

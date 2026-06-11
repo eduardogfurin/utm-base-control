@@ -609,10 +609,10 @@ function LinksPageInner() {
         />
 
         <Input
-          placeholder="Buscar por slug ou URL..."
+          placeholder="Buscar..."
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}
-          className="w-64 bg-card border-gray-100"
+          className="w-48 bg-card border-gray-100 text-xs placeholder:text-xs"
         />
       </div>
 
