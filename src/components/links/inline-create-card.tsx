@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { Globe, X, Plus } from "lucide-react";
+import { Globe, X, Plus, Copy, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { CreatableSelect, type SelectOption } from "@/components/ui/creatable-select";
@@ -77,6 +75,48 @@ const emptyForm: LinkFormState = {
   rebrandlyDomain: "",
 };
 
+// ─── OG Thumbnail (small, for top row) ───────────────────────────────────────
+
+const ogCache: Record<string, string | null> = {};
+
+function OgPreview({ url }: { url: string }) {
+  const [imgSrc, setImgSrc] = useState<string | null>(ogCache[url] ?? null);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!url) return;
+    if (fetchedRef.current || imgSrc !== null || url in ogCache) return;
+    fetchedRef.current = true;
+    try { new URL(url); } catch { ogCache[url] = null; return; }
+    fetch(`/api/og-preview?url=${encodeURIComponent(url)}`)
+      .then((r) => r.json())
+      .then((d: { image?: string | null }) => {
+        ogCache[url] = d.image ?? null;
+        setImgSrc(d.image ?? null);
+      })
+      .catch(() => { ogCache[url] = null; });
+  }, [url, imgSrc]);
+
+  if (!url) return null;
+
+  if (imgSrc) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imgSrc}
+        alt=""
+        className="w-8 h-8 rounded-lg object-cover shrink-0 border border-gray-100"
+        onError={() => setImgSrc(null)}
+      />
+    );
+  }
+  return (
+    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+      <Link2 className="h-3.5 w-3.5 text-gray-400" />
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface InlineCreateCardProps {
@@ -104,17 +144,19 @@ export function InlineCreateCard({
   const [form, setForm] = useState<LinkFormState>({ ...emptyForm });
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
   const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  // slugStatus tracks manual-typed slugs; auto-generated slugs resolve themselves silently
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "taken" | "free">("idle");
+  const [isAutoSlug, setIsAutoSlug] = useState(true);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { setVehicles(initialVehicles); }, [initialVehicles]);
   useEffect(() => { setCampaigns(initialCampaigns); }, [initialCampaigns]);
 
-  // Check slug availability
+  // Check slug availability — only for manually typed slugs
   useEffect(() => {
     if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
-    if (!form.slug) { setSlugStatus("idle"); return; }
+    if (!form.slug || isAutoSlug) { if (isAutoSlug) setSlugStatus("idle"); return; }
     setSlugStatus("checking");
     slugTimerRef.current = setTimeout(() => {
       fetch(`/api/links/check-slug?slug=${encodeURIComponent(form.slug)}`)
@@ -123,7 +165,7 @@ export function InlineCreateCard({
         .catch(() => setSlugStatus("idle"));
     }, 500);
     return () => { if (slugTimerRef.current) clearTimeout(slugTimerRef.current); };
-  }, [form.slug]);
+  }, [form.slug, isAutoSlug]);
 
   const hasRebrandly = hasUserRebrandly || !!(settings?.rebrandlyApiKey && settings?.rebrandlyStatus);
 
@@ -142,7 +184,6 @@ export function InlineCreateCard({
         const domains = res?.domains ?? [];
         setRebrandlyDomains(domains);
         setForm((prev) => {
-          // Priority: user-selected domain from integration > first domain in list
           const defaultDomain = res?.defaultDomain || domains?.[0]?.fullName || "";
           return {
             ...prev,
@@ -154,14 +195,32 @@ export function InlineCreateCard({
       .catch(() => {});
   }, [expanded, hasRebrandly]);
 
-  // Auto-generate slug from vehicle + campaign slugs
+  // Auto-generate slug from vehicle + campaign slugs, with dedup suffix
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || !isAutoSlug) return;
     const veh = vehicles.find((v) => v.id === form.vehicleId);
     const cam = campaigns.find((c) => c.id === form.campaignId);
-    if (veh && cam) {
-      setForm((prev) => ({ ...prev, slug: slugify(`${veh.slug}-${cam.slug}`) }));
-    }
+    if (!veh || !cam) return;
+
+    const base = slugify(`${veh.slug}-${cam.slug}`);
+
+    const trySlug = async (candidate: string, attempt: number): Promise<string> => {
+      const res = await fetch(`/api/links/check-slug?slug=${encodeURIComponent(candidate)}`);
+      const d = await res.json();
+      if (d.available) return candidate;
+      const next = attempt === 1 ? `${base}-2` : `${base}-${attempt + 1}`;
+      return trySlug(next, attempt + 1);
+    };
+
+    trySlug(base, 1)
+      .then((resolved) => {
+        setForm((prev) => ({ ...prev, slug: resolved }));
+        setSlugStatus("idle");
+      })
+      .catch(() => {
+        setForm((prev) => ({ ...prev, slug: base }));
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.vehicleId, form.campaignId, expanded, vehicles, campaigns]);
 
   // Load UTM template when vehicle changes
@@ -199,6 +258,11 @@ export function InlineCreateCard({
     utmTerm: form.utmTerm || null,
   });
 
+  // Full URL including slug (appended as hash/path not UTM — this is the "short preview")
+  const shortPreview = form.shortenWithRebrandly && form.rebrandlyDomain && form.slug
+    ? `https://${form.rebrandlyDomain}/${form.slug}`
+    : null;
+
   const handleCollapse = () => {
     setExpanded(false);
   };
@@ -208,6 +272,7 @@ export function InlineCreateCard({
     setForm({ ...emptyForm });
     setRebrandlyDomains([]);
     setSlugStatus("idle");
+    setIsAutoSlug(true);
     if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
   };
 
@@ -301,8 +366,23 @@ export function InlineCreateCard({
       )}
     >
       <form onSubmit={handleSubmit}>
-        {/* Always-visible row */}
+        {/* Always-visible row: [OG preview] [URL input flex-1] [Criar Link button] [X] */}
         <div className="flex items-center gap-3 p-4">
+          {/* OG thumbnail — only when URL has been typed */}
+          {form.baseUrl && <OgPreview url={form.baseUrl} />}
+
+          <input
+            ref={urlInputRef}
+            placeholder="Cole a URL base aqui..."
+            value={form.baseUrl}
+            onChange={handleUrlChange}
+            onFocus={() => { if (!expanded) setExpanded(true); }}
+            className={cn(
+              "flex-1 bg-transparent text-sm placeholder:text-gray-400 outline-none",
+              expanded && "font-medium text-gray-800"
+            )}
+          />
+
           <button
             type="button"
             onClick={() => { if (!expanded) { setExpanded(true); setTimeout(() => urlInputRef.current?.focus(), 50); } }}
@@ -316,18 +396,6 @@ export function InlineCreateCard({
             <Plus size={15} />
             Criar Link
           </button>
-
-          <Input
-            ref={urlInputRef}
-            placeholder="Cole a URL base aqui..."
-            value={form.baseUrl}
-            onChange={handleUrlChange}
-            onFocus={() => { if (!expanded) setExpanded(true); }}
-            className={cn(
-              "flex-1 border-0 bg-transparent text-sm placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto",
-              expanded && "font-medium text-gray-800"
-            )}
-          />
 
           {expanded ? (
             <button
@@ -346,95 +414,123 @@ export function InlineCreateCard({
         <div
           className={cn(
             "transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-            expanded ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+            expanded ? "max-h-[1400px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
           )}
         >
-          <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-3">
+          <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-2.5">
 
-            {/* Vehicle + Campaign — side by side */}
+            {/* Vehicle + Campaign — side by side, no label above */}
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Veículo *</Label>
-                <CreatableSelect
-                  value={form.vehicleId}
-                  onChange={(id) => set("vehicleId", id)}
-                  options={vehicleOptions}
-                  placeholder="Veículo *"
-                  createLabel="Criar veículo"
-                  onCreate={handleCreateVehicle}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Campanha *</Label>
-                <CreatableSelect
-                  value={form.campaignId}
-                  onChange={(id) => set("campaignId", id)}
-                  options={campaignOptions}
-                  placeholder="Campanha *"
-                  createLabel="Criar campanha"
-                  onCreate={handleCreateCampaign}
-                />
-              </div>
+              <CreatableSelect
+                value={form.vehicleId}
+                onChange={(id) => set("vehicleId", id)}
+                options={vehicleOptions}
+                placeholder="Veículo *"
+                createLabel="Criar veículo"
+                onCreate={handleCreateVehicle}
+              />
+              <CreatableSelect
+                value={form.campaignId}
+                onChange={(id) => set("campaignId", id)}
+                options={campaignOptions}
+                placeholder="Campanha *"
+                createLabel="Criar campanha"
+                onCreate={handleCreateCampaign}
+              />
             </div>
 
             <Separator className="bg-gray-100" />
 
-            {/* UTM Fields — vertical */}
-            <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Parâmetros UTM</p>
-              <div className="space-y-3">
-                {(
-                  [
-                    { field: "utmSource", label: "Source", placeholder: "ex: google" },
-                    { field: "utmMedium", label: "Medium", placeholder: "ex: cpc" },
-                    { field: "utmCampaign", label: "Campaign", placeholder: "ex: lancamento-2026" },
-                    { field: "utmContent", label: "Content", placeholder: "ex: banner-topo" },
-                    { field: "utmTerm", label: "Term", placeholder: "ex: palavra-chave" },
-                  ] as { field: keyof LinkFormState; label: string; placeholder: string }[]
-                ).map(({ field, label, placeholder }) => (
-                  <div key={field} className="space-y-1.5">
-                    <Label className="text-xs text-gray-500">{label}</Label>
-                    <Input
-                      placeholder={placeholder}
-                      value={form[field] as string}
-                      onChange={(e) => set(field, e.target.value)}
-                      className="bg-card border-gray-200 text-sm focus:border-blue-400 transition-colors duration-200"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* UTM Fields — placeholder as title, Home style */}
+            {(
+              [
+                { field: "utmSource", placeholder: "Source (ex: google)" },
+                { field: "utmMedium", placeholder: "Medium (ex: cpc)" },
+                { field: "utmCampaign", placeholder: "Campaign (ex: lancamento-2026)" },
+                { field: "utmContent", placeholder: "Content (ex: banner-topo)" },
+                { field: "utmTerm", placeholder: "Term (ex: palavra-chave)" },
+              ] as { field: keyof LinkFormState; placeholder: string }[]
+            ).map(({ field, placeholder }) => (
+              <input
+                key={field}
+                placeholder={placeholder}
+                value={form[field] as string}
+                onChange={(e) => set(field, e.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-card px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-300 outline-none focus:border-blue-400 transition-colors"
+              />
+            ))}
 
-            {/* Slug — last */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">Slug</Label>
+            {/* Slug — placeholder as title, Home style */}
+            <div>
               <div className="relative">
-                <Input
-                  placeholder="gerado-automaticamente"
+                <input
+                  placeholder="Slug"
                   value={form.slug}
-                  onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle"); }}
+                  onChange={(e) => {
+                    set("slug", e.target.value);
+                    setIsAutoSlug(false);
+                    setSlugStatus("idle");
+                  }}
                   className={cn(
-                    "bg-card font-mono text-xs focus:border-blue-400 transition-colors duration-200 pr-8",
-                    slugStatus === "taken" ? "border-red-400 text-red-700" :
-                    slugStatus === "free" ? "border-emerald-400" : "border-gray-200 text-gray-500"
+                    "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-300 outline-none transition-colors pr-8",
+                    slugStatus === "taken" ? "border-red-400 text-red-700 focus:border-red-400" :
+                    slugStatus === "free" ? "border-emerald-400 text-gray-700 focus:border-emerald-400" :
+                    "border-gray-200 text-gray-500 focus:border-blue-400"
                   )}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {slugStatus === "checking" && <span className="w-3 h-3 rounded-full border-2 border-orange-400 border-t-transparent animate-spin block" />}
+                  {slugStatus === "checking" && <span className="w-3 h-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin block" />}
                   {slugStatus === "free" && <span className="text-emerald-500 text-xs font-bold">✓</span>}
                   {slugStatus === "taken" && <span className="text-red-500 text-xs font-bold">✕</span>}
                 </div>
               </div>
               {slugStatus === "taken" && (
-                <p className="text-xs text-red-600">Este slug já está em uso. Escolha outro.</p>
+                <p className="mt-1 text-xs text-red-600">Este slug já está em uso. Escolha outro.</p>
               )}
             </div>
 
-            {/* Preview URL */}
+            {/* Preview URL final — with slug appended + copy icon */}
             {form.baseUrl && (
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1.5">Preview da URL final</p>
-                <p className="text-xs text-gray-600 break-all font-mono leading-relaxed">{previewUrl}</p>
+              <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-2.5">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">Preview da URL final</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-xs text-gray-600 break-all font-mono leading-relaxed flex-1">
+                    {previewUrl}{form.slug ? `#${form.slug}` : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const full = previewUrl + (form.slug ? `#${form.slug}` : "");
+                      navigator.clipboard.writeText(full);
+                      toast.success("URL copiada!");
+                    }}
+                    className="shrink-0 mt-0.5 text-gray-300 hover:text-gray-600 transition-colors"
+                    title="Copiar URL"
+                  >
+                    <Copy size={13} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Preview link encurtado — only when Rebrandly enabled + domain + slug */}
+            {shortPreview && (
+              <div className="rounded-xl bg-blue-50 border border-blue-100 px-3.5 py-2.5">
+                <p className="text-[10px] text-blue-400 uppercase tracking-wider mb-1.5">Preview link encurtado</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-blue-700 font-mono font-medium flex-1 break-all">{shortPreview}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(shortPreview);
+                      toast.success("Link curto copiado!");
+                    }}
+                    className="shrink-0 text-blue-300 hover:text-blue-600 transition-colors"
+                    title="Copiar link curto"
+                  >
+                    <Copy size={13} />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -452,18 +548,15 @@ export function InlineCreateCard({
                   />
                 </div>
                 {form.shortenWithRebrandly && rebrandlyDomains.length > 0 && (
-                  <div>
-                    <Label className="text-xs text-gray-500">Domínio</Label>
-                    <select
-                      value={form.rebrandlyDomain}
-                      onChange={(e) => set("rebrandlyDomain", e.target.value)}
-                      className="mt-1.5 w-full h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
-                    >
-                      {rebrandlyDomains.map((d) => (
-                        <option key={d.id} value={d.fullName}>{d.fullName}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={form.rebrandlyDomain}
+                    onChange={(e) => set("rebrandlyDomain", e.target.value)}
+                    className="w-full h-9 rounded-xl border border-gray-200 bg-card px-3 text-sm text-gray-900 outline-none focus:border-blue-400 transition-colors duration-200"
+                  >
+                    {rebrandlyDomains.map((d) => (
+                      <option key={d.id} value={d.fullName}>{d.fullName}</option>
+                    ))}
+                  </select>
                 )}
               </div>
             )}
