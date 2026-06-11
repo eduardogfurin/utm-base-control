@@ -37,7 +37,9 @@ interface QrConfig {
   fgColor: string;
   bgColor: string;
   logoDataUrl: string;
+  // 0.1–0.4 → imageSize passed to qr-code-styling (capped at 0.4 to preserve readability)
   logoSize: number;
+  // 0–10 → margin cells (qr-code-styling uses pixel margin = margin * moduleSize)
   margin: number;
   dotStyle: DotStyle;
   exportSize: ExportSize;
@@ -48,14 +50,14 @@ const DEFAULT_QR: QrConfig = {
   fgColor: "#272727",
   bgColor: "#ffffff",
   logoDataUrl: "",
-  logoSize: 0.3,
+  logoSize: 0.2,
   margin: 2,
   dotStyle: "classy-rounded",
   exportSize: 256,
   exportFormat: "png",
 };
 
-// ─── QR Dot style thumbnails (inline SVG previews) ───────────────────────────
+// ─── QR style helpers ────────────────────────────────────────────────────────
 
 const DOT_STYLES: { id: DotStyle; label: string }[] = [
   { id: "square", label: "Quadrado" },
@@ -65,6 +67,46 @@ const DOT_STYLES: { id: DotStyle; label: string }[] = [
   { id: "classy-rounded", label: "Classy +" },
   { id: "dots", label: "Pontos" },
 ];
+
+function cornerStyleFor(dot: DotStyle): {
+  squareType: "square" | "extra-rounded" | "dot";
+  dotType: "square" | "dot";
+} {
+  switch (dot) {
+    case "square":
+    case "classy":
+      return { squareType: "square", dotType: "square" };
+    default:
+      return { squareType: "extra-rounded", dotType: "dot" };
+  }
+}
+
+function buildQrOptions(domain: string, cfg: QrConfig, size: number) {
+  const corners = cornerStyleFor(cfg.dotStyle);
+  return {
+    width: size,
+    height: size,
+    type: "svg" as const,
+    data: `https://${domain}`,
+    dotsOptions: { color: cfg.fgColor, type: cfg.dotStyle },
+    backgroundOptions: { color: cfg.bgColor },
+    cornersSquareOptions: { color: cfg.fgColor, type: corners.squareType },
+    cornersDotOptions: { color: cfg.fgColor, type: corners.dotType },
+    margin: cfg.margin,
+    ...(cfg.logoDataUrl
+      ? {
+          image: cfg.logoDataUrl,
+          imageOptions: {
+            crossOrigin: "anonymous" as const,
+            margin: 2,
+            imageSize: Math.min(cfg.logoSize, 0.4), // cap to preserve QR readability
+          },
+        }
+      : {}),
+  };
+}
+
+// ─── Dot style thumbnail SVGs ─────────────────────────────────────────────────
 
 function DotStyleThumb({ style, active }: { style: DotStyle; active: boolean }) {
   const c = active ? "#3b82f6" : "#374151";
@@ -78,7 +120,6 @@ function DotStyleThumb({ style, active }: { style: DotStyle; active: boolean }) 
   const size = 6;
   const gap = 1.5;
   const total = grid.length * size + (grid.length - 1) * gap;
-
   return (
     <svg viewBox={`0 0 ${total} ${total}`} width="32" height="32">
       {grid.flatMap((row, ri) =>
@@ -86,32 +127,21 @@ function DotStyleThumb({ style, active }: { style: DotStyle; active: boolean }) 
           if (!on) return null;
           const x = ci * (size + gap);
           const y = ri * (size + gap);
-          if (style === "dots") {
-            return <circle key={`${ri}-${ci}`} cx={x + size / 2} cy={y + size / 2} r={size / 2} fill={c} />;
-          }
-          if (style === "rounded") {
-            return <rect key={`${ri}-${ci}`} x={x} y={y} width={size} height={size} rx={1.5} fill={c} />;
-          }
-          if (style === "extra-rounded") {
-            return <rect key={`${ri}-${ci}`} x={x} y={y} width={size} height={size} rx={3} fill={c} />;
-          }
-          if (style === "classy") {
-            return (
-              <g key={`${ri}-${ci}`}>
-                <rect x={x} y={y} width={size} height={size} fill={c} />
-                <rect x={x + size - 2} y={y} width={2} height={2} rx={1} fill={active ? "#93c5fd" : "#9ca3af"} />
-              </g>
-            );
-          }
-          if (style === "classy-rounded") {
-            return (
-              <g key={`${ri}-${ci}`}>
-                <rect x={x} y={y} width={size} height={size} rx={1} fill={c} />
-                <rect x={x + size - 2} y={y} width={2} height={2} rx={1} fill={active ? "#93c5fd" : "#9ca3af"} />
-              </g>
-            );
-          }
-          // square
+          if (style === "dots") return <circle key={`${ri}-${ci}`} cx={x + size / 2} cy={y + size / 2} r={size / 2} fill={c} />;
+          if (style === "rounded") return <rect key={`${ri}-${ci}`} x={x} y={y} width={size} height={size} rx={1.5} fill={c} />;
+          if (style === "extra-rounded") return <rect key={`${ri}-${ci}`} x={x} y={y} width={size} height={size} rx={3} fill={c} />;
+          if (style === "classy") return (
+            <g key={`${ri}-${ci}`}>
+              <rect x={x} y={y} width={size} height={size} fill={c} />
+              <rect x={x + size - 2} y={y} width={2} height={2} rx={1} fill={active ? "#93c5fd" : "#9ca3af"} />
+            </g>
+          );
+          if (style === "classy-rounded") return (
+            <g key={`${ri}-${ci}`}>
+              <rect x={x} y={y} width={size} height={size} rx={1} fill={c} />
+              <rect x={x + size - 2} y={y} width={2} height={2} rx={1} fill={active ? "#93c5fd" : "#9ca3af"} />
+            </g>
+          );
           return <rect key={`${ri}-${ci}`} x={x} y={y} width={size} height={size} fill={c} />;
         })
       )}
@@ -119,70 +149,118 @@ function DotStyleThumb({ style, active }: { style: DotStyle; active: boolean }) 
   );
 }
 
-// ─── Corner style derived from dot style ─────────────────────────────────────
-
-function cornerStyleFor(dot: DotStyle): {
-  squareType: "square" | "extra-rounded" | "dot";
-  dotType: "square" | "dot";
-} {
-  switch (dot) {
-    case "square":
-    case "classy":
-      return { squareType: "square", dotType: "square" };
-    case "rounded":
-    case "extra-rounded":
-    case "dots":
-    case "classy-rounded":
-    default:
-      return { squareType: "extra-rounded", dotType: "dot" };
-  }
-}
-
-// ─── Live QR preview (canvas-based via qr-code-styling) ──────────────────────
+// ─── Live QR preview component ───────────────────────────────────────────────
 
 function QrPreview({ domain, config }: { domain: string; config: QrConfig }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<InstanceType<typeof import("qr-code-styling").default> | null>(null);
+  const initializedRef = useRef(false);
 
-  const buildOptions = useCallback(() => ({
-    width: 200,
-    height: 200,
-    type: "svg" as const,
-    data: `https://${domain}`,
-    dotsOptions: { color: config.fgColor, type: config.dotStyle },
-    backgroundOptions: { color: config.bgColor },
-    cornersSquareOptions: { color: config.fgColor, type: cornerStyleFor(config.dotStyle).squareType },
-    cornersDotOptions: { color: config.fgColor, type: cornerStyleFor(config.dotStyle).dotType },
-    margin: config.margin,
-    ...(config.logoDataUrl
-      ? {
-          image: config.logoDataUrl,
-          imageOptions: { crossOrigin: "anonymous" as const, margin: 4, imageSize: config.logoSize },
-        }
-      : {}),
-  }), [domain, config]);
+  const opts = buildQrOptions(domain, config, 200);
+
+  // Stable serialization to detect real changes
+  const optsKey = JSON.stringify(opts);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!containerRef.current) return;
     let cancelled = false;
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
-      if (cancelled || !ref.current) return;
-      if (instanceRef.current) {
-        instanceRef.current.update(buildOptions());
+      if (cancelled || !containerRef.current) return;
+      if (!initializedRef.current) {
+        instanceRef.current = new QRCodeStyling(opts);
+        instanceRef.current.append(containerRef.current);
+        initializedRef.current = true;
       } else {
-        instanceRef.current = new QRCodeStyling(buildOptions());
-        instanceRef.current.append(ref.current);
+        instanceRef.current?.update(opts);
       }
     });
     return () => { cancelled = true; };
-  }, [buildOptions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optsKey]);
 
   return (
     <div
-      ref={ref}
-      className="w-[200px] h-[200px] flex items-center justify-center"
+      ref={containerRef}
+      className="w-[200px] h-[200px]"
       style={{ background: config.bgColor }}
     />
+  );
+}
+
+// ─── Color field (native picker + hex display, circular swatch) ──────────────
+
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs text-gray-500 font-medium">{label}</label>
+      <label className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-card cursor-pointer hover:border-gray-300 transition-colors">
+        {/* circular swatch — clicking it opens native color picker */}
+        <div
+          className="w-5 h-5 rounded-full border border-gray-200 shrink-0 shadow-sm"
+          style={{ background: value }}
+        />
+        <span className="text-xs font-mono text-gray-600 flex-1 select-none">{value}</span>
+        {/* visually hidden native color input — positioned over the whole label */}
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="sr-only"
+        />
+      </label>
+    </div>
+  );
+}
+
+// ─── Smooth range slider ──────────────────────────────────────────────────────
+
+function RangeSlider({
+  label,
+  value,
+  displayValue,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  displayValue?: string;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs text-gray-500 font-medium">{label}</label>
+        <span className="text-xs font-mono text-gray-600 bg-gray-100 rounded px-1.5 py-0.5 min-w-[28px] text-center">
+          {displayValue ?? value}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full accent-blue-500 cursor-pointer appearance-none bg-gray-200"
+        style={{
+          backgroundImage: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((value - min) / (max - min)) * 100}%, #e5e7eb ${((value - min) / (max - min)) * 100}%, #e5e7eb 100%)`,
+        }}
+      />
+    </div>
   );
 }
 
@@ -308,36 +386,42 @@ export default function IntegrationsPage() {
     }
   };
 
-  const getQrConfig = (domain: string): QrConfig => qrConfigs[domain] ?? DEFAULT_QR;
-  const patchQrConfig = (domain: string, patch: Partial<QrConfig>) =>
-    setQrConfigs((prev) => ({ ...prev, [domain]: { ...getQrConfig(domain), ...patch } }));
+  const getQrConfig = useCallback(
+    (domain: string): QrConfig => qrConfigs[domain] ?? DEFAULT_QR,
+    [qrConfigs]
+  );
 
-  const handleLogoUpload = (domain: string, file: File) => {
+  const patchQrConfig = useCallback((domain: string, patch: Partial<QrConfig>) =>
+    setQrConfigs((prev) => ({ ...prev, [domain]: { ...((prev[domain]) ?? DEFAULT_QR), ...patch } })),
+    []
+  );
+
+  const applyToAll = useCallback((sourceDomain: string) => {
+    const cfg = qrConfigs[sourceDomain] ?? DEFAULT_QR;
+    setQrConfigs((prev) => {
+      const next = { ...prev };
+      domains.forEach((d) => { next[d.fullName] = { ...cfg }; });
+      return next;
+    });
+  }, [qrConfigs, domains]);
+
+  const handleLogoUpload = useCallback((domain: string, file: File) => {
     if (file.size > 2 * 1024 * 1024) { toast.error("Logo máximo 2 MB"); return; }
     const reader = new FileReader();
     reader.onload = (e) => {
-      patchQrConfig(domain, { logoDataUrl: e.target?.result as string, logoSize: 0.3 });
+      patchQrConfig(domain, { logoDataUrl: e.target?.result as string, logoSize: 0.2 });
     };
     reader.readAsDataURL(file);
-  };
+  }, [patchQrConfig]);
 
   const handleExportQr = async (domain: string) => {
     const cfg = getQrConfig(domain);
     const { default: QRCodeStyling } = await import("qr-code-styling");
-    const qr = new QRCodeStyling({
-      width: cfg.exportSize,
-      height: cfg.exportSize,
-      type: cfg.exportFormat === "svg" ? "svg" : "canvas",
-      data: `https://${domain}`,
-      dotsOptions: { color: cfg.fgColor, type: cfg.dotStyle },
-      backgroundOptions: { color: cfg.bgColor },
-      cornersSquareOptions: { color: cfg.fgColor, type: cornerStyleFor(cfg.dotStyle).squareType },
-      cornersDotOptions: { color: cfg.fgColor, type: cornerStyleFor(cfg.dotStyle).dotType },
-      margin: cfg.margin,
-      ...(cfg.logoDataUrl
-        ? { image: cfg.logoDataUrl, imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: cfg.logoSize } }
-        : {}),
-    });
+    const exportOpts = {
+      ...buildQrOptions(domain, cfg, cfg.exportSize),
+      type: cfg.exportFormat === "svg" ? "svg" as const : "canvas" as const,
+    };
+    const qr = new QRCodeStyling(exportOpts);
     await qr.download({ name: `qr-${domain.replace(/\./g, "-")}`, extension: cfg.exportFormat as "png" | "svg" | "jpeg" | "webp" });
     toast.success("QR exportado!");
   };
@@ -373,10 +457,11 @@ export default function IntegrationsPage() {
     const previewDomain = qrPreviewDomain || domain;
     const previewCfg = getQrConfig(previewDomain);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [dragOver, setDragOver] = useState(false);
 
     return (
       <div className="border-t border-gray-100 bg-gray-50/50">
-        <div className="grid grid-cols-[1fr_auto] gap-0 divide-x divide-gray-100">
+        <div className="grid grid-cols-[1fr_auto] divide-x divide-gray-100">
 
           {/* ── Left: controls ── */}
           <div className="px-5 py-4 space-y-5">
@@ -387,75 +472,43 @@ export default function IntegrationsPage() {
 
             {/* Colors */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-medium">Background</label>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-card">
-                  <input
-                    type="color"
-                    value={cfg.bgColor}
-                    onChange={(e) => patchQrConfig(domain, { bgColor: e.target.value })}
-                    className="w-5 h-5 rounded cursor-pointer border-none bg-transparent p-0 shrink-0"
-                  />
-                  <span className="text-xs font-mono text-gray-600 flex-1">{cfg.bgColor}</span>
-                  <button
-                    onClick={() => {
-                      const v = prompt("Hex color", cfg.bgColor);
-                      if (v) patchQrConfig(domain, { bgColor: v });
-                    }}
-                    className="text-gray-300 hover:text-gray-500"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-medium">Cor principal</label>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-card">
-                  <input
-                    type="color"
-                    value={cfg.fgColor}
-                    onChange={(e) => patchQrConfig(domain, { fgColor: e.target.value })}
-                    className="w-5 h-5 rounded cursor-pointer border-none bg-transparent p-0 shrink-0"
-                  />
-                  <span className="text-xs font-mono text-gray-600 flex-1">{cfg.fgColor}</span>
-                  <button
-                    onClick={() => {
-                      const v = prompt("Hex color", cfg.fgColor);
-                      if (v) patchQrConfig(domain, { fgColor: v });
-                    }}
-                    className="text-gray-300 hover:text-gray-500"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                </div>
-              </div>
+              <ColorField
+                label="Background"
+                value={cfg.bgColor}
+                onChange={(v) => patchQrConfig(domain, { bgColor: v })}
+              />
+              <ColorField
+                label="Cor principal"
+                value={cfg.fgColor}
+                onChange={(v) => patchQrConfig(domain, { fgColor: v })}
+              />
             </div>
 
             {/* Margem slider */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs text-gray-500 font-medium">Margem</label>
-                <span className="text-xs font-mono text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">{cfg.margin}</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={10}
-                value={cfg.margin}
-                onChange={(e) => patchQrConfig(domain, { margin: Number(e.target.value) })}
-                className="w-full h-1.5 rounded-full accent-blue-500 cursor-pointer"
-              />
-            </div>
+            <RangeSlider
+              label="Margem"
+              value={cfg.margin}
+              min={0}
+              max={10}
+              step={1}
+              onChange={(v) => patchQrConfig(domain, { margin: v })}
+            />
 
             {/* Logo upload */}
             <div className="space-y-2">
               <label className="text-xs text-gray-500 font-medium">Upload a logo</label>
               {!cfg.logoDataUrl ? (
                 <label
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 bg-card hover:bg-gray-50 cursor-pointer py-5 transition-colors"
-                  onDragOver={(e) => e.preventDefault()}
+                  className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed cursor-pointer py-5 transition-all ${
+                    dragOver
+                      ? "border-blue-400 bg-blue-50 scale-[1.01]"
+                      : "border-gray-200 bg-card hover:bg-gray-50 hover:border-gray-300"
+                  }`}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
                   onDrop={(e) => {
                     e.preventDefault();
+                    setDragOver(false);
                     const f = e.dataTransfer.files[0];
                     if (f) handleLogoUpload(domain, f);
                   }}
@@ -470,7 +523,7 @@ export default function IntegrationsPage() {
                       if (f) handleLogoUpload(domain, f);
                     }}
                   />
-                  <Upload size={18} className="text-gray-400" />
+                  <Upload size={18} className={dragOver ? "text-blue-400" : "text-gray-400"} />
                   <p className="text-xs text-center text-gray-500">
                     <span className="font-semibold">Drag & drop file,</span>{" "}
                     <span
@@ -483,37 +536,28 @@ export default function IntegrationsPage() {
                   <p className="text-[11px] text-gray-400">PNG format, Max size 2MB, 1536 × 2046</p>
                 </label>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 bg-card">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={cfg.logoDataUrl} alt="logo" className="w-8 h-8 object-contain rounded" />
                     <span className="text-xs text-gray-500 flex-1 truncate">Logo carregada</span>
                     <button
-                      onClick={() => patchQrConfig(domain, { logoDataUrl: "", logoSize: 0.3 })}
-                      className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg px-2.5 py-1 flex items-center gap-1 transition-colors"
+                      onClick={() => patchQrConfig(domain, { logoDataUrl: "", logoSize: 0.2 })}
+                      className="group text-xs font-medium rounded-lg px-2.5 py-1 flex items-center gap-1 transition-colors bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-600"
                     >
                       <Trash2 size={11} />
                       Deletar logo
                     </button>
                   </div>
-                  {/* Logo size slider — only shown when logo is set */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs text-gray-500 font-medium">Tamanho logo</label>
-                      <span className="text-xs font-mono text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">
-                        {(cfg.logoSize * 10).toFixed(1)}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={1}
-                      max={5}
-                      step={0.1}
-                      value={cfg.logoSize * 10}
-                      onChange={(e) => patchQrConfig(domain, { logoSize: Number(e.target.value) / 10 })}
-                      className="w-full h-1.5 rounded-full accent-blue-500 cursor-pointer"
-                    />
-                  </div>
+                  <RangeSlider
+                    label="Tamanho logo"
+                    value={Math.round(cfg.logoSize * 10)}
+                    displayValue={String(Math.round(cfg.logoSize * 10))}
+                    min={1}
+                    max={4}
+                    step={1}
+                    onChange={(v) => patchQrConfig(domain, { logoSize: v / 10 })}
+                  />
                 </div>
               )}
             </div>
@@ -619,7 +663,7 @@ export default function IntegrationsPage() {
               </div>
             )}
 
-            {/* QR preview */}
+            {/* QR preview card */}
             <div
               className="rounded-xl overflow-hidden border border-gray-100 shadow-sm flex items-center justify-center"
               style={{ background: previewCfg.bgColor, width: 216, height: 216 }}
@@ -628,6 +672,32 @@ export default function IntegrationsPage() {
             </div>
 
             <p className="text-[11px] text-gray-400 text-center">{previewDomain || domain}</p>
+
+            {/* Apply to all toggle */}
+            {domains.length > 1 && (
+              <div className="w-full mt-1">
+                <div className="rounded-xl border border-gray-100 bg-card px-3 py-2.5 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">Aplicar a todos os domínios</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Substituirá o estilo de todos os domínios</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Aplicar o estilo de "${domain}" para todos os ${domains.length} domínios? Isso substituirá as personalizações individuais.`)) {
+                          applyToAll(domain);
+                          toast.success("Estilo aplicado a todos os domínios");
+                        }
+                      }}
+                      className="shrink-0 text-[11px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-2.5 py-1 transition-colors"
+                    >
+                      Aplicar a todos
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
