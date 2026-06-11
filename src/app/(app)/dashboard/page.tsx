@@ -81,9 +81,9 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-card px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-xl border border-gray-100 bg-card px-3 py-2 text-xs shadow-lg">
       <p className="text-gray-400 mb-1">{label ? formatDate(label) : ""}</p>
-      <p className="text-gray-900 dark:text-gray-100 font-semibold">
+      <p className="text-gray-900 font-semibold">
         {payload[0].value.toLocaleString("pt-BR")} cliques
       </p>
     </div>
@@ -318,7 +318,7 @@ function HeroCreateCard({
       <div
         className={cn(
           "w-full max-w-lg rounded-3xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          "bg-card shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)]",
+          "bg-card shadow-[0_8px_40px_rgba(0,0,0,0.12)]",
           expanded ? "scale-100" : "scale-[0.985] hover:scale-100"
         )}
       >
@@ -409,7 +409,7 @@ function HeroCreateCard({
         <div className="px-4 pt-4 pb-3">
           <div className={cn(
             "flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200",
-            expanded ? "border-blue-200 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-500/10" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-card/5 hover:border-gray-300 dark:hover:border-white/15"
+            expanded ? "border-blue-200 bg-blue-50/40" : "border-gray-200 bg-gray-50 hover:border-gray-300:border-white/15"
           )}>
             <Globe size={15} className="text-gray-400 shrink-0" />
             <input
@@ -473,7 +473,7 @@ function HeroCreateCard({
                   value={form[field] as string}
                   onChange={(e) => set(field, e.target.value)}
                   placeholder={placeholder}
-                  className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-card dark:bg-card/5 px-3.5 py-2.5 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
+                  className="w-full rounded-xl border border-gray-200 bg-card px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-colors"
                 />
               ))}
 
@@ -485,7 +485,7 @@ function HeroCreateCard({
                     onChange={(e) => { set("slug", e.target.value); setSlugStatus("idle") }}
                     placeholder="Slug (gerado automaticamente)"
                     className={cn(
-                      "w-full rounded-xl border bg-gray-50 dark:bg-card/5 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
+                      "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm font-mono placeholder:text-gray-400 outline-none transition-colors pr-8",
                       slugStatus === "taken" ? "border-red-400 text-red-700 focus:border-red-400" :
                       slugStatus === "free" ? "border-emerald-400 text-gray-700 focus:border-emerald-400" :
                       "border-gray-200 text-gray-500 focus:border-blue-400"
@@ -504,15 +504,15 @@ function HeroCreateCard({
 
               {/* URL Preview */}
               {form.baseUrl && (
-                <div className="rounded-xl bg-gray-50 dark:bg-card/5 border border-gray-100 dark:border-white/8 px-3.5 py-2.5">
+                <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-2.5">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Preview</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 break-all font-mono leading-relaxed">{previewUrl}</p>
+                  <p className="text-xs text-gray-500 break-all font-mono leading-relaxed">{previewUrl}</p>
                 </div>
               )}
 
               {/* Rebrandly */}
               {hasRebrandly && (
-                <div className="rounded-xl border border-gray-100 dark:border-white/8 bg-gray-50/50 dark:bg-card/5 px-3.5 py-2.5 space-y-2">
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-3.5 py-2.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-700 font-medium">Encurtar via Rebrandly</p>
                     <Switch checked={form.shortenWithRebrandly} onCheckedChange={(v) => set("shortenWithRebrandly", v)} />
@@ -537,7 +537,7 @@ function HeroCreateCard({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 rounded-2xl border border-gray-200 dark:border-white/10 py-3.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-card/5 transition-colors"
+                className="flex-1 rounded-2xl border border-gray-200 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50:bg-card/5 transition-colors"
               >
                 Cancelar
               </button>
@@ -630,19 +630,19 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* ── Greeting ─────────────────────────────────────────────── */}
       <div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
+        <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">
           {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
         </p>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-0.5">
+        <h1 className="text-2xl font-bold text-gray-900 mt-0.5">
           {getGreeting()}, {firstName} 👋
         </h1>
       </div>
 
       {/* ── Error banner ─────────────────────────────────────────── */}
       {error && (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30 px-4 py-3">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          <button onClick={loadDashboard} className="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 underline ml-4 shrink-0">
+        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-600">{error}</p>
+          <button onClick={loadDashboard} className="text-xs font-medium text-red-600 hover:text-red-800 underline ml-4 shrink-0">
             Tentar novamente
           </button>
         </div>
@@ -666,70 +666,70 @@ export default function DashboardPage() {
       <div className="grid grid-cols-12 gap-4">
 
         {/* KPI: Cliques */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliques</span>
-            <span className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center">
+            <span className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
               <MousePointerClick size={15} className="text-blue-500" />
             </span>
           </div>
           {loading ? <Skeleton className="h-9 w-20" /> : (
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+              <span className="text-4xl font-bold text-gray-900 tabular-nums leading-none">
                 {(data?.totalClicks ?? 0).toLocaleString("pt-BR")}
               </span>
-              <ArrowUpRight size={14} className="text-gray-300 dark:text-gray-600 mb-1" />
+              <ArrowUpRight size={14} className="text-gray-300 mb-1" />
             </div>
           )}
           <p className="text-xs text-gray-400">Total acumulado via Rebrandly</p>
         </div>
 
         {/* KPI: Campanhas */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campanhas</span>
-            <span className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
+            <span className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Megaphone size={15} className="text-emerald-500" />
             </span>
           </div>
           {loading ? <Skeleton className="h-9 w-20" /> : (
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+              <span className="text-4xl font-bold text-gray-900 tabular-nums leading-none">
                 {(data?.activeCampaigns ?? 0).toLocaleString("pt-BR")}
               </span>
-              <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/15 dark:text-emerald-400 rounded-full px-2 py-0.5 mb-1">ativas</span>
+              <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5 mb-1">ativas</span>
             </div>
           )}
           <p className="text-xs text-gray-400">Campanhas com status ativo</p>
         </div>
 
         {/* KPI: Veículos */}
-        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-4 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Veículos</span>
-            <span className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center">
+            <span className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
               <Radio size={15} className="text-violet-500" />
             </span>
           </div>
           {loading ? <Skeleton className="h-9 w-20" /> : (
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+              <span className="text-4xl font-bold text-gray-900 tabular-nums leading-none">
                 {(data?.activeVehicles ?? 0).toLocaleString("pt-BR")}
               </span>
-              <span className="text-[10px] font-medium text-violet-600 bg-violet-50 dark:bg-violet-500/15 dark:text-violet-400 rounded-full px-2 py-0.5 mb-1">ativos</span>
+              <span className="text-[10px] font-medium text-violet-600 bg-violet-50 rounded-full px-2 py-0.5 mb-1">ativos</span>
             </div>
           )}
           <p className="text-xs text-gray-400">Canais com status ativo</p>
         </div>
 
         {/* Area chart: cliques over time — col 8 */}
-        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-8 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Cliques nos últimos 30 dias</h3>
+              <h3 className="text-sm font-semibold text-gray-800">Cliques nos últimos 30 dias</h3>
               <p className="text-xs text-gray-400 mt-0.5">Distribuição por data de criação do link</p>
             </div>
-            <span className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center">
+            <span className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
               <TrendingUp size={13} className="text-blue-500" />
             </span>
           </div>
@@ -756,14 +756,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Links — col 4 */}
-        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-50 dark:border-white/6 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Links</h3>
-            <span className="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center">
+        <div className="col-span-12 lg:col-span-4 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-800">Top Links</h3>
+            <span className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
               <ExternalLink size={11} className="text-amber-500" />
             </span>
           </div>
-          <div className="flex-1 divide-y divide-gray-50 dark:divide-white/5 overflow-y-auto">
+          <div className="flex-1 divide-y divide-gray-50 overflow-y-auto">
             {loading ? Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="px-5 py-3 flex items-center justify-between gap-3">
                 <Skeleton className="h-4 w-28" /><Skeleton className="h-4 w-10" />
@@ -772,11 +772,11 @@ export default function DashboardPage() {
               <div className="px-5 py-8 text-center text-sm text-gray-400">Nenhum link com cliques</div>
             ) : (
               (data?.topLinks ?? []).slice(0, 7).map((link, idx) => (
-                <div key={idx} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-card/5 transition-colors">
+                <div key={idx} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60:bg-card/5 transition-colors">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600 w-3 shrink-0">{idx + 1}</span>
+                    <span className="text-[10px] font-bold text-gray-300 w-3 shrink-0">{idx + 1}</span>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">/{link.slug}</p>
+                      <p className="text-xs font-medium text-gray-700 truncate">/{link.slug}</p>
                       <p className="text-[10px] text-gray-400 truncate">{link.shortUrl}</p>
                     </div>
                   </div>
@@ -790,10 +790,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Veículos bar chart — col 6 */}
-        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Veículos</h3>
-            <span className="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
+            <h3 className="text-sm font-semibold text-gray-800">Top Veículos</h3>
+            <span className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center">
               <Radio size={11} className="text-emerald-500" />
             </span>
           </div>
@@ -815,10 +815,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Campanhas bar chart — col 6 */}
-        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 dark:border-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="col-span-12 lg:col-span-6 rounded-2xl bg-card border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Top Campanhas</h3>
-            <span className="w-6 h-6 rounded-lg bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center">
+            <h3 className="text-sm font-semibold text-gray-800">Top Campanhas</h3>
+            <span className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center">
               <Megaphone size={11} className="text-violet-500" />
             </span>
           </div>
