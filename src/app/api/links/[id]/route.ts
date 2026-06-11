@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAuditLog, diffAndAudit } from "@/lib/audit";
 import { buildUtmUrl } from "@/lib/utils";
-import { rebrandlyDeleteLink } from "@/lib/rebrandly";
+import { rebrandlyUpdateLink, rebrandlyDeleteLink } from "@/lib/rebrandly";
 import { AuditAction } from "@prisma/client";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -16,6 +16,22 @@ const linkIncludes = {
   qrCode: true,
   createdBy: { select: { id: true, name: true, email: true } },
 };
+
+// Resolve Rebrandly credentials — user integration takes priority over global settings
+async function getRebrandlyConfig(userId: string): Promise<{ apiKey: string; domain: string } | null> {
+  const [userIntegration, globalSettings] = await Promise.all([
+    prisma.userIntegration.findUnique({
+      where: { userId_provider: { userId, provider: "REBRANDLY" } },
+    }),
+    prisma.appSettings.findFirst(),
+  ]);
+
+  const apiKey = userIntegration?.apiKey ?? globalSettings?.rebrandlyApiKey ?? null;
+  const domain = userIntegration?.domain ?? globalSettings?.rebrandlyDomain ?? null;
+
+  if (!apiKey || !domain) return null;
+  return { apiKey, domain };
+}
 
 export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
@@ -50,7 +66,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     const { id } = await params;
 
-    const before = await prisma.link.findUnique({ where: { id } });
+    const before = await prisma.link.findUnique({
+      where: { id },
+      include: { rebrandly: true },
+    });
     if (!before) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -95,6 +114,37 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       },
       include: linkIncludes,
     });
+
+    // Sync changes to Rebrandly when URL or slug changed
+    if (before.rebrandly?.rebrandlyId) {
+      const rebrandlyConfig = await getRebrandlyConfig(session.user.id);
+      if (rebrandlyConfig) {
+        const rebrandlyPayload: { destination?: string; slashtag?: string } = {};
+        const urlChanged = finalUrl !== before.finalUrl;
+        const slugChanged = slug !== undefined && slug !== before.slug;
+        if (urlChanged) rebrandlyPayload.destination = finalUrl;
+        if (slugChanged) rebrandlyPayload.slashtag = slug;
+
+        if (Object.keys(rebrandlyPayload).length > 0) {
+          try {
+            const rebrandlyResult = await rebrandlyUpdateLink(
+              rebrandlyConfig,
+              before.rebrandly.rebrandlyId,
+              rebrandlyPayload
+            );
+            // Update stored shortUrl if slashtag changed
+            if (slugChanged) {
+              await prisma.rebrandlyLink.update({
+                where: { linkId: id },
+                data: { shortUrl: rebrandlyResult.shortUrl },
+              });
+            }
+          } catch (err) {
+            console.error("[links PATCH] Rebrandly update failed:", err);
+          }
+        }
+      }
+    }
 
     await diffAndAudit(
       session.user.id,
@@ -161,17 +211,15 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Delete from Rebrandly if integration exists
-    if (link.rebrandly) {
-      const settings = await prisma.appSettings.findFirst();
-      if (settings?.rebrandlyApiKey && settings?.rebrandlyDomain) {
+    // Delete from Rebrandly before DB cascade removes the record
+    if (link.rebrandly?.rebrandlyId) {
+      const rebrandlyConfig = await getRebrandlyConfig(session.user.id);
+      if (rebrandlyConfig) {
         try {
-          await rebrandlyDeleteLink(
-            { apiKey: settings.rebrandlyApiKey, domain: settings.rebrandlyDomain },
-            link.rebrandly.rebrandlyId
-          );
+          await rebrandlyDeleteLink(rebrandlyConfig, link.rebrandly.rebrandlyId);
         } catch (err) {
-          console.error("Rebrandly delete failed:", err);
+          console.error("[links DELETE] Rebrandly delete failed:", err);
+          // Non-fatal: proceed with local deletion
         }
       }
     }
@@ -187,7 +235,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       oldValue: JSON.stringify({ slug: link.slug, finalUrl: link.finalUrl }),
     });
 
-    // Cascade deletes QrCode and RebrandlyLink due to onDelete: Cascade in schema
+    // Cascade deletes QrCode and RebrandlyLink via onDelete: Cascade
     await prisma.link.delete({ where: { id } });
 
     return NextResponse.json({ deleted: true });

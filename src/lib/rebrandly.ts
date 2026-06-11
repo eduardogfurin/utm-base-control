@@ -66,6 +66,17 @@ export async function rebrandlyGetLink(
   return rebrandlyFetch(`/links/${linkId}`, config);
 }
 
+export async function rebrandlyUpdateLink(
+  config: RebrandlyConfig,
+  linkId: string,
+  payload: { destination?: string; slashtag?: string; title?: string }
+): Promise<RebrandlyLinkResponse> {
+  return rebrandlyFetch(`/links/${linkId}`, config, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function rebrandlyDeleteLink(
   config: RebrandlyConfig,
   linkId: string

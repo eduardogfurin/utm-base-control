@@ -576,6 +576,8 @@ function LinksPageInner() {
           );
         }
         await fetchLinks();
+        // Sync Rebrandly clicks in background after links load
+        fetch("/api/links/sync-clicks", { method: "POST" }).catch(() => {});
       } finally {
         setLoading(false);
       }
