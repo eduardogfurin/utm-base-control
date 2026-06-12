@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
             campaignId: row.campaignId,
             createdById: session.user.id,
           },
+          select: { id: true },
         });
 
         let urlForQr = finalUrl;
@@ -100,15 +101,11 @@ export async function POST(request: NextRequest) {
               { destination: finalUrl, slug, title: slug }
             );
 
-            const rb = await prisma.rebrandlyLink.create({
-              data: {
-                linkId: link.id,
-                rebrandlyId: rebrandlyLink.id,
-                shortUrl: rebrandlyLink.shortUrl,
-                clicks: rebrandlyLink.clicks ?? 0,
-              },
-            });
-            urlForQr = rb.shortUrl;
+            await prisma.$executeRaw`
+              INSERT INTO "RebrandlyLink" (id, "linkId", "rebrandlyId", "shortUrl", clicks, "createdAt", "updatedAt")
+              VALUES (${crypto.randomUUID()}, ${link.id}, ${rebrandlyLink.id}, ${rebrandlyLink.shortUrl}, ${rebrandlyLink.clicks ?? 0}, NOW(), NOW())
+            `;
+            urlForQr = rebrandlyLink.shortUrl;
           } catch (rebErr) {
             errors.push(`Row ${i + 1}: Rebrandly failed — ${(rebErr as Error).message}`);
           }
@@ -121,9 +118,11 @@ export async function POST(request: NextRequest) {
             width: 256,
             margin: 2,
           });
-          await prisma.qrCode.create({
-            data: { linkId: link.id, svgData: svg },
-          });
+          await prisma.$executeRaw`
+            INSERT INTO "QrCode" (id, "linkId", "svgData", "createdAt", "updatedAt")
+            VALUES (${crypto.randomUUID()}, ${link.id}, ${svg}, NOW(), NOW())
+            ON CONFLICT ("linkId") DO UPDATE SET "svgData" = EXCLUDED."svgData", "updatedAt" = NOW()
+          `;
         } catch (qrErr) {
           errors.push(`Row ${i + 1}: QR Code failed — ${(qrErr as Error).message}`);
         }

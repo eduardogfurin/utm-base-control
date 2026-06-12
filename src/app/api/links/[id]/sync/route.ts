@@ -19,7 +19,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
 
     const link = await prisma.link.findUnique({
       where: { id },
-      include: { rebrandly: true },
+      select: { id: true, vehicleId: true, campaignId: true, rebrandly: { select: { rebrandlyId: true } } },
     });
 
     if (!link) {
@@ -33,28 +33,49 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const settings = await prisma.appSettings.findFirst({
-      select: { id: true, rebrandlyApiKey: true, rebrandlyDomain: true },
-    });
-    if (!settings?.rebrandlyApiKey || !settings?.rebrandlyDomain) {
-      return NextResponse.json(
-        { error: "Rebrandly not configured" },
-        { status: 400 }
-      );
+    // Fetch Rebrandly config with raw SQL fallback (qrConfig column may not exist yet)
+    let apiKey: string | null = null;
+    let domain: string | null = null;
+    try {
+      const settings = await prisma.appSettings.findFirst({
+        select: { rebrandlyApiKey: true, rebrandlyDomain: true },
+      });
+      apiKey = settings?.rebrandlyApiKey ?? null;
+      domain = settings?.rebrandlyDomain ?? null;
+    } catch {
+      const rows = await prisma.$queryRaw<{ rebrandlyApiKey: string | null; rebrandlyDomain: string | null }[]>`
+        SELECT "rebrandlyApiKey", "rebrandlyDomain" FROM "AppSettings" LIMIT 1
+      `;
+      apiKey = rows[0]?.rebrandlyApiKey ?? null;
+      domain = rows[0]?.rebrandlyDomain ?? null;
+    }
+
+    // Also check user integration
+    try {
+      const ui = await prisma.userIntegration.findUnique({
+        where: { userId_provider: { userId: session.user.id, provider: "REBRANDLY" } },
+        select: { apiKey: true, domain: true },
+      });
+      if (ui?.apiKey) { apiKey = ui.apiKey; domain = ui.domain ?? domain; }
+    } catch { /* qrConfig missing — ignore, use appSettings fallback */ }
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "Rebrandly not configured" }, { status: 400 });
     }
 
     const metrics = await rebrandlyGetMetrics(
-      { apiKey: settings.rebrandlyApiKey, domain: settings.rebrandlyDomain },
+      { apiKey, domain: domain ?? "" },
       link.rebrandly.rebrandlyId
     );
 
-    const updated = await prisma.rebrandlyLink.update({
-      where: { linkId: id },
-      data: {
-        clicks: metrics.clicks,
-        syncedAt: new Date(),
-      },
-    });
+    const clicks = metrics.clicks ?? 0;
+
+    // Use raw SQL to avoid RETURNING * emitted by Prisma v7 adapter-pg
+    await prisma.$executeRaw`
+      UPDATE "RebrandlyLink"
+      SET clicks = ${clicks}, "syncedAt" = NOW(), "updatedAt" = NOW()
+      WHERE "linkId" = ${id}
+    `;
 
     await createAuditLog({
       userId: session.user.id,
@@ -64,11 +85,12 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
       linkId: id,
       vehicleId: link.vehicleId,
       campaignId: link.campaignId,
-      newValue: String(metrics.clicks),
+      newValue: String(clicks),
     });
 
-    return NextResponse.json({ clicks: updated.clicks, syncedAt: updated.syncedAt });
-  } catch {
+    return NextResponse.json({ clicks, syncedAt: new Date() });
+  } catch (err) {
+    console.error("[links/sync POST]", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

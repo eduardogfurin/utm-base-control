@@ -98,23 +98,38 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       utmTerm: utmTerm ?? before.utmTerm,
     });
 
-    const updated = await prisma.link.update({
-      where: { id },
-      data: {
-        ...(baseUrl !== undefined && { baseUrl }),
-        finalUrl,
-        ...(slug !== undefined && { slug }),
-        ...(utmSource !== undefined && { utmSource }),
-        ...(utmMedium !== undefined && { utmMedium }),
-        ...(utmCampaign !== undefined && { utmCampaign }),
-        ...(utmContent !== undefined && { utmContent }),
-        ...(utmTerm !== undefined && { utmTerm }),
-        ...(vehicleId !== undefined && { vehicleId }),
-        ...(campaignId !== undefined && { campaignId }),
-        ...(status !== undefined && { status }),
-      },
-      include: linkIncludes,
-    });
+    // Use raw SQL for the update to avoid RETURNING * on write, then re-fetch with include
+    await prisma.$executeRawUnsafe(
+      `UPDATE "Link" SET
+        "baseUrl" = COALESCE($2, "baseUrl"),
+        "finalUrl" = $3,
+        "slug" = COALESCE($4, "slug"),
+        "utmSource" = COALESCE($5, "utmSource"),
+        "utmMedium" = COALESCE($6, "utmMedium"),
+        "utmCampaign" = COALESCE($7, "utmCampaign"),
+        "utmContent" = COALESCE($8, "utmContent"),
+        "utmTerm" = COALESCE($9, "utmTerm"),
+        "vehicleId" = COALESCE($10, "vehicleId"),
+        "campaignId" = COALESCE($11, "campaignId"),
+        "status" = COALESCE($12, "status"),
+        "updatedAt" = NOW()
+       WHERE id = $1`,
+      id,
+      baseUrl ?? null,
+      finalUrl,
+      slug ?? null,
+      utmSource ?? null,
+      utmMedium ?? null,
+      utmCampaign ?? null,
+      utmContent ?? null,
+      utmTerm ?? null,
+      vehicleId ?? null,
+      campaignId ?? null,
+      status ?? null
+    );
+
+    const updated = await prisma.link.findUnique({ where: { id }, include: linkIncludes });
+    if (!updated) return NextResponse.json({ error: "Not found after update" }, { status: 404 });;
 
     // Sync changes to Rebrandly when URL or slug changed
     if (before.rebrandly?.rebrandlyId) {
@@ -133,12 +148,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
               before.rebrandly.rebrandlyId,
               rebrandlyPayload
             );
-            // Update stored shortUrl if slashtag changed
+            // Update stored shortUrl if slashtag changed — raw SQL avoids RETURNING * issue
             if (slugChanged) {
-              await prisma.rebrandlyLink.update({
-                where: { linkId: id },
-                data: { shortUrl: rebrandlyResult.shortUrl },
-              });
+              await prisma.$executeRaw`
+                UPDATE "RebrandlyLink" SET "shortUrl" = ${rebrandlyResult.shortUrl}, "updatedAt" = NOW()
+                WHERE "linkId" = ${id}
+              `;
             }
           } catch (err) {
             console.error("[links PATCH] Rebrandly update failed:", err);
